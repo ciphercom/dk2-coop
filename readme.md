@@ -33,7 +33,7 @@ Note 2: The `Data` directory are not required for this to work, but are recommen
 
 ## Files explained
 
-The `Data` folder in the zip file contains patches for some campaign maps taken from the link https://keeperklan.com/downloads.php?do=file&id=141. These fix creatures like Dark Angels not spawning in some campaign maps.
+The `Data` folder in the zip file contains patches by Quuz for level editor
 
 # For Software Developers
 

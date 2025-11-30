@@ -19,6 +19,7 @@ namespace {
     bool g_auto_network_connect_applied = false;
 
     std::vector<std::string> split(const std::string& s, const std::string& delimiter) {
+        if(s.empty()) return {};
         size_t pos_start = 0, pos_end, delim_len = delimiter.length();
         std::string token;
         std::vector<std::string> res;

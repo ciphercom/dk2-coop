@@ -471,7 +471,7 @@ namespace patch::replace_parse_command_line {
             dk2::MyResources_instance.gameCfg.logOos__eos = 1;
         }
         if (*o_dk2_enableFilePatching) {
-            dk2::MyResources_instance.fillPaths();
+            dk2::MyResources_instance.useUnpackedDirs();
         }
         return true;
     }
@@ -633,7 +633,7 @@ namespace dk2 {
             } else if (!_strcmpi(*cur_token, "-LOGOOS")) {  // logging of out of sync
                 MyResources_instance.gameCfg.logOos__eos = 1;
             } else if (!_strcmpi(*cur_token, "-ENABLEFILEPATCHING")) {  // Allows to use the extracted WAD files instead of the compressed ones
-                MyResources_instance.fillPaths();
+                MyResources_instance.useUnpackedDirs();
             }
         }
         return true;
@@ -650,11 +650,11 @@ BOOL __cdecl dk2::parse_command_line(int argc, const char **argv) {
             dk2::MyResources_instance.video_settings.setBumpMappingEnabled(1);
         }
     }
-    MyGame_debugMsg(&MyGame_instance, "Cmd Line: ");
+    MyGame_log_printf(&MyGame_instance, "Cmd Line: ");
     for (int i = 0; i < argc; ++i) {
-        MyGame_debugMsg(&MyGame_instance, "%s ", argv[i]);
+        MyGame_log_printf(&MyGame_instance, "%s ", argv[i]);
     }
-    MyGame_debugMsg(&MyGame_instance, "\n");
+    MyGame_log_printf(&MyGame_instance, "\n");
     _wcsncpy(MyResources_instance.gameCfg.levelName, L"LEVEL", 64);
     MyResources_instance.gameCfg.levelName[63] = 0;
     MyResources_instance.gameCfg.hasSaveFile = 0;
@@ -671,7 +671,7 @@ BOOL __cdecl dk2::parse_command_line(int argc, const char **argv) {
         MyResources_instance.video_settings.zbuffer_bitnes = 32;
         MyResources_instance.video_settings.display_bitnes = 32;
     }
-    MyResources_instance.fillPaths();
+    MyResources_instance.useUnpackedDirs();
     MyResources_instance.gameCfg.EnableArtPatching = 1;
     return 1;
 }

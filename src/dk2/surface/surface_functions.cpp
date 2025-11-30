@@ -9,7 +9,7 @@
 #include <patches/micro_patches.h>
 
 
-dk2::MySurface *__cdecl dk2::MyResources_loadPng(const char *name) {
+dk2::MySurface *__cdecl dk2::static_CBridge_loadPng(const char *name) {
     char Buffer[1024];
     if (!MyResources_instance.gameCfg.EnableArtPatching) {
         sprintf(Buffer, "Attempt To Load PNG without artpatch : %s", name);

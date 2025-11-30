@@ -25,7 +25,6 @@ collect_sources(WEANETR_SOURCES weanetr_dll)
 add_library(${TARGET} SHARED
         main.cpp
         dkii_exe_functions.cpp
-        dk2/MyResources.cpp
         dk2/MyGame.cpp
         dk2/MyHeap.cpp
         dk2/MyDxMouse.cpp
@@ -76,6 +75,10 @@ add_library(${TARGET} SHARED
 
         dk2/network/protocol.cpp
 
+        dk2/resources/filesystem.cpp
+        dk2/resources/MyResources.cpp
+        dk2/resources/dir/MyDir_CFileManager.cpp
+
         ${MAIN_LAYOUT_SOURCES}
         ${GAME_LAYOUT_SOURCES}
 
@@ -118,8 +121,8 @@ add_library(${TARGET} SHARED
         patches/replace_heap.cpp
         patches/remember_window_location_and_size.cpp
         patches/wine_support.cpp
-        patches/external_textures.cpp
         patches/show_wireframe.cpp
+        patches/alternative_resources.cpp
 
         patches/big_resolution_fix/expand_surf_idx_array.cpp
         patches/big_resolution_fix/big_resolution_fix.cpp
@@ -139,6 +142,9 @@ add_library(${TARGET} SHARED
 #        patches/welcome_window/main/imgui_texture_opengl3.cpp
 
         patches/welcome_window/welcome_window.cpp
+        patches/welcome_window/options_section.cpp
+        patches/welcome_window/MyTimer.cpp
+        patches/welcome_window/alt_res_section.cpp
 
         ${GOG_PATCH_SOURCES}
         ${WEANETR_SOURCES}

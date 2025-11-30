@@ -7,7 +7,7 @@ How to install:
 - (optional, but recommended) copy `Data` directory with replacement to the game directory
 - run `DKII-DX.exe` as usual
 
-The `Date` folder contains patches for some campaign maps taken from the link https://keeperklan.com/downloads.php?do=file&id=141
+The `Date` folder contains patches by Quuz for level editor
 
 If you have any bugs in the game, please describe them in the discord channel: https://discord.gg/RvrQpCFUZc or in the GitHub issues.
 It helps a lot if you include steps how to reproduce found bug

@@ -7,7 +7,6 @@
 #include "dk2/MyStringHashMap_entry.h"
 #include "dk2_functions.h"
 #include "dk2_globals.h"
-#include "patches/external_textures.h"
 
 
 void dk2::MyCESurfHandle::resolveSurface() {
@@ -22,10 +21,7 @@ void dk2::MyCESurfHandle::resolveSurface() {
     int f24_reductionLevel = mydd_devTexture.reductionLevel;
     if (this->surfWidth8) {
         if (mydd_devTexture.reductionLevel <= (this->reductionLevel_andFlags & 7) || !this->nextByReduction) {
-            this->cesurf = (CEngineSurface *) patch::external_textures::loadFlameTexture(texName);
-            if (!this->cesurf) {  // patch
-                this->cesurf = (CEngineSurface*) MyTextures_instance.loadCompressed(texName);
-            }
+            this->cesurf = (CEngineSurface*) MyTextures_instance.loadCompressed(texName);
             if (!this->cesurf) {
                 int EntryIdx = ((MyStringHashMap *)&MyStringHashMap_MyCESurfHandle_instance)->getEntryIdx(f0_name);
                 MyStringHashMap_MyCESurfHandle_instance.entries.buf[EntryIdx].value->loadPrescaled();
@@ -60,9 +56,6 @@ void dk2::MyCESurfHandle::resolveSurface() {
     this->surfHeight8 = height_;
     this->createReduction();
     if (!f24_reductionLevel || !this->nextByReduction) {
-        this->cesurf = (CEngineSurface *) patch::external_textures::loadFlameTexture(texName);
-        if (!this->cesurf) { // patch
-            this->cesurf = (CEngineSurface*) MyTextures_instance.loadCompressed(texName);
-        }
+        this->cesurf = (CEngineSurface*) MyTextures_instance.loadCompressed(texName);
     }
 }

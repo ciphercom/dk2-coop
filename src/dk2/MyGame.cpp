@@ -64,7 +64,7 @@ int dk2::MyGame::prepareScreenEx(
         }
         if(!found) {
             patch::log::err("Screen Mode %d*%d (%d bpp) is not available", dwWidth, dwHeight, dwRGBBitCount);
-            MyGame_debugMsg(this, "Screen Mode %d*%d (%d bpp) is not available\n", dwWidth, dwHeight, dwRGBBitCount);
+            MyGame_log_printf(this, "Screen Mode %d*%d (%d bpp) is not available\n", dwWidth, dwHeight, dwRGBBitCount);
             for (int ddraw_idx = 0; ddraw_idx < dev->modeListCount; ++ddraw_idx) {
                 DxModeInfo* cur = &dev->modeList[ddraw_idx];
                 patch::log::dbg("- %dx%d (%d bpp)", cur->dwWidth, cur->dwHeight, cur->dwRGBBitCount);

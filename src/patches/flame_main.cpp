@@ -24,6 +24,7 @@
 #if __has_include(<dk2_research.h>)
 #include "dk2_research.h"
 #endif
+#include "alternative_resources.h"
 #include "patches/protocol_dump.h"
 #include "patches/welcome_window/welcome_window.h"
 #include "patches/wine_support.h"
@@ -108,6 +109,7 @@ void patch::flameInit(int argc, const char **argv) {
         patch::control_windowed_mode::enabled = true;
     }
 
+    patch::alternative_resources::init();
     patch::wine_support::init();
     patch::inspect_tools::init();
     patch::multi_interface_fix::init();

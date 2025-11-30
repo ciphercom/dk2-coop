@@ -11,7 +11,7 @@
 #include "patches/micro_patches.h"
 #include "patches/original_compatible.h"
 
-#include "dk2/FindFileData.h"
+#include "dk2/resources/DirIter.h"
 #include "patches/flame_main.h"
 #include "tools/bug_hunter.h"
 
@@ -99,8 +99,36 @@ bool dk2::dk2_main2() {
     return true;
 }
 
+namespace dk2 {
+
+    uint32_t calcFileHashsum(char *exeFilePath, uint32_t hashsum) {
+        int status;
+        MyFile_Disc *file;
+        if (*MyFile_Disc_create(&status, &file, exeFilePath, 0x80000001) < 0) return hashsum;
+        int sizeLeft = MyFile_Disc_getSize(file);
+        char buf[0x2000];
+        while (sizeLeft > 0) {
+            int blockSize = 0x2000;
+            if (blockSize >= sizeLeft) {
+                memset(buf, 0, sizeof(buf));
+                blockSize = sizeLeft;
+            }
+            if (*MyFile_Disc_readBytes(&status, file, buf, blockSize, NULL) < 0) return 0;
+            sizeLeft -= blockSize;
+            auto *pos = (DWORD *) buf;
+            for (int i = (blockSize + 3) / 4; i > 0; --i) {
+                hashsum = _rotl(hashsum, 1);
+                hashsum = *pos++ ^ hashsum;
+            }
+        }
+        MyFile_Disc_delete(&status, file);
+        return hashsum;
+    }
+
+}
+
 bool dk2::dk2_main1(int argc, LPCSTR *argv) {
-    CoInitialize(0);
+    CoInitialize(NULL);
     int status_2;
     setLibIconName(&status_2, 1000);
     struct _MEMORYSTATUS memoryStatus;
@@ -115,53 +143,14 @@ bool dk2::dk2_main1(int argc, LPCSTR *argv) {
         g_fontType = 2;
     }
     int status;
-    FindFileData findFileData;
-    findFile(&status, *argv, &findFileData, -1);
+    DirIter dirIter;
+    fs_DirIter_init(&status, *argv, &dirIter, -1);
     if (status >= 0) {
-        g_fileChecksum = findFileData.findData.ftLastWriteTime.dwLowDateTime + findFileData.findData.ftLastWriteTime.dwHighDateTime;
+        g_fileChecksum = dirIter.findData.ftLastWriteTime.dwLowDateTime + dirIter.findData.ftLastWriteTime.dwHighDateTime;
         char *exeFilePath = (char *) argv[0];
-        uint32_t hashsum_ = 0x5041554C;
-        uint32_t hashsum = 0x5041554C;
-        int status2;
-        TbDiscFile *pTbDiscFile;
-        if (*MyDiscFile_create(&status2, &pTbDiscFile, exeFilePath, 0x80000001) >= 0 ) {
-            int sizeLeft_ = TbDiscFile_getSize(pTbDiscFile);
-            int sizeLeft = sizeLeft_;
-            if ( sizeLeft_ > 0 ) {
-                char buf[8192];
-                while (true) {
-                    int blockSize = sizeLeft_;
-                    if ( sizeLeft_ <= 0x2000 )
-                        memset(buf, 0, sizeof(buf));
-                    else
-                        blockSize = 0x2000;
-                    if ( (int)*TbDiscFile_readBytes(&status_2, pTbDiscFile, buf, blockSize, 0) < 0 ) {
-                        hashsum_ = 0;
-                        hashsum = 0;
-                        sizeLeft = 0;
-                    } else {
-                        DWORD *pos = (DWORD *) buf;
-                        sizeLeft -= blockSize;
-                        int dwordsCount = (blockSize + 3) / 4;
-                        if (dwordsCount > 0 ) {
-                            do {
-                                hashsum = _rotl(hashsum, 1);
-                                hashsum_ = *pos++ ^ hashsum;
-                                --dwordsCount;
-                                hashsum = hashsum_;
-                            } while(dwordsCount);
-                        }
-                    }
-                    if (sizeLeft <= 0) break;
-                    sizeLeft_ = sizeLeft;
-                }
-            }
-            int status_;
-            TbDiscFile_delete(&status_, pTbDiscFile);
-        }
-        g_fileHashsum = hashsum_;  // 1.7=FF542FAC
+        g_fileHashsum = calcFileHashsum(exeFilePath, 0x5041554C);  // 1.7=FF542FAC
         patch::original_compatible::patch_hashsum();
-        closeFindFile(&status_2, (int)&findFileData);
+        fs_DirIter_destroy(&status_2, &dirIter);
     }
     MyResources_instance.readOrCreate();
     if (!parse_command_line(argc, argv)) {

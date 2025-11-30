@@ -7,7 +7,6 @@
 #include <iostream>
 #include <istream>
 
-#define thread_local
 #include <patches/game_version_patch.h>
 
 #include "command_line.h"
@@ -20,6 +19,7 @@ namespace std {  // fix for toml.hpp std __cdecl -> __stdcall used in dk2 by def
     }
 }
 
+#define thread_local
 #include "toml.hpp"
 #include "console.h"
 #include <Windows.h>
@@ -86,6 +86,7 @@ flame_config::flame_value fromTomlValue(toml_value &val) {
 }
 
 std::vector<std::string> split(const std::string &s, const std::string &prefix, char delim) {
+    if(s.empty()) return {};
     std::vector<std::string> parts;
     std::stringstream ss(s);
     std::string part;

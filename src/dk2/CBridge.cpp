@@ -11,6 +11,8 @@
 #include "dk2_globals.h"
 #include "dk2_functions.h"
 #include "patches/micro_patches.h"
+#include "patches/logging.h"
+#include "dk2/resources/file/MyFile.h"
 
 void dk2::CBridge::sub_43E320(
         unsigned int a2_x,
@@ -122,3 +124,52 @@ void dk2::CBridge::sub_443610(
             return;
     }
 }
+
+dk2::MySurface * dk2::CBridge::loadPng(const char *name) {
+    this->surf.lpSurface = NULL;
+
+    char file_buf[sizeof(MyFile)];
+    MyFile& file = *(MyFile*) file_buf;
+    file.constructor_empty();
+
+    int status = -1;
+    TbGraphicFileLoader* loader = NULL;
+    int try_level = 0;
+    if (this->pngPrefix_2635[0]) {
+        sprintf(CBridge_instance.resourcePath, "%s%s", this->pngPrefix_2635, name);
+        loader = MyFile_openImage(&file, &MyResources_instance.engineTexturesFileMan, CBridge_instance.resourcePath, MyResources_instance.gameCfg.fun_55D540());
+    }
+    if (!loader) {
+        loader = MyFile_openImage(&file, &MyResources_instance.engineTexturesFileMan, name, MyResources_instance.gameCfg.fun_55D540());
+    }
+    if (loader) {
+        if (*loader->readHeader(&status, &file, &this->surf) >= 0) {
+            MyFileContent_instance.resize(this->surf.dwHeight * this->surf.lPitch);
+            this->surf.lpSurface = MyFileContent_instance.buf;
+            if (*loader->readBody(&status, &this->surf, &file, NULL) >= 0) {
+                try_level = -1;
+                file.destructor();
+                return &this->surf;
+            }
+        }
+    }
+    sprintf(temp_string, "Unable to load Bitmap Resource, '%s'. Continue will use 'NoTexture'", name);
+    patch::log::dbg(temp_string);
+    loader = MyFile_openImage(&file, &MyResources_instance.engineTexturesFileMan, "NoTexture", MyResources_instance.gameCfg.fun_55D540());
+    if (loader) {
+        if (*loader->readHeader(&status, &file, &this->surf) >= 0) {
+            MyFileContent_instance.resize(this->surf.dwHeight * this->surf.lPitch);
+            this->surf.lpSurface = MyFileContent_instance.buf;
+            if (*loader->readBody(&status, &this->surf, &file, NULL) >= 0) {
+                try_level = -1;
+                file.destructor();
+                return &this->surf;
+            }
+        }
+    }
+    MyGame_log_printf(&MyGame_instance, "Unable to Load Bitmap Resource, '%s'\n", name);
+    try_level = -1;
+    file.destructor();
+    return NULL;
+}
+

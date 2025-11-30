@@ -75,7 +75,7 @@ dk2::MyScaledSurface *dk2::MyScaledSurface::constructor(MyDblNamedSurface *surfd
                 if (i < 0) {
                     int v21_idx = EngineTextureWhite_a31x400_idx;
                     if (EngineTextureWhite_a31x400_idx < 0 || EngineTextureWhite_a31x400_idx >= MyEntryBuf_MyScaledSurface_instance.count) {
-                        MyGame_debugMsg(&MyGame_instance, "Invalid Material\n");
+                        MyGame_log_printf(&MyGame_instance, "Invalid Material\n");
                     }
                     MyScaledSurface* v22_surf = MyEntryBuf_MyScaledSurface_instance.buf[v21_idx];
                     this->scaledSurfArr[y + this->prob_height * x].surfScaledArr[0] = v22_surf->scaledSurfArr->surfScaledArr[0];

@@ -275,10 +275,10 @@ BOOL dk2::CWorld::checkAllowObjectToDrop_509340(
 
 int dk2::CWorld::saveToFile(const char *path) {
     int status;
-    TbDiscFile *file = nullptr;
-    if(*MyDiscFile_create(&status, &file, path, 0xC0000030) < 0) return 0;
+    MyFile_Disc *file = nullptr;
+    if(*MyFile_Disc_create(&status, &file, path, 0xC0000030) < 0) return 0;
     this->saveAllToTbDiscFile(&file);
-    TbDiscFile_delete(&status, file);
+    MyFile_Disc_delete(&status, file);
     patch::autosave::updateLastAutoSaveTime();
     return 1;
 }

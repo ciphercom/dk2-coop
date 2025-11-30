@@ -3,7 +3,6 @@
 00634860 void *___onexitinit();  // ------------------  /* auto */
 006477F0 int WinMain(HINSTANCE, HINSTANCE, CHAR *, int);  /* auto */
 005A5DA0 int __cdecl dk2_main(int, const CHAR **);      /* auto */
-005B74A0 void resolveDk2HomeDir();  // ---------------  /* auto */
 005A63B0 int __cdecl parse_command_line(int, const char **);  /* auto */
 00528080 int __cdecl cmd_dumpPlayer(int, int);  // ---  /* auto */
 005278C0 int cmd_Game();  // -------------------------  /* auto */
@@ -24,6 +23,54 @@
 00592EA0 int __cdecl mydd_devTexture_init(MyDirectDraw *);  /* auto */
 00575780 bool __cdecl engine_drawScene(char);  // ----  /* auto */
 00571910 void __cdecl engine_set_g2_screenArea(int, int, int, int);  /* auto */
+
+# filesystem
+005B7140 void __cdecl fs_setExeDirPath(const char *);   /* auto */
+005B74A0 void fs_resolveDk2HomeDir();  // ------------  /* auto */
+005B71A0 char *fs_getExeDir();  // -------------------  /* auto */
+005B71C0 int *__cdecl fs_buildExeBasedPath(int *, char *, int, const char *);  /* auto */
+005B3900 int *__cdecl fs_createDirectory(int *, const char *);  /* auto */
+005B3940 int *__cdecl fs_removeDirectory(int *, const char *);  /* auto */
+005B3AB0 int *__cdecl fs_getFileAttributes(int *, const char *, uint32_t *);  /* auto */
+005B3B20 int *__cdecl fs_setFileAttributes(int *, const char *, uint32_t);  /* auto */
+005B3B90 int __cdecl fs_getFileSize(const char *);      /* auto */
+005B3BF0 BOOL __cdecl fs_fileExists(const char *);      /* auto */
+005B3C30 bool __cdecl fs_isDirectory(const char *);     /* auto */
+005B3C80 int *__cdecl fs_deleteFile(int *, const char *);  /* auto */
+005B72E0 int *__cdecl fs_readFile(int *, const char *, void *, int, int *);  /* auto */
+005B7400 int *__cdecl fs_writeFile(int *, const char *, void *, int);  /* auto */
+005B3E80 int *__cdecl fs_moveFile(int *, LPCSTR, LPCSTR);  /* auto */
+005B3CE0 int *__cdecl fs_DirIter_init(int *, LPCSTR, DirIter *, int);  /* auto */
+005B3DD0 int *__cdecl fs_DirIter_next(int *, DirIter *);  /* auto */
+005B3E60 int *__cdecl fs_DirIter_destroy(int *, DirIter *);  /* auto */
+00636500 _iobuf *__cdecl _fopen(const char *, const char *);  /* auto */
+005BA0F0 int *__cdecl MyLogger_init(int *, MyLogger *, const char *, int);  /* auto */
+
+# MyDir_CFileManager
+00556870 MyDir_CFileManager *constructor();  // ------  /* auto */
+#005568A0 MyDir_CFileManager *scalar_destructor(char);   /* auto */
+005568C0 int destructor();  // -----------------------  /* auto */
+00556980 void clearDirsList();  // -------------------  /* auto */
+00556A20 int *openFile(int *, MyFile *, const char *);  /* auto */
+00556B70 char *getPath();  // ------------------------  /* auto */
+00556BA0 int *readFile(int *, MyFileContent *, const char *);  /* auto */
+00556C90 int *addDir(int *, MyDir *);  // ------------  /* auto */
+00556D90 char *findFile(const char *);  // -----------  /* auto */
+0055BE80 int *__cdecl MyDir_CFileManager_addDirWadf(int *, MyDir_CFileManager *, const char *, ...);  /* auto */
+0055BF40 int *__cdecl MyDir_CFileManager_addDirDiscf(int *, MyDir_CFileManager *, const char *, ...);  /* auto */
+
+# MyResources
+0055AF40 MyResources *constructor();  // -------------  /* auto */
+0055B120 void readOrCreate();  // --------------------  /* auto */
+#0055B480 int writeBin(MyFile_Disc **);  // -----------  /* auto */
+#0055B980 int readBin(MyFile_Disc **);  // ------------  /* auto */
+0055C020 MyResources *init_resources();  // ----------  /* auto */
+#0055C3C0 void resolveMovies();  // -------------------  /* auto */
+0055C6B0 int setCdPath(const char *);  // ------------  /* auto */
+0055C700 void useUnpackedDirs();  // -----------------  /* auto */
+0055C7B0 void destructor();  // ----------------------  /* auto */
+0055C8E0 void init_Conf_Paths();  // -----------------  /* auto */
+0055CAC0 void writeDefaultValues();  // --------------  /* auto */
 
 # SurfaceHolder
 00591ED0 int calcWeight();  // -----------------------  /* auto */
@@ -147,6 +194,7 @@
 004EC490 int createRoom(int, uint16_t, uint16_t *);     /* auto */
 
 # CBridge.h
+0043E0F0 MySurface *loadPng(const char *);  // -------  /* auto */
 0043E320 void sub_43E320(uint32_t, uint32_t, MyTerrainDataObj *, CEngineStaticMeshDataArrays *);  /* auto */
 00443610 void sub_443610(int, uint32_t, MyMapElement *, MyTerrainDataObj *, CEngineStaticMeshDataArrays *);  /* auto */
 

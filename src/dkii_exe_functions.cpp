@@ -27,55 +27,6 @@ int32_t dk2::MyGame::isOsCompatible() {
     return !isOsVersionGE(6, 0, 0);
 }
 
-void dk2::resolveDk2HomeDir() {
-    if(patch::use_cwd_as_dk2_home_dir::enabled) {
-        char tmp[MAX_PATH];
-        DWORD len = GetCurrentDirectoryA(MAX_PATH, tmp);
-        strcpy(tmp + len, "\\");
-        // patch::log::dbg("replace exe dir path1: %s -> %s", dk2::dk2HomeDir, tmp);
-        strcpy(dk2::dk2HomeDir, tmp);
-        return;
-    }
-    const char *CommandLineA = GetCommandLineA();
-    _strncpy(pathBuf, CommandLineA, 259u);
-    char firstChar = pathBuf[0];
-    pathBuf[259] = 0;
-    char sepChar = ' ';
-    if ( pathBuf[0] == '"' ) {
-        signed int idx = 0;
-        sepChar = '"';
-        unsigned int len = strlen(pathBuf) + 1;
-        if ( (int)(len - 1) > 0 ) {
-            do {
-                pathBuf[idx] = pathBuf[idx + 1];
-                ++idx;
-            } while ( idx < (int)(len - 1) );
-            firstChar = pathBuf[0];
-        }
-    }
-    char *pos = pathBuf;
-    if ( firstChar ) {
-        char curChar = firstChar;
-        do
-        {
-            if ( curChar == sepChar )
-                break;
-            curChar = *++pos;
-        }
-        while ( curChar );
-    }
-    *pos = 0;
-    char *sep1Pos = strrchr(pathBuf, '/');
-    char *sep2Pos = strrchr(pathBuf, '\\');
-    char **pSepPos = &sep2Pos;
-    if ( sep2Pos <= sep1Pos ) pSepPos = &sep1Pos;
-    char *sepPos = *pSepPos;
-    if ( sepPos ) {
-        sepPos[1] = 0;
-        setExeDirPath(pathBuf);
-    }
-}
-
 
 void __cdecl dk2::CTextBox_renderVersion(dk2::CTextBox *textBox, CFrontEndComponent *frontend) {
     AABB area;

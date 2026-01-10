@@ -123,7 +123,7 @@ void dk2::MyDxMouse::handleData(int count) {
     }
 }
 
-uint32_t *dk2::MyDxInputManagerCb::onWindowActivated(uint32_t *psatatus, int isActivated) {
+int *dk2::MyDxInputManagerCb::onWindowActivated(int *psatatus, int isActivated) {
     this->f54_pdxKeyboard->dx_device.updateWindowActive(isActivated);
     if (!patch::replace_mouse_dinput_to_user32::enabled) {
         this->f58_pdxmouse->dx_device.updateWindowActive(isActivated);

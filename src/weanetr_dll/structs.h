@@ -10,6 +10,7 @@
 #include "weanetr_memory.h"
 #include <cstdint>
 #include <dk2/SessionMapInfo.h>
+#include <net/net_LocalService.h>
 
 namespace net {
 
@@ -229,15 +230,6 @@ struct MyAddrStruc {
 static_assert(sizeof(MyAddrStruc) == 0x18);
 
 #pragma pack(push, 1)
-struct MyAddr {
-    wchar_t *f0_pAddr;
-    size_t f4_size;
-    uint16_t f8_port;
-};
-#pragma pack(pop)
-static_assert(sizeof(MyAddr) == 0xA);
-
-#pragma pack(push, 1)
 struct MyPlayerDesc {
     wchar_t f0_playername[16];
     PlayerId f20_playerId_slot;
@@ -271,31 +263,6 @@ struct MyDPlayCompoundAddress {
 };
 #pragma pack(pop)
 static_assert(sizeof(MyDPlayCompoundAddress) == 0x22);
-
-#pragma pack(push, 1)
-struct MyLocalServiceAddr {
-    char f0_signature[2];
-    GUID f2_guid;
-    MyAddr f12_addr;
-    BYTE gap_1C[6];
-    wchar_t f22_addr[];
-};
-#pragma pack(pop)
-static_assert(sizeof(MyLocalServiceAddr) == 0x22);
-
-#pragma pack(push, 1)
-struct MyLocalService {
-    GUID f0_guid;
-    DWORD f10_count;
-    size_t f14_addr_size;
-    wchar_t *f18_pName;
-    MyLocalService *f1C_next;
-    MyLocalServiceAddr *f20_addr;
-    GUID *f24_pGuid;
-    wchar_t f28_name[];
-};
-#pragma pack(pop)
-static_assert(sizeof(MyLocalService) == 0x28);
 
 
 #pragma pack(push, 1)

@@ -33,10 +33,14 @@ void patch::limit_tps::call() {
     int tps = *o_limitTps;
     if (tps <= 0) return;
     DWORD now = GetTickCount();
+    if(g_lastTime == 0) {
+        g_lastTime = now;
+        return;
+    }
     DWORD loopTime = now - g_lastTime;
     int mspt = 1000 / tps;  // calc milliseconds per tick
     int freeTime = mspt - loopTime;
-    if (freeTime > 0) {
+    if (freeTime > 0 && freeTime < 5000) {
         // 60 tps == 16 ms loop time
         // 30 tps == 33 ms loop time
         int test = *o_test1;

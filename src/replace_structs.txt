@@ -1,0 +1,11 @@
+# here mapping of completely decompiled structures with all member methods and usages
+
+
+# weanetr.dll structures
+MLDPlay net::MLDPlay
+net_LocalService net::MyLocalService
+
+# DKII.exe
+CWindowTest dk2::CWindowTest
+DdModeList dk2::DdModeList
+DdModeListItem dk2::DdModeListItem

@@ -87,14 +87,13 @@ namespace {
         dk2::AABB v13_tmp;
         dk2::Area4i pos = *(dk2::Area4i *) a2_defplif->cgui_manager.scaleAabb_2560_1920(&v13_tmp, (dk2::AABB *)&a1_btn->pos);
 
-        dk2::PixelMask v11_pixelMask {0, 0, 0, 0, 0};
         if (a1_btn->f5D_isVisible != 1) return 0;
 
-        unsigned __int8 v5_brightnes;
+        unsigned __int8 v5_brightnes = 0;
         if ( !a1_btn->f34_idxHigh || (v5_brightnes = -1, !a1_btn->f45_containsCursor) )
             v5_brightnes = -56;
 
-        v11_pixelMask = {v5_brightnes, v5_brightnes, v5_brightnes, 0, 0};
+        dk2::Bgraf v11_pixelMask {v5_brightnes, v5_brightnes, v5_brightnes, 0, 0};
 
         uint8_t *text = nullptr;
         int autosave = *o_autosave;
@@ -134,7 +133,7 @@ namespace {
         if (text == nullptr) return 0;
 
         v14_try_level = -1;
-        return a2_defplif->sub_42CB60(
+        return a2_defplif->printText(
             &a2_defplif->_options,
             pos.x, pos.y, text,
             &v11_pixelMask,

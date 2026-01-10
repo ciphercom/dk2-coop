@@ -472,6 +472,29 @@ class MySectionHeadersStream(MyBytes):
     #         f' chars={sec.Characteristics:08X}')
 
 
+def parseSymbols(stream: MyStream, size: int, skew: int = 0) -> list['CVSymbol']:
+    symbols_end = stream.pos + size
+    symbols: list[CVSymbol] = []
+    while stream.pos < symbols_end - 4:
+      left = symbols_end - stream.pos
+      record_len = stream.read(wintypes.WORD).value
+      record_kind = stream.read(wintypes.WORD).value
+      record_data = bytes(stream.read(wintypes.BYTE * min(record_len - 2, left - 2)))
+      assert record_len <= left
+      try:
+        record_kind = pdb_types.SymbolType(int(record_kind))
+      except ValueError:
+        record_kind = {record_kind, f'  S_UNK_{record_kind:04x} = 0x{record_kind:04x}'}
+      symbols.append(CVSymbol.create(record_kind, record_data))
+      # stream.align(self.base, 4)
+    data_left = bytes(stream.read(wintypes.BYTE * (symbols_end - stream.pos)))
+    assert data_left in (  # why?
+        b'', b'\xf4\x00\x00\x00', b'\xf6\x00\x00\x00', b'\xf2\x00\x00\x00', b'\x00\x00\x00\x00'
+    )
+    stream.pos = symbols_end
+    return symbols
+
+
 class MyModuleDebugStream(MyBytes):
 
   def __init__(self, pdb, modi, data: bytes):
@@ -486,22 +509,7 @@ class MyModuleDebugStream(MyBytes):
 
     stream = MyStream(self.base)
     self.signature = stream.read(wintypes.DWORD).value
-    symbols_end = stream.pos + SymbolSize
-    self.symbols: list[CVSymbol] = []
-    while stream.pos < symbols_end - 4:
-      left = symbols_end - stream.pos
-      record_len = stream.read(wintypes.WORD).value
-      record_kind = stream.read(wintypes.WORD).value
-      record_data = bytes(stream.read(wintypes.BYTE * min(record_len - 2, left - 2)))
-      assert record_len <= left
-      try:
-        record_kind = pdb_types.SymbolType(int(record_kind))
-      except ValueError:
-        record_kind = {record_kind, f'  S_UNK_{record_kind:04x} = 0x{record_kind:04x}'}
-      self.symbols.append(CVSymbol.create(record_kind, record_data))
-      # stream.align(self.base, 4)
-    assert stream.pos == symbols_end - 4
-    stream.pos = symbols_end
+    self.symbols: list[CVSymbol] = parseSymbols(stream, SymbolSize, 4)
     c11_end = stream.pos + C11Size
     # todo: C11Lines
     stream.pos = c11_end
@@ -511,6 +519,7 @@ class MyModuleDebugStream(MyBytes):
     global_refs_size = stream.read(wintypes.DWORD).value
     global_refs_end = stream.pos + global_refs_size
     # todo: global_refs
+    # global_data = bytes(stream.read(wintypes.BYTE * global_refs_size))
     stream.pos = global_refs_end
 
 
@@ -520,9 +529,12 @@ class CVSymbol(MyBytes):
     self.ty = ty
     super().__init__(data)
 
+  def __repr__(self):
+      return f'CVSymbol{{ty={self.ty.name!r}, data.sz={len(self.data)!r}}}'
+
   @classmethod
   def create(cls, ty: pdb_types.SymbolType, data: bytes):
-    for ecls in (CV_DataSym, CV_ProcSym, CV_Thunk32Sym):
+    for ecls in (CV_DataSym, CV_ProcSym, CV_Thunk32Sym, CV_ExportSym, CV_PublicSym32):
       if ecls.match(ty):
         return ecls(ty, data)
     return cls(ty, data)
@@ -542,12 +554,98 @@ class CV_DataSym(CVSymbol):
     data_left = data_left.strip(b'\x00')
     assert not data_left
 
+  def __repr__(self):
+      return f'CV_DataSym{{data.sz={len(self.data)!r}, name={self.name}}}'
+
   @staticmethod
   def match(ty: pdb_types.SymbolType):
     return ty in (
       pdb_types.SymbolType.S_LDATA32, pdb_types.SymbolType.S_GDATA32,
       pdb_types.SymbolType.S_LMANDATA, pdb_types.SymbolType.S_GMANDATA
     )
+
+
+class PublicSymFlags(enum.IntEnum):
+  Code = 1 << 0
+  Function = 1 << 1
+  Managed = 1 << 2
+  MSIL = 1 << 3
+
+
+class CV_PublicSym32(CVSymbol):
+
+  def __init__(self, ty: pdb_types.SymbolType, data: bytes):
+    super().__init__(ty, data)
+    stream = MyStream(self.base)
+    end = stream.pos + self.size
+    self.flags = stream.read(wintypes.DWORD).value
+    self.flags_ = list(filter(lambda flag: flag.value & self.flags, PublicSymFlags))
+    self.offset = stream.read(wintypes.DWORD).value
+    self.segment = stream.read(wintypes.WORD).value
+    self.name = stream.read_str()
+    data_left = bytes(stream.read(wintypes.BYTE * (end - stream.pos)))
+    data_left = data_left.strip(b'\x00')
+    assert not data_left
+
+  def __repr__(self):
+      return f'PublicSym32{{data.sz={len(self.data)!r}, name={self.name}}}'
+
+  @staticmethod
+  def match(ty: pdb_types.SymbolType):
+    return ty is pdb_types.SymbolType.S_PUB32
+
+  @property
+  def is_code(self) -> bool: return (self.flags & PublicSymFlags.Code) != 0
+  @property
+  def is_function(self) -> bool: return (self.flags & PublicSymFlags.Function) != 0
+  @property
+  def is_managed(self) -> bool: return (self.flags & PublicSymFlags.Managed) != 0
+  @property
+  def is_msil(self) -> bool: return (self.flags & PublicSymFlags.MSIL) != 0
+
+
+class ExportFlags(enum.IntEnum):
+  IsConstant = 1 << 0
+  IsData = 1 << 1
+  IsPrivate = 1 << 2
+  HasNoName = 1 << 3
+  HasExplicitOrdinal = 1 << 4
+  IsForwarder = 1 << 5
+
+
+class CV_ExportSym(CVSymbol):
+
+  def __init__(self, ty: pdb_types.SymbolType, data: bytes):
+    super().__init__(ty, data)
+    stream = MyStream(self.base)
+    end = stream.pos + self.size
+    self.ordinal = stream.read(wintypes.WORD).value
+    self.export_flags = stream.read(wintypes.WORD).value
+    self.export_flags_ = list(filter(lambda flag: flag.value & self.export_flags, ExportFlags))
+    self.name = stream.read_str()
+    data_left = bytes(stream.read(wintypes.BYTE * (end - stream.pos)))
+    data_left = data_left.strip(b'\x00')
+    assert not data_left
+
+  def __repr__(self):
+      return f'ExportSym{{data.sz={len(self.data)!r}, name={self.name}}}'
+
+  @staticmethod
+  def match(ty: pdb_types.SymbolType):
+    return ty is pdb_types.SymbolType.S_EXPORT
+
+  @property
+  def is_constant(self) -> bool: return (self.export_flags & ExportFlags.IsConstant) != 0
+  @property
+  def is_data(self) -> bool: return (self.export_flags & ExportFlags.IsData) != 0
+  @property
+  def is_private(self) -> bool: return (self.export_flags & ExportFlags.IsPrivate) != 0
+  @property
+  def has_no_name(self) -> bool: return (self.export_flags & ExportFlags.HasNoName) != 0
+  @property
+  def has_explicit_ordinal(self) -> bool: return (self.export_flags & ExportFlags.HasExplicitOrdinal) != 0
+  @property
+  def is_forwarder(self) -> bool: return (self.export_flags & ExportFlags.IsForwarder) != 0
 
 
 class CV_ProcSym(CVSymbol):
@@ -570,6 +668,9 @@ class CV_ProcSym(CVSymbol):
     data_left = bytes(stream.read(wintypes.BYTE * (end - stream.pos)))
     data_left = data_left.strip(b'\x00')
     assert not data_left
+
+  def __repr__(self):
+      return f'ProcSym{{data.sz={len(self.data)!r}, name={self.name}}}'
 
   @staticmethod
   def match(ty: pdb_types.SymbolType):
@@ -597,6 +698,9 @@ class CV_Thunk32Sym(CVSymbol):
     data_left = bytes(stream.read(wintypes.BYTE * (end - stream.pos)))
     data_left = data_left.strip(b'\x00')
     assert not data_left
+
+  def __repr__(self):
+      return f'Thunk32Sym{{data.sz={len(self.data)!r}, name={self.name}}}'
 
   @staticmethod
   def match(ty: pdb_types.SymbolType):
@@ -631,7 +735,8 @@ class MyPdb(MyBytes):
 
     self.debug = MyPdbDebugStream(self, self.root[3])  # DBI Stream
 
-    # symbol_records = MyBytes(self.root[self.debug.header.symrecStream])
+    symbol_records = MyBytes(self.root[self.debug.header.symrecStream])
+    self.symrecs: list[CVSymbol] = parseSymbols(MyStream(symbol_records.base), symbol_records.size)
     # stream = MyStream(symbol_records.base)
 
     self.fpo = MyPdbFPOStream(self, self.root[self.debug.DBIDbgHeader.snFPO])  # .debug$F

@@ -1,7 +1,7 @@
 //
 // Created by DiaLight on 21.07.2024.
 //
-#include <dk2/CFrontEndComponent.h>
+#include <dk2/components/CFrontEndComponent.h>
 #include <dk2/MyMapInfo.h>
 #include <dk2/Obj543D99.h>
 #include <dk2/button/CListBox.h>
@@ -13,9 +13,13 @@
 #include <patches/big_resolution_fix/screen_resolution.h>
 #include <weanetr_dll/MLDPlay.h>
 #include "dk2/CListBox_ItemHeightCfg.h"
+#include "dk2/engine/game_engine.h"
+#include "dk2/sound/TbSysCommand_GetDirectSoundObject.h"
+#include "dk2/sound/TbSysCommand_Process.h"
+#include "dk2/sound/TbSysCommand_StopAll.h"
 #include "dk2_functions.h"
 #include "dk2_globals.h"
-#include "dk2_memory.h"
+#include "dk2/dk2_memory.h"
 #include "patches/logging.h"
 #include "patches/micro_patches.h"
 #include "weanetr_dll/globals.h"
@@ -54,6 +58,43 @@ void dk2::CFrontEndComponent::showTitleScreen() {
         }
         MyGame_instance.prepareScreen();
     }
+}
+
+dk2::CComponent *dk2::CFrontEndComponent::mainGuiLoop() {
+    patch::log::dbg("enter CFrontEndComponent");
+    while (!this->is_component_destroy) {
+        if (this->cgui_manager.sub_52C520())
+            MyInputManagerCb_static_processInputs_setStaticListenersAndHandleDxActions(
+                &this->static_listeners, 0, this, 0);
+        else
+            MyInputManagerCb_static_processInputs_setStaticListenersAndHandleDxActions(
+                &this->static_listeners, 1u, this, 0);
+        if (IsIconic(getHWindow())) continue;
+        this->f10 = 0;
+        this->cgui_manager.sub_52BC50((CDefaultPlayerInterface*) this);
+
+        for (CWindow* curWin = &this->cgui_manager.windowListEnd; curWin; curWin = curWin->f5E_next) {
+            if (!curWin->f44_isCurrent) continue;
+            if (auto* f24_getPanelItemsCount = curWin->f24_getPanelItemsCount)
+                f24_getPanelItemsCount(curWin, 0, this);
+            break;
+        }
+        if (this->f10 == 1) continue;
+        DWORD nowMs = getTimeMs();
+        if (nowMs >= g_lastRedawTime) {
+            char sysCmdBuf[sizeof(TbSysCommand_Process)];
+            auto &sysCmd = *(TbSysCommand_Process *) sysCmdBuf;
+            *(void **) &sysCmd = TbSysCommand_Process::vftable;
+            int status;
+            MySound_ptr->v_fun_567A40(&status, &sysCmd);
+            if (this->draw2dGui_0())
+                MyGame_instance.prepareScreen();
+            g_lastRedawTime = nowMs + 16;
+        }
+        if (isAppExitStatusSet())
+            this->release();
+    }
+    return this->f4_nextComponent;
 }
 
 char dk2::CFrontEndComponent::sub_5435E0(int a2, CFrontEndComponent *a3_comp) {
@@ -485,11 +526,17 @@ int dk2::CFrontEndComponent::launchGame() {
                this->isUseFe3d == 1
                )) return 0;
     this->pMyDdSurfaceEx = MyGame_instance.getCurOffScreenSurf();
-    MyDdSurfaceEx *CurOffScreenSurf = MyGame_instance.getCurOffScreenSurf();
     int status;
-    __surface_init_blt(&status, CurOffScreenSurf, NULL, 0xFF000000, 0, 0);
-    MyDdSurfaceEx *PrimarySurf = MyGame_instance.getPrimarySurf();
-    __surface_init_blt(&status, PrimarySurf, NULL, 0xFF000000, 0, 0);
+    MyDdSurfaceEx_fillWithColor(
+        &status, MyGame_instance.getCurOffScreenSurf(), NULL,
+        Bgraf {0, 0, 0, 0xFF, 0}, 0
+    );
+    MyDdSurfaceEx_fillWithColor(
+        &status,
+        &g_primarySurf,  // MyInputManagerCb_instance.inputSurf.v_getPrimarySurf(),  // 0079D200 &g_primarySurf
+        NULL,
+        Bgraf {0, 0, 0, 0xFF, 0}, 0
+    );
     Sleep(50u);
     if (!is_welcome_shown) {
         this->showTitleScreen();
@@ -511,15 +558,17 @@ int dk2::CFrontEndComponent::launchGame() {
     }
     CWorld_instance.showLoadingScreen();
     CWorld_instance.releaseSurface();
-    tagRECT v16;
-    v16.left = 12;
-    v16.top = 435;
-    v16.right = 201;
-    v16.bottom = 473;
-    MyDdSurfaceEx *v6_screenSurf = MyGame_instance.getCurOffScreenSurf();
-    __surface_init_blt(&status, v6_screenSurf, &v16, 0xFF000000, 0, 0);
-    MyDdSurfaceEx *v7_promSurf = MyGame_instance.getPrimarySurf();
-    __surface_init_blt(&status, v7_promSurf, &v16, 0xFF000000, 0, 0);
+    RECT v16_rect{12, 435, 201, 473};
+    MyDdSurfaceEx_fillWithColor(
+        &status, MyGame_instance.getCurOffScreenSurf(), &v16_rect,
+        Bgraf {0, 0, 0, 0xFF, 0}, 0
+    );
+    MyDdSurfaceEx_fillWithColor(
+        &status,
+        &g_primarySurf,  // MyInputManagerCb_instance.inputSurf.v_getPrimarySurf(),  // 0079D200 &g_primarySurf
+        &v16_rect,
+        Bgraf {0, 0, 0, 0xFF, 0}, 0
+    );
     g_flags_74034C = g_flags_74034C & ~0x80;
     this->sub_533E90();
     *(DWORD *)&this->f6701 = 0;
@@ -728,4 +777,131 @@ void dk2::CFrontEndComponent::isMapPresent(SessionMapInfo *mapInfo, wchar_t *map
         MBToUni_convert(MyMbStringList_idx1091_getMbString(0xC06u), name, 50);
         wcscpy(mapName, name);
     }
+}
+
+void dk2::CFrontEndComponent::showMovie(LPSTR pszFileName) {
+    int status;
+    if (MyGame_instance.isWindowed || !MyResources_instance.gameCfg.showMovies) return;
+
+    MyGame_sub_559770((__int16) &MyGame_instance);
+    this->fun_536E20(0, 0);
+    MyDdSurfaceEx_fillWithColor(
+        &status, MyGame_instance.getCurOffScreenSurf(), NULL,
+        Bgraf {0, 0, 0, 0xFF, 0}, 0
+    );
+    MyDdSurfaceEx_fillWithColor(
+        &status,
+        &g_primarySurf,  // MyInputManagerCb_instance.inputSurf.v_getPrimarySurf(),  // 0079D200
+        NULL,
+        Bgraf {0, 0, 0, 0xFF, 0}, 0
+    );
+    Sleep(50u);
+    memset(&MovieRenderer_instance, 0, sizeof(MovieRenderer_instance));
+    MovieRenderer_instance.flags = 0xB05064C;
+    MovieRenderer_instance.f8 = 7;
+
+    {
+        char sysCmdBuf[sizeof(TbSysCommand_StopAll)];
+        auto& sysCmd = *(TbSysCommand_StopAll*) sysCmdBuf;
+        *(void**) &sysCmd = TbSysCommand_StopAll::vftable;
+        MySound_ptr->v_fun_567A40(&status, &sysCmd);
+    }
+
+    IDirectSound* v13_pDirectSound = NULL;
+    {
+        char sysCmdBuf[sizeof(TbSysCommand_GetDirectSoundObject)];
+        auto& sysCmd = *(TbSysCommand_GetDirectSoundObject*) sysCmdBuf;
+        *(void**) &sysCmd = TbSysCommand_GetDirectSoundObject::vftable;
+        sysCmd.ppDirectSound = &v13_pDirectSound;
+        MySound_ptr->v_fun_567A40(&status, &sysCmd);
+    }
+
+    if (v13_pDirectSound) {
+        MovieRenderer_instance.directSound = v13_pDirectSound;
+        MovieRenderer_instance.flags |= 0xA00000u;
+    } else {
+        MovieRenderer_instance.directSound = NULL;
+        MovieRenderer_instance.flags |= 0x800000u;
+    }
+    MovieRenderer_instance.pFun = (int) sub_53C2C0;
+    MovieRenderer_instance.lpdd = ge_dk2dd_get(1);
+    MovieRenderer_instance.dd2 = NULL;
+    MovieRenderer_instance.obj_58 = 0;
+    MovieRenderer_instance.soundBuffer = NULL;
+    int v14 = MyGame_instance.f18;
+    if ((MyGame_instance.f18 & 1) != 0) {
+        copyToFullscreenSurf(&status, 0);
+        MyGame_instance.f18 = v14 + 1;
+    }
+    {
+        LPDIRECTDRAWSURFACE lpDdSurf = MyDdSurface_addRef(&g_primarySurf.dd_surf, 1);
+        lpDdSurf->QueryInterface(CLSID_IDirectDrawSurface2, (LPVOID*) &MovieRenderer_instance.p_primarySurf);
+        lpDdSurf->Release();
+    }
+    {
+        LPDIRECTDRAWSURFACE lpDdSurf = MyDdSurface_addRef(&g_pCurOffScreen->dd_surf, 1);
+        lpDdSurf->QueryInterface(CLSID_IDirectDrawSurface2, (LPVOID*) &MovieRenderer_instance.p_offScreenSurf);
+        lpDdSurf->Release();
+    }
+    g_pMovieRenderer = NULL;
+    MyGame_instance.addWmActivateCallback(CFrontEndComponent_WM_ACTIVATE_cb, this);
+    g_pMovieRenderer = static_MovieRenderer_sub_5A8F70(pszFileName, getHWindow(), &MovieRenderer_instance);
+    if (g_pMovieRenderer) {
+        while (static_MovieRenderer_sub_5A8FB0(g_pMovieRenderer)) {
+            MyInputManagerCb_static_processInputs_setStaticListenersAndHandleDxActions(
+                &CFrontEndComponent_MovieRenderer_static_listeners, 0, NULL, 0
+            );
+            Sleep(50u);
+        }
+        g_movieKeyActed = 0;
+        g_pMovieRenderer = NULL;
+    }
+    MyGame_instance.removeWmActivateCallback(CFrontEndComponent_WM_ACTIVATE_cb);
+    MovieRenderer_instance.lpdd->Release();
+    MovieRenderer_instance.p_primarySurf->Release();
+    MovieRenderer_instance.p_offScreenSurf->Release();
+    MyDdSurfaceEx_fillWithColor(
+        &status, MyGame_instance.getCurOffScreenSurf(), NULL,
+        Bgraf {0, 0, 0, 0xFF, 0}, 0
+    );
+    MyDdSurfaceEx_fillWithColor(
+        &status,
+        &g_primarySurf,  // MyInputManagerCb_instance.inputSurf.v_getPrimarySurf(),  // 0079D200 &g_primarySurf
+        NULL,
+        Bgraf {0, 0, 0, 0xFF, 0}, 0
+    );
+    this->fun_536E20(1, 0);
+    this->timestampMs = getTimeMs();
+}
+
+void dk2::CFrontEndComponent::TcpIpInternet_updateStatusLine(unsigned int a1) {
+    if (MyGame_instance.isWindowed != 0) return;
+    MyDdSurfaceEx *PrimarySurf = &g_primarySurf; // MyInputManagerCb_instance.inputSurf.v_getPrimarySurf(),  // 0079D200 &g_primarySurf
+    int status;
+    if ( *MyDdSurfaceEx_resolveDesc(&status, PrimarySurf, 0) < 0 ) return;
+    unsigned __int8 *MbString = MyMbStringList_idx1091_getMbString(a1);
+    strcpy((char *) this->mbStr, (const char *)MbString);
+    CButton *foundButton = NULL;
+    for (
+        CButton *f66_buttons = this->cgui_manager.findGameWindowById(11)->f66_buttons;
+        f66_buttons; f66_buttons = f66_buttons->f78_next) { // tcpip internet / status line
+        if (f66_buttons->f70_id != 532) continue;
+        foundButton = f66_buttons;
+        break;
+    }
+    MySurface a1_surf;
+    a1_surf.constructor_empty();
+    MySurface *v7_surf = g_myRenderSurface;
+    MyDdSurfaceEx *v8_primSurf = &g_primarySurf;  // MyInputManagerCb_instance.inputSurf.v_getPrimarySurf(),  // 0079D200 &g_primarySurf
+    MySurface_copyFromSurf(&a1_surf, v8_primSurf);
+    setDrawSurface(&a1_surf);
+    AABB v11_aabb;
+    foundButton->getScreenAABB(&v11_aabb);
+    AABB v12_aabb;
+    v11_aabb = *this->cgui_manager.scaleAabb_2560_1920(&v12_aabb, &v11_aabb);
+    MyNBitTexture_fC(&v11_aabb, this->color30319);
+    CButton_render_546150(foundButton, this);
+    setDrawSurface(v7_surf);
+    MyDdSurfaceEx *v9 = &g_primarySurf;  // MyInputManagerCb_instance.inputSurf.v_getPrimarySurf(),  // 0079D200 &g_primarySurf
+    MyDdSurfaceEx_unlock(v9);
 }

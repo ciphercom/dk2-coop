@@ -4,7 +4,7 @@
 #include <dk2_functions.h>
 #include <dk2_globals.h>
 #include "dk2/dk2_memory.h"
-#include "dk2/Rgba.h"
+#include "dk2/utils/Rgba.h"
 #include "dk2/MyDblNamedSurface.h"
 #include "dk2/entities/CObject.h"
 #include "dk2/entities/data/MyObjectDataObj.h"

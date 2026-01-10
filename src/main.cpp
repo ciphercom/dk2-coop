@@ -11,6 +11,7 @@
 #include "patches/micro_patches.h"
 #include "patches/original_compatible.h"
 
+#include "dk2/engine/game_engine.h"
 #include "dk2/resources/DirIter.h"
 #include "patches/flame_main.h"
 #include "tools/bug_hunter.h"
@@ -23,7 +24,7 @@ namespace dk2 {
 }
 
 bool dk2::dk2_main2() {
-    MyGame_instance.f28D = cmd_flag_NOERRORS;
+    MyGame_instance.isTurnErrors = cmd_flag_NOERRORS;
     if ( MyResources_instance.video_settings.f9C )
         MyResources_instance.video_settings.sub_566DA0();
     if ( !cmd_flag_NOSOUND
@@ -68,8 +69,8 @@ bool dk2::dk2_main2() {
             MyResources_instance.gameCfg.useFe_playMode = 4;
             MyResources_instance.gameCfg.useFe_unkTy = 3;
         } else if ( !cmd_flag_FrontEnd3D_unk8 ) {
-            if ( MyGame_instance.getCpuSpeed() < 240.0 && getDevIdxSupportsLinearPerspective() != -1
-                 || MyGame_instance.getCpuSpeed() < 290.0 && getDevIdxSupportsLinearPerspective() == -1 )
+            if ( MyGame_instance.getCpuSpeed() < 240.0 && ge_getDeviceIdxSuitableForGame() != -1
+                 || MyGame_instance.getCpuSpeed() < 290.0 && ge_getDeviceIdxSuitableForGame() == -1 )
             {
                 MyResources_instance.gameCfg.useFe2d_unk2 = 1;
             }
@@ -83,10 +84,11 @@ bool dk2::dk2_main2() {
         }
         // hook::ALL_READY_TO_START
         patch::screen_resolution::patchGameWindowResolution();
-        CGameComponent *cur = &CGameComponent_instance;
+        CComponent *cur = &CGameComponent_instance;
         while (cur != nullptr) {
             if (!cur->v_handle()) break;
-            CGameComponent *next = cur->v_mainGuiLoop();
+            CComponent *next = cur->v_mainGuiLoop();
+
             cur->v_f10_();
             cur = next;
         }
@@ -159,7 +161,7 @@ bool dk2::dk2_main1(int argc, LPCSTR *argv) {
         }
         return false;
     }
-    if (!loadResources()) {
+    if (!loadFonts()) {
         if(patch::print_game_start_errors::enabled) {
             patch::log::err("failed to load resources");
         }
@@ -179,14 +181,13 @@ bool dk2::dk2_main1(int argc, LPCSTR *argv) {
         int status_;
         setWindowName(&status_, "Bullfrog Productions Ltd");
     }
-    int DevIdxSupportsLinearPerspective = getDevIdxSupportsLinearPerspective();
-    if ( (MyGame_instance.f50D & 0x800000) == 0 && DevIdxSupportsLinearPerspective == -1 ) {
+    if ( (MyGame_instance.flags50D & 0x800000) == 0 && ge_getDeviceIdxSuitableForGame() == -1 ) {
         unsigned __int8 *mbString1 = MyMbStringList_idx1091_getMbString(2u);
         wchar_t wString1[512];
         if (MBToUni_convert(mbString1, wString1, 512)) {
             unsigned __int8 *mbString2 = MyMbStringList_idx1091_getMbString(0xB60u);
             wchar_t wString2[512];
-            if (MBToUni_convert(mbString2, (wchar_t *)wString2, 512)) {
+            if (MBToUni_convert(mbString2, wString2, 512)) {
                 WCHAR Text[512];
                 dk2::_swprintf(Text, L"%s\n\n%s", wString1, wString2);
                 HWND HWindow = getHWindow();
@@ -210,7 +211,7 @@ bool dk2::dk2_main1(int argc, LPCSTR *argv) {
         }
     }
     MyGame_instance.release();
-    releaseResources();
+    releaseFonts();
     CoUninitialize();
     return success;
 }

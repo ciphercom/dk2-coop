@@ -9,7 +9,8 @@
 #include "patches/logging.h"
 #include "patches/micro_patches.h"
 
-#define fs_log(fmt, ...) patch::log::dbg(fmt, __VA_ARGS__)
+//#define fs_log(fmt, ...) patch::log::dbg(fmt, __VA_ARGS__)
+#define fs_log(fmt, ...)
 
 void __cdecl dk2::fs_setExeDirPath(const char * path) {
     size_t len = strlen(path);

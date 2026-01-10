@@ -204,6 +204,11 @@ void flame_config::set_option(const std::string &path, flame_value value) {
     }
 }
 
+flame_config::flame_value flame_config::get_cmdl_option(const std::string &path) {
+    if (toml_value *cur = getOrNullToml(cmdl_state, path)) return fromTomlValue(*cur);
+    return flame_value();
+}
+
 void flame_config::set_tmp_option(const std::string &path, flame_value value) {
     setToml(cmdl_state, path, toTomlValue(value));
     auto &options = defined_options();

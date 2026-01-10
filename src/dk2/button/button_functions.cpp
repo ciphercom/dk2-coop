@@ -2,10 +2,7 @@
 // Created by DiaLight on 25.01.2025.
 //
 
-#include <dk2/SessionMapInfo.h>
-
-
-#include "dk2/CFrontEndComponent.h"
+#include "dk2/components/CFrontEndComponent.h"
 #include "dk2/MyMapInfo.h"
 #include "dk2/button/CButton.h"
 #include "dk2/button/CListBox.h"
@@ -196,7 +193,7 @@ int __cdecl dk2::CButton_handleLeftClick_changeMenu(uint32_t idx, int command, C
             String.x = 0;
             String.y = 0;
             int v68_status;
-            static_MyInputManagerCb_sub_5B2BD0(&v68_status, 0, 0, &String);
+            static_MyInputManagerCb_setCursorIconAndDraw(&v68_status, 0, 0, &String);
             if (comp->isUseFe3d) {
                 MyResources_instance.gameCfg.unk_f16C = 1;
                 CSpeechSystem_instance.add_stop_handle(
@@ -222,7 +219,7 @@ int __cdecl dk2::CButton_handleLeftClick_changeMenu(uint32_t idx, int command, C
                     break;
             }
             memset(comp->wstr19, 0, 0x208u);
-            comp->fun_552C80((CComponent *) &CGameComponent_instance);
+            comp->gotoComponent(&CGameComponent_instance);
         } break;
         case 13: {  // open selected network service
             if (comp->networkSelectService()) {
@@ -659,7 +656,7 @@ int __cdecl dk2::CButton_handleLeftClick_changeMenu(uint32_t idx, int command, C
             comp->fun_5321A0(11, 11);
         } break;
         case 84: {  // network -> tcpip -> Connect
-            comp->sub_537AE0(0x1Bu);
+            comp->TcpIpInternet_updateStatusLine(0x1Bu);
             comp->fun_536E20(1, 1);
             WeaNetR_instance.enumerateSessions(0);
             if (g_MLDPLAY_SESSIONDESC_arr_count) {
@@ -726,7 +723,7 @@ int __cdecl dk2::CButton_handleLeftClick_changeMenu(uint32_t idx, int command, C
             MyResources_instance.gameCfg.hasSaveFile = 0;
             MyResources_instance.playerCfg.mgIntroSwitch = 45;
             comp->applyLevelVariables();
-            comp->fun_552C80((CComponent *) &CGameComponent_instance);
+            comp->gotoComponent(&CGameComponent_instance);
         } break;
         case 92:
         case 95:
@@ -739,7 +736,7 @@ int __cdecl dk2::CButton_handleLeftClick_changeMenu(uint32_t idx, int command, C
             memset(comp->wstr19, 0, 0x208u);
             break;
         case 97:
-            comp->sub_537AE0(0x1Bu);
+            comp->TcpIpInternet_updateStatusLine(0x1Bu);
             comp->fun_536E20(1, 1);
             WeaNetR_instance.enumerateSessions(0);
             if (g_MLDPLAY_SESSIONDESC_arr_count
@@ -821,7 +818,7 @@ int __cdecl dk2::CButton_handleLeftClick_changeMenu(uint32_t idx, int command, C
             String.x = 0;
             String.y = 0;
             int v69_status;
-            static_MyInputManagerCb_sub_5B2BD0(&v69_status, 0, 0, &String);
+            static_MyInputManagerCb_setCursorIconAndDraw(&v69_status, 0, 0, &String);
             comp->release();
         } break;
         case 112:

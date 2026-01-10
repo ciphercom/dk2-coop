@@ -41,7 +41,7 @@ void dk2::MyResources::readOrCreate() {
     }
     if (v3_version == 11) {
         this->init_Conf_Paths();
-        this->video_settings.readOrCreate();
+        this->video_settings.readOrCreate();  // BullfrogWindow_create called here
         this->playerCfg.readOrCreate();
         this->networkCfg.readOrCreate();
         this->soundCfg.readOrCreate();

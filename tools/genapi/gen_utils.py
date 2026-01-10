@@ -1,5 +1,6 @@
 import re
 import sgmap
+import replace_structs
 
 AUTO_OFFS = 60
 empty_line = "// " + "-" * (AUTO_OFFS - 5)
@@ -57,9 +58,7 @@ def collect_types(ty: sgmap.Type, complete_types: set, ref_types, is_ptr=False):
     return
   if ty.kind is sgmap.TypeKind.Winapi:
     win_t = ty  # type: sgmap.WinapiType
-    if is_ptr and win_t.name in [
-      'MLDPlay'
-    ]:
+    if is_ptr and replace_structs.is_replace_name(win_t.name):
       ref_types.add(win_t.name)
     return
   if ty.kind is sgmap.TypeKind.Struct:
@@ -123,8 +122,9 @@ def filter_global_var(glob: sgmap.Global):
   return True
 
 
-def build_struct_path(struct: sgmap.Struct, ext: str) -> str:
+def build_struct_path(struct: sgmap.Struct, ext: str = 'h', name: str = None) -> str:
+  struct_name = struct.name if name is None else name
   if struct.path is None:
-    return f'dk2/{struct.name}.{ext}'
-  return f'{struct.path}/{struct.name}.{ext}'
+    return f'dk2/{struct_name}.{ext}'
+  return f'{struct.path}/{struct_name}.{ext}'
 

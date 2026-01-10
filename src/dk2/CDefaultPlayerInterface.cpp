@@ -387,13 +387,6 @@ void dk2::CDefaultPlayerInterface::handleRightClick(unsigned int a2_isPressed, O
     this->pushDropThingFromHandAction(thingInHand, a3_underHand);
 }
 
-typedef int (__thiscall *CPlayer_init_t)(dk2::CPlayer *_this, void *edx, dk2::PlayerList *a2);
-
-int dk2::CPlayer::init(dk2::PlayerList *a2) {
-    int ret = ((CPlayer_init_t) 0x004B8640)(this, NULL, a2);
-    return ret;
-}
-
 
 namespace dk2 {
     bool checkPlayerAllowToDrop(CWorld *world, uint16_t playerTagId, CThing *thingInHand, int a4_x, int a5_y) {

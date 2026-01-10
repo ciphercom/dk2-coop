@@ -48,6 +48,12 @@ flame_config::define_flame_option<bool> o_single_core(
     "",
     true
 );
+flame_config::define_flame_option<bool> o_skip_launcher(
+    "flame:skip-launcher", flame_config::OG_Config,
+    "Do not show flame launcher. Works only from command line\n"
+    "DKII-DX.EXE -skip-launcher",
+    false
+);
 
 
 void patch::flameInit(int argc, const char **argv) {
@@ -82,7 +88,9 @@ void patch::flameInit(int argc, const char **argv) {
         }
         flame_config::load(config);
     }
-    {
+
+    auto skipLauncher = flame_config::get_cmdl_option(o_skip_launcher.path);
+    if(skipLauncher.ty != flame_config::VT_Boolean || !skipLauncher.bool_value) {
         patch::welcome_window::welcome_data_t res;
         res.win32_class_name = L"Flame_win32";
         res.win32_title = L"DungeonKeeper 2 Flame";

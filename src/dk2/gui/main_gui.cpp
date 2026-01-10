@@ -235,7 +235,7 @@ int dk2::CFrontEndComponent::load() {
     // this->cgui_manager.createElements(mainView, (CDefaultPlayerInterface*) this);  // original
     this->cgui_manager.createElements(main_layout(), (CDefaultPlayerInterface*) this);  // dynamic layout build
 
-    g_FontObj3_instance.setFontMask(&status, &this->fontMask_3031E);
+    g_FontObj3_instance.setColor(&status, &this->color3031E);
     this->renderButtonsText_15_0_4();
     this->renderButtonsText_16_1_4();
     this->renderButtonsText_17_2_5();
@@ -258,7 +258,7 @@ int dk2::CFrontEndComponent::load() {
     this->f670D = 1;
     this->sub_536A80();
     g_sceneObjectIdx = 0;
-    this->fontMask_5FF4 = this->fontMask_3031E;
+    this->color5FF4 = this->color3031E;
     this->sub_54FCF0(696, 48);
     this->sub_54FCF0(72, 8);
     this->sub_54FCF0(150, 17);

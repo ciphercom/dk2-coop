@@ -6,6 +6,7 @@ add_custom_command(
         ${Python3_EXECUTABLE} ${CMAKE_HOME_DIRECTORY}/tools/extract_fpo/for_flame.py
         -pdb_file $<TARGET_PDB_FILE:flame>
         -fpo_file ${CMAKE_CURRENT_BINARY_DIR}/flame.fpo
+        -symmap_file ${CMAKE_HOME_DIRECTORY}/libs/dkii_exe/genlib/dkii.symmap
         DEPENDS
         flame
         ${CMAKE_HOME_DIRECTORY}/tools/extract_fpo/for_flame.py

@@ -12,6 +12,7 @@
 extern flame_config::define_flame_option<bool> o_console;
 extern flame_config::define_flame_option<bool> o_windowed;
 extern flame_config::define_flame_option<bool> o_single_core;
+extern flame_config::define_flame_option<bool> o_skip_launcher;
 extern flame_config::define_flame_option<std::string> o_menuRes;
 extern flame_config::define_flame_option<std::string> o_gameRes;
 extern flame_config::define_flame_option<bool> o_gog_enabled;

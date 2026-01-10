@@ -4,12 +4,11 @@
 #include <dk2/dk2_memory.h>
 #include <patches/logging.h>
 
-#include "dk2/MyBBase673E70.h"
-#include "dk2/MyBUnk673FD8.h"
+#include "dk2/sound/MySnd_ListThread.h"
+#include "dk2/sound/MyBUnk673FD8.h"
 #include "dk2/MyGame.h"
 #include "dk2/MyMouseUpdater.h"
 #include "dk2/MyObj673FD4.h"
-#include "dk2/MyUnk673FD0.h"
 #include "dk2/MyUnk67457C.h"
 #include "dk2/button/CTextBox.h"
 #include "dk2_functions.h"
@@ -85,8 +84,8 @@ int dk2::MyUnk67457C::sub_61C090() {
     return this->flags & 2;
 }
 
-void dk2::MyUnk673FD0::destructor() {
-    *(void **) this = &MyUnk673FD0::vftable;
+void dk2::MySnd_ListThread::destructor() {
+    *(void **) this = &MySnd_ListThread::vftable;
     this->threadExit = 1;
     InterlockedExchange((LONG volatile *) &this->threadWorking, 1);
     while (!this->threadStopped) {

@@ -119,7 +119,7 @@ class ModuleInfoHeader(ctypes.Structure):
   range: SectionContrib
   flags: int
   ModuleSymStream: int  # llvm: ModDiStream
-  SymByteSize: int
+  SymByteSize: int  # llvm: SymBytes  # Size of local symbol debug info in above stream
   oldLineSize: int  # llvm: C11Bytes
   lineSize: int  # llvm: C13Bytes
   nSrcFiles: int

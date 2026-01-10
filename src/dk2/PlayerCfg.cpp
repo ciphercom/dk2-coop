@@ -2,7 +2,7 @@
 // Created by DiaLight on 09.08.2024.
 //
 #include <map>
-#include "dk2/PlayerCfg.h"
+#include "dk2/settings/PlayerCfg.h"
 #include "dk2/KeyEntry.h"
 #include "dk2_globals.h"
 #include "patches/micro_patches.h"

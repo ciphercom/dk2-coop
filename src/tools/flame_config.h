@@ -106,6 +106,7 @@ namespace flame_config {
 
     flame_value get_option(const std::string &path);
     void set_option(const std::string &path, flame_value value);
+    flame_value get_cmdl_option(const std::string &path);
     void set_tmp_option(const std::string &path, flame_value value);
 
     void help();

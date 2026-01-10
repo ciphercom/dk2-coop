@@ -53,7 +53,7 @@ namespace {
     };
 }
 
-void __stdcall dk2::createPanelButtons(
+void dk2::createPanelButtons(
     CWindow *a1_win,
     CButton *a2_subBtn,
     ButtonCfg *a3_btnCfg,

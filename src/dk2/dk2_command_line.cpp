@@ -299,12 +299,12 @@ namespace patch::replace_parse_command_line {
             dk2::MyResources_instance.gameCfg.f120 = 1;
         }
         if (*o_dk2_software) {
-            if ((dk2::MyGame_instance.f50D & 0x800000) != 0) {
+            if ((dk2::MyGame_instance.flags50D & 0x800000) != 0) {
                 dk2::MyResources_instance.video_settings.cmd_flag_SOFTWARE = 1;
             }
         }
         if (*o_dk2_chooseCard) {
-            int value = dk2::getDevIdxSupportsLinearPerspective();
+            int value = dk2::ge_getDeviceIdxSuitableForGame();
             if (value < 0) {
                 dk2::MyResources_instance.video_settings.setSelected3dEngine(4);
                 dk2::MyResources_instance.video_settings.writeGuidIndex(0);
@@ -502,11 +502,11 @@ namespace dk2 {
             } else if (!_strcmpi(*cur_token, "-ENGINE")) {
                 MyResources_instance.gameCfg.f120 = 1;
             } else if (!_strcmpi(*cur_token, "-SOFTWARE")) {  // Disables Hardware Acceleration
-                if ((MyGame_instance.f50D & 0x800000) != 0) {
+                if ((MyGame_instance.flags50D & 0x800000) != 0) {
                     MyResources_instance.video_settings.cmd_flag_SOFTWARE = 1;
                 }
             } else if (!_strcmpi(*cur_token, "-CHOOSECARD")) {  // Sets Dungeon Keeper 2 to run using your default video card
-                int value = getDevIdxSupportsLinearPerspective();
+                int value = ge_getDeviceIdxSuitableForGame();
                 if (value < 0) {
                     MyResources_instance.video_settings.setSelected3dEngine(4);
                     MyResources_instance.video_settings.writeGuidIndex(0);

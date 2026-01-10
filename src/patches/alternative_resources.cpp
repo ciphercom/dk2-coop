@@ -9,7 +9,8 @@
 #include "patches/logging.h"
 #include "tools/flame_config.h"
 
-#define fs_log(fmt, ...) patch::log::dbg(fmt, __VA_ARGS__)
+//#define fs_log(fmt, ...) patch::log::dbg(fmt, __VA_ARGS__)
+#define fs_log(fmt, ...)
 
 
 flame_config::define_flame_option<std::string> o_altResources(
@@ -17,7 +18,7 @@ flame_config::define_flame_option<std::string> o_altResources(
     "Alternative resources list of directory names\n"
     "in flame/resources/ path separated by ';' char\n"
     "example: dir2;dir2;dir3",
-    "Quuz_AudioFix;Quuz_LevelFixes;Quuz_UniqueBatTex"
+    "Quuz_AudioFix;LevelFixes;Quuz_UniqueBatTex"
 );
 
 namespace {

@@ -10,6 +10,7 @@
 #include "dk2/SurfHashList2.h"
 #include "dk2/SurfHashListItem.h"
 #include "dk2/SurfaceHolder.h"
+#include "dk2/engine/game_engine.h"
 #include "dk2_functions.h"
 #include "dk2_globals.h"
 #include "patches/big_resolution_fix/big_resolution_fix.h"
@@ -745,5 +746,75 @@ void dk2::SurfHashList::expandPut(MyCESurfHandle *surfh, SurfHashListItem *item)
         surfh->reductionLevel_andFlags &= ~0x200u;
         return;
     }
+}
+
+int dk2::CPCEngineInterface::init3d() {
+    __int16 v2_flags = MyResources_instance.video_settings.selected_3D_engine == 4;
+    if (!MyGame_instance.zbufferSurf) {
+        v2_flags = 1;
+        MyResources_instance.video_settings.setSelected3dEngine(4);
+    }
+    if (MyResources_instance.video_settings.untouched2_eq_1)
+        v2_flags |= 2u;
+    if (MyResources_instance.video_settings.cmd_flag_32BITTEXTURES)
+        v2_flags |= 4u;
+    if (MyResources_instance.video_settings.cmd_flag_SOFTWAREFILTER)
+        v2_flags |= 8u;
+
+    if (MyResources_instance.video_settings.isBumpmappingEnabled == 1) {
+        v2_flags |= 0x10u;
+    } else if (MyResources_instance.video_settings.isBumpmappingEnabled == 2) {
+        v2_flags |= 0x20u;
+    }
+
+    int isLowResTexture = MyResources_instance.video_settings.high_res_texture == 0;
+    MyDdSurfaceEx* primarySurf = &g_primarySurf; // MyInputManagerCb_instance.inputSurf.v_getPrimarySurf(),  // 0079D200 &g_primarySurf
+    IDirectDrawSurface* ddPrimarySurf = MyDdSurface_addRef(&primarySurf->dd_surf, 0);
+    IDirectDrawSurface* ddOffScreen = MyDdSurface_addRef(&MyGame_instance.getCurOffScreenSurf()->dd_surf, 0);
+    IDirectDraw* lpdd = ge_dk2dd_get(0);
+    int initResult = mydd_scene_init(
+        lpdd,
+        ddOffScreen,
+        ddPrimarySurf,
+        &MyResources_instance.video_settings.deviceGuid,
+        v2_flags,
+        isLowResTexture);
+    this->init3dResult = initResult;
+    if (initResult) return 1;
+
+    if ((v2_flags & 0x30) != 0) {
+        v2_flags &= ~0x30u;
+        int isLowResTexture_ = MyResources_instance.video_settings.high_res_texture == 0;
+        MyDdSurfaceEx* primarySurf_ = &g_primarySurf; // MyInputManagerCb_instance.inputSurf.v_getPrimarySurf(),  // 0079D200 &g_primarySurf
+        IDirectDrawSurface* lpddsurf = MyDdSurface_addRef(&primarySurf_->dd_surf, 0);
+        MyDdSurfaceEx* offscrSurf_ = MyGame_instance.getCurOffScreenSurf();
+        IDirectDrawSurface* screenDdSurf_ = MyDdSurface_addRef(&offscrSurf_->dd_surf, 0);
+        IDirectDraw* lpdd_ = ge_dk2dd_get(0);
+        int initResult_ = mydd_scene_init(
+            lpdd_,
+            screenDdSurf_,
+            lpddsurf,
+            &MyResources_instance.video_settings.deviceGuid,
+            v2_flags,
+            isLowResTexture_);
+        this->init3dResult = initResult_;
+        if (initResult_)
+            return 1;
+    }
+    MyResources_instance.video_settings.setSelected3dEngine(4);
+    int isLowResTexture_1 = MyResources_instance.video_settings.high_res_texture == 0;
+    MyDdSurfaceEx* primarySurf_1 = &g_primarySurf; // MyInputManagerCb_instance.inputSurf.v_getPrimarySurf(),  // 0079D200 &g_primarySurf
+    IDirectDrawSurface* lpddsurf_1 = MyDdSurface_addRef(&primarySurf_1->dd_surf, 0);
+    IDirectDrawSurface* screenDdSurf_1 = MyDdSurface_addRef(&MyGame_instance.getCurOffScreenSurf()->dd_surf, 0);
+    IDirectDraw* lpdd_1 = ge_dk2dd_get(0);
+    int result = mydd_scene_init(
+        lpdd_1,
+        screenDdSurf_1,
+        lpddsurf_1,
+        &MyResources_instance.video_settings.deviceGuid,
+        v2_flags | 1,
+        isLowResTexture_1);
+    this->init3dResult = result;
+    return result;
 }
 

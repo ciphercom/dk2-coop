@@ -17,7 +17,7 @@ add_custom_command(
         COMMAND $<TARGET_FILE:genlib_dkii>
         -sgmap_file ${CMAKE_HOME_DIRECTORY}/mapping/DKII_EXE_v170.sgmap
         -def_file ${CMAKE_CURRENT_LIST_DIR}/dkii.def
-        -replace_globals ${CMAKE_HOME_DIRECTORY}/src/replace_globals.map
+        -replace_globals ${CMAKE_HOME_DIRECTORY}/src/replace_globals.txt
         -exp_file ${CMAKE_CURRENT_LIST_DIR}/dkii_exp.def
         -map_file ${CMAKE_CURRENT_LIST_DIR}/dkii.symmap
         -asm_stub_file ${CMAKE_CURRENT_LIST_DIR}/dkii_stub.asm
@@ -25,7 +25,7 @@ add_custom_command(
         ${LIB_PROGRAM} ${CMAKE_HOME_DIRECTORY}/libs/dkii_exe/genlib/dkii.def ${ABS_GENLIB_LIB}
         DEPENDS
         ${CMAKE_HOME_DIRECTORY}/mapping/DKII_EXE_v170.sgmap
-        ${CMAKE_HOME_DIRECTORY}/src/replace_globals.map
+        ${CMAKE_HOME_DIRECTORY}/src/replace_globals.txt
         COMMENT "genlib DKII.EXE"
 )
 

@@ -408,6 +408,8 @@ class IdaStructs:
       self.resolve_id(struct)
 
   def get_by_name(self, name: str) -> IdaStruct or None:
+    if name == 'RECT':
+        return None
     sid = idaapi.get_struc_id(name)
     if sid != -1 and sid != 0 and sid != idaapi.BADADDR:
       struct_ = self.struct_by_sid.get(sid)

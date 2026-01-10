@@ -5,6 +5,7 @@
 #include <dk2/button/CButton.h>
 #include <dk2/button/button_types.h>
 #include <dk2/gui/main/main_layout.h>
+#include <dk2/utils/Bgraf.h>
 #include <dk2_functions.h>
 #include <dk2_globals.h>
 #include <patches/gui/button_id.h>
@@ -66,7 +67,7 @@ namespace patch {
                 localSurf.lpSurface,
                 0,
                 localSurf.dwHeight * localSurf.lPitch);
-            dk2::MySurface_probably_set_global_bitnes(&localSurf);
+            dk2::setDrawSurface(&localSurf);
             dk2::Size2i _sz {(btnSize.w - 16*6) / 6 + 16, btnSize.h};
 
             int posY_ = 0;
@@ -86,16 +87,11 @@ namespace patch {
                 posX = endX;
             }
 
-            dk2::PixelMask v58_fontMask;
-            v58_fontMask.b = 0xBF;
-            v58_fontMask.g = 0xBF;
-            v58_fontMask.r = 0xBF;
-            v58_fontMask.f3 = 0xFF;
-            v58_fontMask.f4 = 0;
-            dk2::g_FontObj1_instance.setFontMask(&status, &v58_fontMask);
+            dk2::Bgraf color {0xBF, 0xBF, 0xBF, 0xFF, 0};
+            dk2::g_FontObj1_instance.setColor(&status, &color);
 
             dk2::MySurface *textSurf = &_surf64_x16x30x6[4];
-            dk2::MySurface_probably_set_global_bitnes(textSurf);
+            dk2::setDrawSurface(textSurf);
 
             textRenderer.selectMyCR(&status, 2);
             textRenderer.selectMyTR(&status, 2);
@@ -108,18 +104,13 @@ namespace patch {
             textRenderer.renderText(&status, &textAabb2, btnText_1, &dk2::g_FontObj1_instance, NULL);
 
             dk2::MySurface *hoverSurf = textSurf + 1;
-            dk2::MySurface_probably_set_global_bitnes(hoverSurf);
-            dk2::g_FontObj1_instance.setFontMask(&status, &front->fontMask_3031E);
+            dk2::setDrawSurface(hoverSurf);
+            dk2::g_FontObj1_instance.setColor(&status, &front->color3031E);
             textRenderer.renderText(&status, &textAabb2, btnText_1, &dk2::g_FontObj1_instance, NULL);
 
-            dk2::PixelMask a5_pixelMask;  // yellow color for glowing
-            a5_pixelMask.b = 0;
-            a5_pixelMask.g = 0xA8;
-            a5_pixelMask.r = 0xFF;
-            a5_pixelMask.f3 = 0xFF;
-            a5_pixelMask.f4 = 0;
             dk2::MySurface *maxGlowSurf = textSurf - 1;
-            front->cglow.sub_5524F0(&status, maxGlowSurf, textSurf, 3, &a5_pixelMask);
+            dk2::Bgraf color2 {0, 0xA8, 0xFF, 0xFF, 0};  // yellow color for glowing
+            front->cglow.sub_5524F0(&status, maxGlowSurf, textSurf, 3, &color2);
             for (int j = 0; j < 3; ++j) {
                 dk2::MySurface *glowSurf = &_surf64_x16x30x6[j];
                 float a4c = (double) (j + 1) * 0.25;

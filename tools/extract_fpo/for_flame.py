@@ -26,11 +26,7 @@ def find_le(symbols_map: list[PdbProc], rva: int) -> PdbProc:
     return symbols_map[idx]
 
 
-def pdb_extract_espmap(flame_pdb_file: pathlib.Path) -> list[MyFpoFun]:
-    with open(flame_pdb_file, 'rb') as f:
-        _data = f.read()
-    pdb = my_pdb.MyPdb(_data)
-
+def collect_sym_map(pdb: my_pdb.MyPdb):
     pdb_symbols_map: list[PdbProc] = []
     for mod in pdb.mod_symbols:
         for sym in mod.symbols:
@@ -38,14 +34,33 @@ def pdb_extract_espmap(flame_pdb_file: pathlib.Path) -> list[MyFpoFun]:
                 proc = typing.cast(my_pdb.CV_Thunk32Sym, sym)
                 sec = pdb.section_headers.sections[proc.segment - 1]
                 rva = sec.VirtualAddress + proc.offset
-                pdb_symbols_map.append(PdbProc(rva, proc.size, proc.name))
-            if my_pdb.CV_ProcSym.match(sym.ty):
+                pdb_symbols_map.append(PdbProc(rva, proc.length, proc.name))
+            elif my_pdb.CV_ProcSym.match(sym.ty):
                 proc = typing.cast(my_pdb.CV_ProcSym, sym)
                 sec = pdb.section_headers.sections[proc.segment - 1]
                 rva = sec.VirtualAddress + proc.code_offset
                 pdb_symbols_map.append(PdbProc(rva, proc.code_size, proc.name))
+            elif my_pdb.CV_ExportSym.match(sym.ty):
+                exp = typing.cast(my_pdb.CV_ExportSym, sym)
+                pass
+            elif my_pdb.CV_PublicSym32.match(sym.ty):
+                pub = typing.cast(my_pdb.CV_PublicSym32, sym)
+                pass
     pdb_symbols_map.sort(key=lambda e: e.rva)
+    return pdb_symbols_map
 
+
+def pdb_extract_espmap(pdb: my_pdb.MyPdb) -> list[MyFpoFun]:
+    pdb_symbols_map: list[PdbProc] = collect_sym_map(pdb)
+
+    for sym in pdb.symrecs:
+        if my_pdb.CV_PublicSym32.match(sym.ty):
+            pub = typing.cast(my_pdb.CV_PublicSym32, sym)
+            if not (0 < pub.segment <= len(pdb.section_headers.sections)):
+                continue
+            sec = pdb.section_headers.sections[pub.segment - 1]
+            rva = sec.VirtualAddress + pub.offset
+            # print(f'{rva:08X} {sec.name} {pub.name}')
 
     # print(f'{pdb.pdb_info.header.Version=:}')
     # print(f'{pdb.pdb_info.header.TimeDateStamp=:08X}')
@@ -53,8 +68,8 @@ def pdb_extract_espmap(flame_pdb_file: pathlib.Path) -> list[MyFpoFun]:
     # print(f'{uuid.UUID(bytes=bytes(pdb.pdb_info.header.GUID))}')
     # print(f'{pdb.pdb_info.header.cbNames=:08X}')
 
-    pdb_dir = flame_pdb_file.parent / 'pdb'
-    pdb_dir.mkdir(exist_ok=True)
+    # pdb_dir = flame_pdb_file.parent / 'pdb'
+    # pdb_dir.mkdir(exist_ok=True)
     # for idx in pdb.root.streams.keys():
     #   suffix = pdb._stream_names.get(idx, '')
     #   suffix = suffix.replace('/', '_')
@@ -177,8 +192,47 @@ def parse_map_file(msvcmap_file: pathlib.Path):
     return image_base, symbols_map
 
 
-def main(pdb_file: pathlib.Path, fpo_file: pathlib.Path):
-    fpos = pdb_extract_espmap(pdb_file)
+def main(pdb_file: pathlib.Path, symmap_file: pathlib.Path, fpo_file: pathlib.Path):
+    symmap = {}
+    with open(symmap_file, 'r') as f:
+        for line in f.readlines():
+            line = line.rstrip()
+            if not line:
+                continue
+            parts = line.split(' ')
+            symmap[parts[1]] = (int(parts[0], 16), parts[2] if len(parts) > 2 else None)
+    with open(pdb_file, 'rb') as f:
+        _data = f.read()
+    pdb = my_pdb.MyPdb(_data)
+
+    csm = {proc.rva: proc for proc in collect_sym_map(pdb)}
+    for sym in pdb.symrecs:
+        if my_pdb.CV_PublicSym32.match(sym.ty):
+            pub = typing.cast(my_pdb.CV_PublicSym32, sym)
+            if not (0 < pub.segment <= len(pdb.section_headers.sections)):
+                continue
+            sec = pdb.section_headers.sections[pub.segment - 1]
+            rva = sec.VirtualAddress + pub.offset
+            va = rva + 0x10000000
+            sm = symmap.get(pub.name)
+            if sm is None:
+                continue
+            cs = csm.get(rva)
+            if cs is None:
+                print(f'{pub.name} not found in pdb')
+                continue
+            if cs.size == 6:
+                continue
+            dk2_va = sm[0]
+            rep = sm[1]
+            if rep is not None:
+                # print(f'{dk2_va:08X} -> {va:08X} {rep} {pub.name}')
+                pass
+            else:
+                print(f'[WARNING] implemented but not replaced {dk2_va:08X} -> {va:08X} {pub.name}')
+
+    fpos: list[MyFpoFun] = pdb_extract_espmap(pdb)
+    tmp = list(filter(lambda f: 'dk2' in f.name, fpos))
     with fpo_file.open('wb') as f:
         fpobin_serialize(f, fpos)
     with fpo_file.with_name(fpo_file.name + '.map').open('w') as f:
@@ -186,15 +240,18 @@ def main(pdb_file: pathlib.Path, fpo_file: pathlib.Path):
 
 
 def start():
+    print(' '.join(sys.argv))
     parser = argparse.ArgumentParser()
     # in
     parser.add_argument('-pdb_file', type=str, required=True)
+    parser.add_argument('-symmap_file', type=str, required=True)
     # out
     parser.add_argument('-fpo_file', type=str, required=True)
     args = parser.parse_args()
     # print(' '.join(sys.argv))
     main(
         pathlib.Path(args.pdb_file),
+        pathlib.Path(args.symmap_file),
         pathlib.Path(args.fpo_file),
     )
 

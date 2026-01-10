@@ -29,11 +29,12 @@ add_library(${TARGET} SHARED
         dk2/MyHeap.cpp
         dk2/MyDxMouse.cpp
         dk2/MyDxKeyboard.cpp
-        dk2/CFrontEndComponent.cpp
-        dk2/CGameComponent.cpp
+        dk2/components/CFrontEndComponent.cpp
+        dk2/components/CGameComponent.cpp
+        dk2/components/CEntryComponent.cpp
+        dk2/components/CNetworkComponent.cpp
         dk2/CDefaultPlayerInterface.cpp
         dk2/CPCEngineInterface.cpp
-        dk2/CWindowTest.cpp
         dk2/PlayerCfg.cpp
         dk2/RegKey.cpp
         dk2/MyComputerPlayer.cpp
@@ -68,8 +69,12 @@ add_library(${TARGET} SHARED
         dk2/entities/CPlayer.cpp
 
         dk2/engine/draw_functions.cpp
-        dk2/engine/window_proc_functions.cpp
         dk2/engine/ddraw_functions.cpp
+        dk2/engine/window_functions.cpp
+        dk2/engine/WinCls_BullfrogLibScreen.cpp
+        dk2/engine/CWindowTest.cpp
+        dk2/engine/WinEventHandlers.cpp
+        dk2/engine/DdModeList.cpp
 
         dk2/surface/surface_functions.cpp
 
@@ -205,6 +210,7 @@ target_compile_options(${TARGET} PRIVATE
         /Zi  # Produces a separate PDB file that contains all the symbolic debugging information
 )
 target_link_options(${TARGET} PRIVATE /debug)  # generate pdb to extract FPO and mapping with release builds
+target_link_options(${TARGET} PRIVATE /MAP)
 target_link_options(${TARGET} PRIVATE /OPT:NOREF)
 target_link_options(${TARGET} PRIVATE /DEF:${CMAKE_HOME_DIRECTORY}/libs/dkii_exe/genlib/dkii_exp.def)
 set(OUTPUT_NAME "Flame")
@@ -222,3 +228,15 @@ set_target_properties(${TARGET} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BIN
 if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/../dev")
     include(../dev/dev.cmake)
 endif ()
+
+
+add_custom_target(update_replace_globals
+        COMMAND ${CMAKE_COMMAND} -E env PYTHONPATH=${CMAKE_HOME_DIRECTORY}/mapping/ida
+        ${Python3_EXECUTABLE} ${CMAKE_HOME_DIRECTORY}/tools/genapi/main_update_replace_globals.py
+        -sgmap_file ${CMAKE_HOME_DIRECTORY}/mapping/DKII_EXE_v170.sgmap
+        -replace_globals ${CMAKE_HOME_DIRECTORY}/src/replace_globals.txt
+        DEPENDS
+        ${CMAKE_HOME_DIRECTORY}/mapping/DKII_EXE_v170.sgmap
+        ${CMAKE_HOME_DIRECTORY}/src/replace_globals.txt
+        COMMENT "update replace_globals.txt"
+)

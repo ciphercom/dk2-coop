@@ -2,7 +2,7 @@
 // Created by DiaLight on 7/28/2025.
 //
 
-#include <dk2/CFrontEndComponent.h>
+#include <dk2/components/CFrontEndComponent.h>
 #include <dk2/MyMapInfo.h>
 #include <dk2/gui/main/main_layout.h>
 #include <dk2_functions.h>

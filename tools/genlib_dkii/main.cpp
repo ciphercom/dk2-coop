@@ -73,6 +73,10 @@ int main(int argc, char * argv[]) {
         show_help();
         return EXIT_SUCCESS;
     }
+//    for (int i = 0; i < argc; ++i) {
+//        printf(" %s", argv[i]);
+//    }
+//    printf("\n");
 
     char *sgmap_file = getCmdOption(argv, argv + argc, "-sgmap_file");
     if (sgmap_file == nullptr) {
@@ -165,9 +169,11 @@ int main(int argc, char * argv[]) {
         asm_os << ".code" << std::endl;
         asm_os << std::endl;
 
+        std::vector<uint32_t> toReplaceVisited;
         bool hasBadSymbols = false;
         for (auto *global: globals | std::views::reverse) {
             bool isReplace = globalsToReplace.contains(global->va);
+            if(isReplace) toReplaceVisited.emplace_back(global->va);
             auto name = msvcMangleName(global);
             if(name.contains(':')) {
                 printf("[-] symbol %s has ':' in name\n", name.c_str());
@@ -196,6 +202,17 @@ int main(int argc, char * argv[]) {
         asm_os << "end" << std::endl;
 
         if(hasBadSymbols) return EXIT_FAILURE;
+
+        for (const auto& item : toReplaceVisited) {
+            globalsToReplace.erase(item);
+        }
+        if(!globalsToReplace.empty()) {
+            printf("[-] not all globals replaced:\n");
+            for (const auto& item : globalsToReplace) {
+                printf("[-] - %08X\n", item);
+            }
+            return EXIT_FAILURE;
+        }
     }
 
     printf("finished in %lu ms\n", GetTickCount() - startMs);

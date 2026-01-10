@@ -20,9 +20,11 @@ add_custom_command(
         COMMAND ${CMAKE_COMMAND} -E env PYTHONPATH=${CMAKE_HOME_DIRECTORY}/mapping/ida
         ${Python3_EXECUTABLE} ${CMAKE_HOME_DIRECTORY}/tools/genapi/main.py
         -sgmap_file ${CMAKE_HOME_DIRECTORY}/mapping/DKII_EXE_v170.sgmap
+        -replace_structs ${CMAKE_HOME_DIRECTORY}/src/replace_structs.txt
         -headers ${CMAKE_CURRENT_LIST_DIR}/api
         DEPENDS ${ABS_GENAPI_SRCS}
         ${CMAKE_HOME_DIRECTORY}/mapping/DKII_EXE_v170.sgmap
+        ${CMAKE_HOME_DIRECTORY}/src/replace_structs.txt
         COMMENT "genapi DKII.EXE"
 )
 

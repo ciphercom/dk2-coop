@@ -9,3 +9,9 @@ add_custom_target(${TARGET}
         gen_globals_h.py
         gen_struct_h.py
         )
+
+add_custom_target(update_replace_globals_txt
+        SOURCES
+        main_update_replace_globals.py
+        dk2cxx.py
+        )

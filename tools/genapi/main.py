@@ -8,6 +8,7 @@ from gen_globals_cpp import format_globals_cpp
 from gen_globals_h import format_globals_h
 from gen_functions_cpp import format_functions_cpp
 from gen_functions_h import format_functions_h
+import replace_structs
 
 
 def build_vtable_map(globals: list[sgmap.Global]) -> dict[str, sgmap.Global]:
@@ -82,7 +83,8 @@ def gen_functions(include_dir: pathlib.Path, globals: list[sgmap.Global]):
   gen_functions_h()
 
 
-def main(sgmap_file: pathlib.Path, include_dir: pathlib.Path):
+def main(sgmap_file: pathlib.Path, replace_structs_file: pathlib.Path, include_dir: pathlib.Path):
+  replace_structs.init(replace_structs_file)
   structs, globals = sgmap.parse_file(sgmap_file)
   print(f'{len(structs)} {len(globals)}')
   structs_map = {struct.id: struct for struct in structs}
@@ -96,9 +98,14 @@ def main(sgmap_file: pathlib.Path, include_dir: pathlib.Path):
 def start():
   parser = argparse.ArgumentParser(description='Optional app description')
   parser.add_argument('-sgmap_file', type=str, required=True)
+  parser.add_argument('-replace_structs', type=str, required=True)
   parser.add_argument('-headers', type=str, required=True)
   args = parser.parse_args()
-  main(pathlib.Path(args.sgmap_file), pathlib.Path(args.headers))
+  main(
+    pathlib.Path(args.sgmap_file),
+    pathlib.Path(args.replace_structs),
+    pathlib.Path(args.headers),
+  )
 
 
 if __name__ == '__main__':

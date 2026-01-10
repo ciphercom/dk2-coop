@@ -387,16 +387,11 @@ char dk2::CFrontEndComponent::renderButtonsText_5329A0(
             }
             v68_posY = v70_endY;
 
-            PixelMask v72_pixMask;
-            v72_pixMask.b = 0xBF;
-            v72_pixMask.g = 0xBF;
-            v72_pixMask.r = 0xBF;
-            v72_pixMask.f3 = 0xFF;
-            v72_pixMask.f4 = 0;
-            g_FontObj1_instance.setFontMask(&status, &v72_pixMask);
+            Bgraf color {0xBF, 0xBF, 0xBF, 0xFF, 0};
+            g_FontObj1_instance.setColor(&status, &color);
 
             MySurface *v46_textSurf = &this->surf64_x16x30x6[a3_x16Idx][btnIdx][4];
-            MySurface_probably_set_global_bitnes(v46_textSurf);
+            setDrawSurface(v46_textSurf);
             switch (v96_rendererTyArr[btnIdx]) {
             case 0: {
                 v91_localTextRenderer.selectMyCR(&status, 0);
@@ -428,12 +423,12 @@ char dk2::CFrontEndComponent::renderButtonsText_5329A0(
             v91_localTextRenderer.renderText(&status, &v77_aabb, v94_mbStringArr[btnIdx], &g_FontObj1_instance, NULL);
 
             MySurface *hoverSurf = v46_textSurf + 1;
-            MySurface_probably_set_global_bitnes(hoverSurf);
-            g_FontObj1_instance.setFontMask(&status, &this->fontMask_3031E);
+            setDrawSurface(hoverSurf);
+            g_FontObj1_instance.setColor(&status, &this->color3031E);
             v91_localTextRenderer.renderText(&status, &v77_aabb, v94_mbStringArr[btnIdx], &g_FontObj1_instance, NULL);
 
             MySurface *maxGlowSurf = v46_textSurf - 1;
-            this->cglow.sub_5524F0(&status, maxGlowSurf, v46_textSurf, 3, &this->fontMask_30323);
+            this->cglow.sub_5524F0(&status, maxGlowSurf, v46_textSurf, 3, &this->color30323);
             for (int j = 0; j < 3; ++j) {
                 MySurface *glowSurf_ = &this->surf64_x16x30x6[a3_x16Idx][btnIdx][j];
                 float a5a = (double) (j + 1) * 0.25;
@@ -609,7 +604,7 @@ char dk2::CFrontEndComponent::bakeButton(int a2_wndId, unsigned __int8 x16Idx, i
         Size2i *v56_size = &btnSizes[0];
         int idx = btnsCount;
         while (1) {
-            MySurface_probably_set_global_bitnes(curSurf1);
+            setDrawSurface(curSurf1);
             Size2i _sz {(v56_size->w - 16*6) / 6 + 16, v56_size->h};
 
             int endY_ = posY_ + _sz.h;
@@ -628,16 +623,11 @@ char dk2::CFrontEndComponent::bakeButton(int a2_wndId, unsigned __int8 x16Idx, i
                 posX = endX;
             }
 
-            PixelMask v58_fontMask;
-            v58_fontMask.b = 0xBF;
-            v58_fontMask.g = 0xBF;
-            v58_fontMask.r = 0xBF;
-            v58_fontMask.f3 = 0xFF;
-            v58_fontMask.f4 = 0;
-            g_FontObj1_instance.setFontMask(&status, &v58_fontMask);
+            Bgraf color {0xBF, 0xBF, 0xBF, 0xFF, 0};
+            g_FontObj1_instance.setColor(&status, &color);
 
             MySurface *textSurf = &this->surf64_x16x30x6[x16Idx][btnIdx][4];
-            MySurface_probably_set_global_bitnes(textSurf);
+            setDrawSurface(textSurf);
             switch (f34_idxHigh0Arr[btnIdx]) {
             case 0: {
                 textRenderer.selectMyCR(&status, 0);
@@ -665,18 +655,13 @@ char dk2::CFrontEndComponent::bakeButton(int a2_wndId, unsigned __int8 x16Idx, i
             textRenderer.renderText(&status, &textAabb, mbStringArr[btnIdx], &g_FontObj1_instance, NULL);
 
             MySurface *hoverSurf = textSurf + 1;
-            MySurface_probably_set_global_bitnes(hoverSurf);
-            g_FontObj1_instance.setFontMask(&status, &this->fontMask_3031E);
+            setDrawSurface(hoverSurf);
+            g_FontObj1_instance.setColor(&status, &this->color3031E);
             textRenderer.renderText(&status, &textAabb, mbStringArr[btnIdx], &g_FontObj1_instance, NULL);
 
-            PixelMask a5_pixelMask;  // yellow color for glowing
-            a5_pixelMask.b = 0;
-            a5_pixelMask.g = 0xA8;
-            a5_pixelMask.r = 0xFF;
-            a5_pixelMask.f3 = 0xFF;
-            a5_pixelMask.f4 = 0;
             MySurface *maxGlowSurf = textSurf - 1;
-            this->cglow.sub_5524F0(&status, maxGlowSurf, textSurf, 3, &a5_pixelMask);
+            Bgraf color2 {0, 0xA8, 0xFF, 0xFF, 0};  // yellow color for glowing
+            this->cglow.sub_5524F0(&status, maxGlowSurf, textSurf, 3, &color2);
             for (int j = 0; j < 3; ++j) {
                 MySurface *glowSurf = &this->surf64_x16x30x6[x16Idx][btnIdx][j];
                 float a4c = (double) (j + 1) * 0.25;
@@ -704,42 +689,41 @@ int __cdecl dk2::CButton_render_42A160(CButton *a1_btn, CDefaultPlayerInterface 
     AABB v13_tmp;
     Area4i pos = *(Area4i *) a2_defplif->cgui_manager.scaleAabb_2560_1920(&v13_tmp, (AABB *)&a1_btn->pos);
 
-    PixelMask v11_pixelMask {0, 0, 0, 0, 0};
     if (a1_btn->f5D_isVisible != 1) return 0;
 
-    unsigned __int8 v5_brightnes;
+    unsigned __int8 v5_brightnes = 0;
     if ( !a1_btn->f34_idxHigh || (v5_brightnes = -1, !a1_btn->f45_containsCursor) )
         v5_brightnes = -56;
 
-    v11_pixelMask = {v5_brightnes, v5_brightnes, v5_brightnes, 0, 0};
+    Bgraf color{v5_brightnes, v5_brightnes, v5_brightnes, 0, 0};
 
     int value = MyResources_instance.video_settings.texture_reduction_level;
 
     if (value == 0) {
         v14_try_level = -1;
         unsigned __int8* v8_mbstr = MyMbStringList_idx1091_getMbString(0x5A2u);
-        return a2_defplif->sub_42CB60(
+        return a2_defplif->printText(
             &a2_defplif->_options,
             pos.x, pos.y, v8_mbstr,
-            &v11_pixelMask,
+            &color,
             0x11, 0, FontObj_3_instance, 1);
     }
     if (value == 1) {
         v14_try_level = -1;
         unsigned __int8* MbString = MyMbStringList_idx1091_getMbString(0x119u);
-        return a2_defplif->sub_42CB60(
+        return a2_defplif->printText(
             &a2_defplif->_options,
             pos.x, pos.y, MbString,
-            &v11_pixelMask,
+            &color,
             0x11, 0, FontObj_3_instance, 1);
     }
     if (value == 2) {
         v14_try_level = -1;
         unsigned __int8* v6_mbstr = MyMbStringList_idx1091_getMbString(0x5A3u);
-        return a2_defplif->sub_42CB60(
+        return a2_defplif->printText(
             &a2_defplif->_options,
             pos.x, pos.y, v6_mbstr,
-            &v11_pixelMask,
+            &color,
             0x11, 0, FontObj_3_instance, 1);
     }
     return value - 2;
@@ -759,9 +743,9 @@ BOOL __cdecl dk2::CListBox_renderTableStr(CListBox *a1_listBox, CFrontEndCompone
     int v39_minX = v5_renderArea->minY;
     int v40_maxX = v5_renderArea->maxX;
     int v41_maxY = v5_renderArea->maxY;
-    MySurface_AABB_sub_5B35B0(&v30_rowArea);
+    MySurface_AABB_calc(&v30_rowArea);
     if (a1_listBox->f5D_isVisible != 1 || v3_itemsCount <= 0)
-        return sub_5B36F0();
+        return static_g_myRenderSurface_calcAabb();
     int f8C_itemHeight = a1_listBox->itemHeight;
     int *f30_arg = (int *) a1_listBox->f30_arg;
     int v12_scrollIdx = f78_slider->v_f28();
@@ -803,7 +787,7 @@ BOOL __cdecl dk2::CListBox_renderTableStr(CListBox *a1_listBox, CFrontEndCompone
     }
     int v18_idx = v12_scrollIdx;
     if (v12_scrollIdx >= v17_endIdx)
-        return sub_5B36F0();
+        return static_g_myRenderSurface_calcAabb();
     int v19_offset = v12_scrollIdx * f8C_itemHeight;
     int v20_curHeight = v19_offset;
     int v43_offset = v19_offset;
@@ -835,25 +819,15 @@ BOOL __cdecl dk2::CListBox_renderTableStr(CListBox *a1_listBox, CFrontEndCompone
         }
         char v22_tableTy = v4_front->_tableTy;
         if ((v22_tableTy == 14 || v22_tableTy == 15) && !v4_front->isSessionCompatible[v18_idx]) {
-            PixelMask pixelMask;
-            pixelMask.b = 0xBF;
-            pixelMask.g = 0xBF;
-            pixelMask.r = 0xBF;
-            pixelMask.f3 = 0xFF;
-            pixelMask.f4 = 0;
             int v56_status;
-            g_FontObj2_instance.setFontMask(&v56_status, &pixelMask);
+            Bgraf color {0xBF, 0xBF, 0xBF, 0xFF, 0};
+            g_FontObj2_instance.setColor(&v56_status, &color);
         }
         if (patch::display_incompatible_reason::enabled) {
             if (!v4_front->isSessionCompatible[v18_idx]) {
-                PixelMask pixelMask;
-                pixelMask.b = 0x30;
-                pixelMask.g = 0x30;
-                pixelMask.r = 0x30;
-                pixelMask.f3 = 0xFF;
-                pixelMask.f4 = 0;
                 int v56_status;
-                g_FontObj2_instance.setFontMask(&v56_status, &pixelMask);
+                Bgraf color {0x30, 0x30, 0x30, 0xFF, 0};
+                g_FontObj2_instance.setColor(&v56_status, &color);
             }
         }
 
@@ -938,14 +912,9 @@ BOOL __cdecl dk2::CListBox_renderTableStr(CListBox *a1_listBox, CFrontEndCompone
                     cellArea.minY = v33_rowArea.minY;
                     cellArea.maxY = v33_rowArea.maxY;
                     {
-                        PixelMask pixelMask;
-                        pixelMask.b = 0xA0;
-                        pixelMask.g = 0xA0;
-                        pixelMask.r = 0xFF;
-                        pixelMask.f3 = 0xFF;
-                        pixelMask.f4 = 0;
                         int v56_status;
-                        g_FontObj2_instance.setFontMask(&v56_status, &pixelMask);
+                        Bgraf color {0xA0, 0xA0, 0xFF, 0xFF, 0};
+                        g_FontObj2_instance.setColor(&v56_status, &color);
                     }
                     int status;
                     renderer.renderText(&status, &cellArea, MBStr_741120, &g_FontObj2_instance, NULL);
@@ -953,7 +922,7 @@ BOOL __cdecl dk2::CListBox_renderTableStr(CListBox *a1_listBox, CFrontEndCompone
             }
         }
         int v57_status;
-        g_FontObj2_instance.setFontMask(&v57_status, &a2_front->fontMask_5FF4);
+        g_FontObj2_instance.setColor(&v57_status, &a2_front->color5FF4);
         v60_tryLevel = -1;
         v30_rowArea.minY += f8C_itemHeight;
         v30_rowArea.maxY = f8C_itemHeight + v30_rowArea.minY;
@@ -967,6 +936,6 @@ BOOL __cdecl dk2::CListBox_renderTableStr(CListBox *a1_listBox, CFrontEndCompone
         v20_curHeight = v37_curHeight;
         v19_offset = v43_offset;
     }
-    return sub_5B36F0();
+    return static_g_myRenderSurface_calcAabb();
 }
 

@@ -10,6 +10,7 @@
 #include <dk2/world/nav/MyNavigationSystem.h>
 #include <patches/gui/game/esc_options/btn_autosave.h>
 
+#include "dk2/engine/game_engine.h"
 #include "dk2_functions.h"
 #include "dk2_globals.h"
 #include "dk2_memory.h"
@@ -285,7 +286,7 @@ int dk2::CWorld::saveToFile(const char *path) {
 int dk2::CWorld::loadFromFile(const char *a2_savePath) {
     int status;
     Pos2i v9 = {0, 0};
-    static_MyInputManagerCb_sub_5B2BD0(&status, 0, 0, &v9);
+    static_MyInputManagerCb_setCursorIconAndDraw(&status, 0, 0, &v9);
 
     this->showLoadingScreen();
     if (this->is_surface_filled) {
@@ -364,3 +365,50 @@ int dk2::CWorld::loadFromFile(const char *a2_savePath) {
         CNetworkCommunication_instance.fun_524050(1, 0);
     return 1;
 }
+
+namespace dk2 {
+
+    void showAndPaint(dk2::CWorld *self, const char *path) {
+        int a1_pstatus;
+        unsigned __int16 ResourceExtensionFlags = getResourceExtensionFlags();
+        loadArtToSurfaceEx(
+            &a1_pstatus,
+            &self->surface,
+            &MyResources_instance.frontEndFileMan,
+            path,
+            ResourceExtensionFlags);
+        if (a1_pstatus >= 0) {
+            self->is_surface_filled = 1;
+            MyDdSurfaceEx *CurOffScreenSurf = MyGame_instance.getCurOffScreenSurf();
+            static_MyDdSurfaceEx_BltWait(&a1_pstatus, CurOffScreenSurf, 0, 0, &self->surface, NULL, 0);
+            MyDdSurfaceEx *PrimarySurf = &g_primarySurf;  // MyInputManagerCb_instance.inputSurf.v_getPrimarySurf(),  // 0079D200 &g_primarySurf
+            static_MyDdSurfaceEx_BltWait(&a1_pstatus, PrimarySurf, 0, 0, &self->surface, NULL, 0);
+        }
+    }
+
+}
+
+void dk2::CWorld::showLoadingScreen() {
+    if (this->is_surface_filled) {
+        int status;
+        MyDdSurface_release(&status, &this->surface.dd_surf);
+        this->is_surface_filled = 0;
+        if (this->is_surface_filled) return;
+    }
+    char Buffer[260];
+    if (MyResources_instance.playerCfg.kbLayoutId == 17) {
+        if (MyResources_instance.gameCfg.useFe_playMode == 3) {
+            sprintf(Buffer, "LoadingScreen-Japanese\\M-LoadingScreen%dx%d", MyGame_instance.dwWidth, MyGame_instance.dwHeight);
+        } else {
+            sprintf(Buffer, "LoadingScreen-Japanese\\LoadingScreen%dx%d", MyGame_instance.dwWidth, MyGame_instance.dwHeight);
+        }
+    } else {
+        if (MyResources_instance.gameCfg.useFe_playMode == 3) {
+            sprintf(Buffer, "LoadingScreen\\M-LoadingScreen%dx%d", MyGame_instance.dwWidth, MyGame_instance.dwHeight);
+        } else {
+            sprintf(Buffer, "LoadingScreen\\LoadingScreen%dx%d", MyGame_instance.dwWidth, MyGame_instance.dwHeight);
+        }
+    }
+    showAndPaint(this, Buffer);
+}
+

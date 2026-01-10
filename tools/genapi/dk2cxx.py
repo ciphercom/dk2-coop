@@ -1,4 +1,5 @@
 import sgmap
+import replace_structs
 
 
 def format_declspec(decl: sgmap.Declspec):
@@ -60,10 +61,9 @@ def format_type(ty: sgmap.Type, name: str = None, is_ptr=False, is_const=False):
     stru_t = ty  # type: sgmap.StructType
     suffix = f" {name}" if name else ''
     struct_name = stru_t.struct.name
-    if struct_name == 'MLDPlay':  # hardcode
-      struct_name = 'net::MLDPlay'
-    if struct_name == 'net_LocalService':  # hardcode
-      struct_name = 'net::MyLocalService'
+    rep = replace_structs.get_replace_name(struct_name)
+    if rep is not None:
+      struct_name = rep
     return f"{struct_name}{suffix}"
   if ty.kind is sgmap.TypeKind.Function:
     fun_t = ty  # type: sgmap.FunctionType

@@ -1,6 +1,9 @@
 # CEntryComponent
 00401410 CComponent *CEntryComponent::runUntilDestroy()
 
+# CComponent
+00401510 int __cdecl CComponent_onKeyboardActionWithCtrl(int, int, int, CComponent *)
+
 # CDefaultPlayerInterface
 00402D00 int CDefaultPlayerInterface::fun_402D00(uint16_t)
 00406530 BOOL __cdecl CDefaultPlayerInterface_onMouseAction(int, uint32_t, Pos2i, CDefaultPlayerInterface *)
@@ -89,21 +92,23 @@
 # CGameComponent
 00525370 CComponent *CGameComponent::mainGuiLoop()
 
-# MyGame
-00525D30 int MyGame_prepareWithSettings(int *)
-005573B0 void __cdecl MyGame_static_destroy()
-00557CB0 int MyGame::init()
-00557FB0 int MyGame::isOsCompatible()
-005580E0 void MyGame::release()
-005581B0 int MyGame::prepareScreenEx(uint32_t, uint32_t, uint32_t, int, int, int)
-005586E0 int MyGame::selectSurfToRender()
-00558770 int MyGame::getSurf_unlock()
-005587C0 MyDdSurfaceEx *MyGame::getCurOffScreenSurf()
-00558A40 int MyGame::takeScreenshot()
-00558F70 int MyGame::createZBufferSurf(uint32_t)
-00559140 int MyGame::handleError(char *, int, const char *, char *)
-00559350 void MyGame::displayError(char *, int, const char *, char *)
-005596D0 void MyGame::removeWmActivateCallback(void *)
+# MyWindow
+00525D30 int MyWindow_prepareWithSettings(int *)
+005573B0 void __cdecl MyWindow_static_destroy()
+00557CB0 int MyWindow::init()
+00557FB0 int MyWindow::isOsCompatible()
+005580E0 void MyWindow::release()
+005581B0 int MyWindow::prepareScreenEx(uint32_t, uint32_t, uint32_t, int, int, int)
+005586E0 int MyWindow::selectSurfToRender()
+00558770 int MyWindow::getSurf_unlock()
+005587C0 MyDdSurfaceEx *MyWindow::getCurOffScreenSurf()
+00558A40 int MyWindow::takeScreenshot()
+00558BD0 int MyWindow::prepareScreen2()
+00558E40 int MyWindow::collect3dDevices()
+00558F70 int MyWindow::createZBufferSurf(uint32_t)
+00559140 int MyWindow::handleError(char *, int, const char *, char *)
+00559350 void MyWindow::displayError(char *, int, const char *, char *)
+005596D0 void MyWindow::removeWmActivateCallback(void *)
 
 # CNetworkComponent
 00527790 CComponent *CNetworkComponent::runUntilDestroy()
@@ -119,14 +124,21 @@
 00557820 BOOL __cdecl ge_isDeviceSuitableForGame(int)
 005578E0 int ge_getDeviceIdxSuitableForGame()
 00558C70 LRESULT myCustomDefWindowProcA(HWND, uint32_t, WPARAM, LPARAM)
-00571910 void __cdecl engine_set_g2_screenArea(int, int, int, int)
-00573ED0 int __cdecl mydd_scene_init(IDirectDraw *, IDirectDrawSurface *, IDirectDrawSurface *, _GUID *, int16_t, int)
+00571910 void __cdecl engine_setRenderArea(int, int, int, int)
+00573CF0 int configureFlagsAndTexturesCount()
+005741D0 void updateGammaRamp()
+00574200 void __cdecl setGammaRamp(const void *)
+00574310 void __cdecl textureCache_init(float, float, const char *, int)
 00575780 bool __cdecl engine_drawScene(char)
 0057CEB0 void *__cdecl MyHeap_alloc(int)
 0057D0B0 void __cdecl MyHeap_free(void *)
+005899F0 void __cdecl static_MyDirectDraw_triangles_init(MyDirectDraw *)
+00589D90 void __cdecl addObjectToDraw(ToDraw *)
 0058A150 void drawTexToSurfTriangles()
+0058A520 void __cdecl static_MyDirectDraw_uvs_init(MyDirectDraw *)
+0058F640 void draw3dScene()
 00592B80 void __cdecl renderer_setSurfaceHolder(SurfaceHolder *, uint32_t)
-00592EA0 int __cdecl mydd_devTexture_init(MyDirectDraw *)
+00592EA0 int __cdecl static_MyDirectDraw_devTexture_init(MyDirectDraw *)
 0059A4B0 MySurface *__cdecl static_CBridge_loadPng(const char *)
 005A5DA0 int __cdecl dk2_main(int, LPCSTR *)
 005A63B0 int __cdecl parse_command_line(int, const char **)
@@ -167,7 +179,7 @@
 005B74A0 void fs_resolveDk2HomeDir()
 005BC3F0 int *DxDevice_updateCoopLevelAndSignal_ev5(int *, MyDxDevice *)
 00634860 void *___onexitinit()
-00636500 _iobuf *__cdecl _fopen(const char *, const char *)
+00636500 _iobuf *__cdecl __fopen(const char *, const char *)
 00637A00 void *__cdecl _realloc(void *, size_t)
 00637BB0 void *__cdecl _malloc_1(size_t)
 00637BD0 void *__cdecl __nh_malloc(size_t, int)
@@ -191,6 +203,7 @@
 # CFrontEndComponent
 0052F140 int CFrontEndComponent::launchGame()
 0052F9E0 CComponent *CFrontEndComponent::mainGuiLoop()
+0052FAF0 int __cdecl CFrontEndComponent_onKeyboardActionWithCtrl(int, int, uint32_t, CFrontEndComponent *)
 005329A0 char CFrontEndComponent::renderButtonsText_5329A0(int, uint8_t, RenderButtonTextInfo *, int)
 00533570 char CFrontEndComponent::bakeButton(int, uint8_t, int)
 005340F0 void CFrontEndComponent::showTitleScreen()
@@ -304,14 +317,35 @@
 005627C0 int *RegKey::open_key(int *, LPCSTR, RegKey *)
 00562860 int *RegKey::create_key(int *, LPCSTR, RegKey *)
 
+# MyDirectDraw
+00573C20 void MyDirectDraw_destroy()
+00573ED0 int __cdecl MyDirectDraw_init(IDirectDraw *, IDirectDrawSurface *, IDirectDrawSurface *, _GUID *, int16_t, int)
+00592950 void MyDirectDraw_devTexture_destroy()
+
+# CEngine2DSprite
+00577640 void CEngine2DSprite::_addRenderObj(int, SceneObject2E *)
+00579180 void __cdecl CEngine2DSprite_create(int, int, int, int, float, int, Vec3f, float, float, uint32_t)
+
+# CEngine2DRotatableSprite
+005776C0 int *CEngine2DRotatableSprite::_addRenderObj(int, SceneObject2E *)
+00578EC0 void __cdecl CEngine2DRotatableSprite_create(int16_t, int16_t, int, int, float, float, int, Vec3f, float, float, int)
+
 # MyScaledSurface
 0057C420 MyScaledSurface *MyScaledSurface::constructor(MyDblNamedSurface *, int)
 
+# CEngineDDSurface
+00590880 CEngineDDSurface *CEngineDDSurface::constructor(uint32_t, uint32_t, MyCEngineSurfDesc *, int)
+005909E0 void CEngineDDSurface::destructor()
+
 # MyCESurfHandle
 00590EC0 void MyCESurfHandle::resolveSurface()
+005911E0 void MyCESurfHandle::loadPrescaled()
 
 # SurfaceHolder
+00591DA0 SurfaceHolder *__cdecl SurfaceHolder_create(uint32_t, MyCEngineSurfDesc *, int)
 00591ED0 int SurfaceHolder::calcWeight()
+00591FF0 void SurfaceHolder::drawSpecial_128x128(float, float)
+00592380 int SurfaceHolder::drawSpecial_128x128_mgsr(float, float)
 
 # SurfHashList
 #00592890 SurfHashList *SurfHashList::clear()
@@ -322,7 +356,11 @@
 00594790 void SurfHashList::deleteItem(SurfHashListItem *)
 005948D0 int SurfHashList::_probablySort()
 
+# SurfHashList2
+00593F50 int SurfHashList2::_probablySort()
+
 # CPCEngineInterface
+0059D7F0 int CPCEngineInterface::drawScene()
 0059D900 int CPCEngineInterface::init3d()
 
 # MyDdSurfaceEx

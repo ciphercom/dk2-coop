@@ -3,7 +3,7 @@
 //
 #include <tools/flame_config.h>
 
-#include "dk2/MyGame.h"
+#include "dk2/MyWindow.h"
 #include "dk2/MyMouseUpdater.h"
 #include "dk2_functions.h"
 #include "dk2_globals.h"
@@ -299,7 +299,7 @@ namespace patch::replace_parse_command_line {
             dk2::MyResources_instance.gameCfg.f120 = 1;
         }
         if (*o_dk2_software) {
-            if ((dk2::MyGame_instance.flags50D & 0x800000) != 0) {
+            if ((dk2::MyWindow_instance.flags50D & 0x800000) != 0) {
                 dk2::MyResources_instance.video_settings.cmd_flag_SOFTWARE = 1;
             }
         }
@@ -308,11 +308,11 @@ namespace patch::replace_parse_command_line {
             if (value < 0) {
                 dk2::MyResources_instance.video_settings.setSelected3dEngine(4);
                 dk2::MyResources_instance.video_settings.writeGuidIndex(0);
-                dk2::MyGame_instance.selected_dd_idx = 0;
+                dk2::MyWindow_instance.selected_dd_idx = 0;
             } else {
                 dk2::MyResources_instance.video_settings.setSelected3dEngine(2);
                 dk2::MyResources_instance.video_settings.writeGuidIndex(value);
-                dk2::MyGame_instance.selected_dd_idx = value;
+                dk2::MyWindow_instance.selected_dd_idx = value;
             }
         }
         if (!o_dk2_pload->empty() && *o_dk2_pload_freq >= 0) {
@@ -502,7 +502,7 @@ namespace dk2 {
             } else if (!_strcmpi(*cur_token, "-ENGINE")) {
                 MyResources_instance.gameCfg.f120 = 1;
             } else if (!_strcmpi(*cur_token, "-SOFTWARE")) {  // Disables Hardware Acceleration
-                if ((MyGame_instance.flags50D & 0x800000) != 0) {
+                if ((MyWindow_instance.flags50D & 0x800000) != 0) {
                     MyResources_instance.video_settings.cmd_flag_SOFTWARE = 1;
                 }
             } else if (!_strcmpi(*cur_token, "-CHOOSECARD")) {  // Sets Dungeon Keeper 2 to run using your default video card
@@ -510,11 +510,11 @@ namespace dk2 {
                 if (value < 0) {
                     MyResources_instance.video_settings.setSelected3dEngine(4);
                     MyResources_instance.video_settings.writeGuidIndex(0);
-                    MyGame_instance.selected_dd_idx = 0;
+                    MyWindow_instance.selected_dd_idx = 0;
                 } else {
                     MyResources_instance.video_settings.setSelected3dEngine(2);
                     MyResources_instance.video_settings.writeGuidIndex(value);
-                    MyGame_instance.selected_dd_idx = value;
+                    MyWindow_instance.selected_dd_idx = value;
                 }
             } else if (!_strcmpi(*cur_token, "-PLOAD")) {  // Load a packet where X is the name of the file (must be use with -LEVEL command)
                 const char *arg1 = *++cur_token;
@@ -650,11 +650,11 @@ BOOL __cdecl dk2::parse_command_line(int argc, const char **argv) {
             dk2::MyResources_instance.video_settings.setBumpMappingEnabled(1);
         }
     }
-    MyGame_log_printf(&MyGame_instance, "Cmd Line: ");
+    MyWindow_log_printf(&MyWindow_instance, "Cmd Line: ");
     for (int i = 0; i < argc; ++i) {
-        MyGame_log_printf(&MyGame_instance, "%s ", argv[i]);
+        MyWindow_log_printf(&MyWindow_instance, "%s ", argv[i]);
     }
-    MyGame_log_printf(&MyGame_instance, "\n");
+    MyWindow_log_printf(&MyWindow_instance, "\n");
     _wcsncpy(MyResources_instance.gameCfg.levelName, L"LEVEL", 64);
     MyResources_instance.gameCfg.levelName[63] = 0;
     MyResources_instance.gameCfg.hasSaveFile = 0;

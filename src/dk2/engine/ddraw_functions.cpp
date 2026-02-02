@@ -151,27 +151,27 @@ int dk2::ge_getDeviceIdxSuitableForGame() {
 
 namespace dk2 {
 
-    void ge_fillDDrawList(dk2::MyGame *game) {
-        game->dds_count = 0;
+    void ge_fillDDrawList(dk2::MyWindow *window) {
+        window->dds_count = 0;
         LPDDENUMCALLBACKA lpCallback = [](LPGUID lpGuid, LPSTR lpDeviceDesc, LPSTR lpDeviceName, LPVOID lpContext) -> BOOL {
-            MyGame *game = (MyGame *) lpContext;
+            MyWindow *window = (MyWindow *) lpContext;
             if (lpGuid) {
-                game->guid_arr16[game->dds_count] = *lpGuid;
-                game->is_empty_dd[game->dds_count] = 0;
+                window->guid_arr16[window->dds_count] = *lpGuid;
+                window->is_empty_dd[window->dds_count] = 0;
             } else {
-                game->is_empty_dd[game->dds_count] = 1;
+                window->is_empty_dd[window->dds_count] = 1;
             }
-            strncpy(game->dds__names_arr16[game->dds_count], lpDeviceName, 64);
-            game->dds__names_arr16[game->dds_count][63] = '\0';
-            strncpy(game->dds__descs_arr16[game->dds_count], lpDeviceDesc, 64);
-            game->dds__descs_arr16[game->dds_count][63] = '\0';
-            game->dds_count++;
+            strncpy(window->dds__names_arr16[window->dds_count], lpDeviceName, 64);
+            window->dds__names_arr16[window->dds_count][63] = '\0';
+            strncpy(window->dds__descs_arr16[window->dds_count], lpDeviceDesc, 64);
+            window->dds__descs_arr16[window->dds_count][63] = '\0';
+            window->dds_count++;
             return TRUE;
         };
         if(*o_gog_enabled) {
-            fake_DirectDrawEnumerateA(lpCallback, game);
+            fake_DirectDrawEnumerateA(lpCallback, window);
         } else {
-            DirectDrawEnumerateA(lpCallback, game);
+            DirectDrawEnumerateA(lpCallback, window);
         }
     }
 
@@ -223,20 +223,19 @@ namespace dk2 {
         }
     }
 
-    void inline_selectDrawEngine(dk2::MyGame *game) {
-        ge_fillDDrawList(game);
+    void inline_selectDrawEngine(dk2::MyWindow *window) {
+        ge_fillDDrawList(window);
         ge_resolveDevices();
         ge_collectDisplayModes();
         int selectedDdIdx = -1;
         if (!MyResources_instance.video_settings.cmd_flag_SOFTWARE) {
             if (cmd_flag_DDD) {
-                game->selected_dd_idx = cmd_flag_DDD_value;
+                window->selected_dd_idx = cmd_flag_DDD_value;
                 return;
             }
-            int devCount = g_ge_ddraw_device_count;
             if (MyResources_instance.video_settings.guid_index < g_ge_ddraw_device_count
                 && MyResources_instance.video_settings.guid_index_verifier_working) {
-                game->selected_dd_idx = MyResources_instance.video_settings.guid_index;
+                window->selected_dd_idx = MyResources_instance.video_settings.guid_index;
                 return;
             }
             selectedDdIdx = ge_getDeviceIdxSuitableForGame();
@@ -245,11 +244,11 @@ namespace dk2 {
             // software render engine
             MyResources_instance.video_settings.setSelected3dEngine(4);
             MyResources_instance.video_settings.writeGuidIndex(0);
-            game->selected_dd_idx = 0;
+            window->selected_dd_idx = 0;
         } else {
             MyResources_instance.video_settings.setSelected3dEngine(2);
             MyResources_instance.video_settings.writeGuidIndex(selectedDdIdx);
-            game->selected_dd_idx = selectedDdIdx;
+            window->selected_dd_idx = selectedDdIdx;
         }
     }
 
@@ -576,8 +575,8 @@ dk2::MySurface *dk2::MyDdSurfaceEx::updateDesc() {
 void dk2::MyDdSurfaceEx::fillDesc(LPDDSURFACEDESC desc) {
     DWORD dwRGBBitCount;
     this->surf.lpSurface = desc->lpSurface;
-    this->surf.dwWidth = desc->dwWidth;
-    this->surf.dwHeight = desc->dwHeight;
+    this->surf.size.w = desc->dwWidth;
+    this->surf.size.h = desc->dwHeight;
     this->surf.lPitch = desc->lPitch;
     dwRGBBitCount = desc->ddpfPixelFormat.dwRGBBitCount;
     if ( dwRGBBitCount == 8 ) {

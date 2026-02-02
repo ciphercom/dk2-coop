@@ -12,11 +12,11 @@
 
 
 int dk2::CDefaultPlayerInterface::fun_402D00(uint16_t a2_playerSceneId) {
-    this->pCWorld = this->profiler->cworld;
+    this->pCWorld = this->pGameSession->pWorld;
     MyInputMethodEditor_instance2.restoreWndProc();
     this->playerTagId = a2_playerSceneId;
     this->f3B94 = 0;
-    MyGame_instance.addWmActivateCallback((void (__cdecl *)(int, uint32_t, uint32_t, void *)) CDefaultPlayerInterface_WM_ACTIVATE_cb, this);
+    MyWindow_instance.addWmActivateCallback((void (__cdecl *)(int, uint32_t, uint32_t, void *)) CDefaultPlayerInterface_WM_ACTIVATE_cb, this);
     this->field_133F_static_listeners.onKeyboardActionWithCtrl = (int (__cdecl *)(int, int, int, CComponent *)) CDefaultPlayerInterface_onKeyboardAction;
     this->field_133F_static_listeners.onMouseAction = (int (__cdecl *)(int, int, int, int, CComponent *)) CDefaultPlayerInterface_onMouseAction;
     this->field_133F_static_listeners.onWindowMsg = (int (__cdecl *)(__int16, WPARAM, LPARAM, CComponent *)) CDefaultPlayerInterface_onWindowMsg;
@@ -39,7 +39,7 @@ int dk2::CDefaultPlayerInterface::fun_402D00(uint16_t a2_playerSceneId) {
     this->lpSurface = v3_surf;
     if (!v3_surf) return 0;
 
-    CBridge *f10_c_bridge = this->profiler->c_bridge;
+    CBridge *f10_c_bridge = this->pGameSession->pBridge;
     g_isSomthingReady_006CE008 = 1;
     int v11_status[3];
     if (*MyDdSurface_createOffScreenSurface(v11_status, 0x100u, 0x100u, 0x800u, &my_surf.dd_surf) >= 0) {
@@ -80,8 +80,8 @@ int dk2::CDefaultPlayerInterface::fun_402D00(uint16_t a2_playerSceneId) {
     this->f4F2D = 0;
 
     if (!this->sub_42C7D0(
-            MyGame_instance.dwWidth,
-            (unsigned int) MyGame_instance.dwHeight >> 3,
+            MyWindow_instance.dwWidth,
+            (unsigned int) MyWindow_instance.dwHeight >> 3,
             32, "FollowPathSubtitleTextBuffer", &this->_followPathSubtitleTextBuffer
     )) return 0;
 
@@ -101,9 +101,9 @@ int dk2::CDefaultPlayerInterface::fun_402D00(uint16_t a2_playerSceneId) {
     this->f46 = 0;
     this->f4A = 0;
     this->f4E = 0;
-    this->f46 = MySound_ptr->v_fun_567790("GLOBAL\\", "OPTIONS_MUSIC");
-    this->f4A = MySound_ptr->v_fun_567790("GLOBAL\\", "OPTIONS_SPEECH");
-    this->f4E = MySound_ptr->v_fun_567790("GLOBAL\\", "OBJECT_FE_PARCHMENT");
+    this->f46 = g_MySound_ptr->v_fun_567790("GLOBAL\\", "OPTIONS_MUSIC");
+    this->f4A = g_MySound_ptr->v_fun_567790("GLOBAL\\", "OPTIONS_SPEECH");
+    this->f4E = g_MySound_ptr->v_fun_567790("GLOBAL\\", "OBJECT_FE_PARCHMENT");
     this->v_fun_4033F0();
     return 1;
 }

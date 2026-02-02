@@ -24,21 +24,21 @@ namespace dk2 {
 }
 
 bool dk2::dk2_main2() {
-    MyGame_instance.isTurnErrors = cmd_flag_NOERRORS;
+    MyWindow_instance.isTurnErrors = cmd_flag_NOERRORS;
     if ( MyResources_instance.video_settings.f9C )
         MyResources_instance.video_settings.sub_566DA0();
     if ( !cmd_flag_NOSOUND
-         && !MySound_ptr->v_sub_567210()
-         && !MySound_ptr->v_set_number_of_channels(
+         && !g_MySound_ptr->v_sub_567210()
+         && !g_MySound_ptr->v_set_number_of_channels(
             MyResources_instance.soundCfg.numberOfChannels) ) {
-        MySound_ptr->v_fun_567410();
+        g_MySound_ptr->v_fun_567410();
         cmd_flag_NOSOUND = 1;
     }
     if ( cmd_flag_NOSOUND || CSpeechSystem_instance.sub_567F90() ) {
         if ( !WeaNetR_instance.init() ) {
             WeaNetR_instance.destroy();
             if ( !cmd_flag_NOSOUND ) {
-                MySound_ptr->v_fun_567410();
+                g_MySound_ptr->v_fun_567410();
                 CSpeechSystem_instance.sub_568020();
             }
             if(patch::print_game_start_errors::enabled) {
@@ -46,17 +46,17 @@ bool dk2::dk2_main2() {
             }
             return false;
         }
-        if ( !MyGame_instance.isOsCompatible() ) {
+        if ( !MyWindow_instance.isOsCompatible() ) {
             WeaNetR_instance.destroy();
-            if ( !cmd_flag_NOSOUND ) MySound_ptr->v_fun_567410();
+            if ( !cmd_flag_NOSOUND ) g_MySound_ptr->v_fun_567410();
             if(patch::print_game_start_errors::enabled) {
-                patch::log::dbg("failed to call MyGame_instance.isOsCompatible()");
+                patch::log::dbg("failed to call MyWindow_instance.isOsCompatible()");
             }
             return false;
         }
         if ( !all_components_fillStaticListeners() ) {
             WeaNetR_instance.destroy();
-            if ( !cmd_flag_NOSOUND ) MySound_ptr->v_fun_567410();
+            if ( !cmd_flag_NOSOUND ) g_MySound_ptr->v_fun_567410();
             if(patch::print_game_start_errors::enabled) {
                 patch::log::dbg("failed to call all_components_fillStaticListeners()");
             }
@@ -69,8 +69,8 @@ bool dk2::dk2_main2() {
             MyResources_instance.gameCfg.useFe_playMode = 4;
             MyResources_instance.gameCfg.useFe_unkTy = 3;
         } else if ( !cmd_flag_FrontEnd3D_unk8 ) {
-            if ( MyGame_instance.getCpuSpeed() < 240.0 && ge_getDeviceIdxSuitableForGame() != -1
-                 || MyGame_instance.getCpuSpeed() < 290.0 && ge_getDeviceIdxSuitableForGame() == -1 )
+            if ( MyWindow_instance.getCpuSpeed() < 240.0 && ge_getDeviceIdxSuitableForGame() != -1
+                 || MyWindow_instance.getCpuSpeed() < 290.0 && ge_getDeviceIdxSuitableForGame() == -1 )
             {
                 MyResources_instance.gameCfg.useFe2d_unk2 = 1;
             }
@@ -96,7 +96,7 @@ bool dk2::dk2_main2() {
         WeaNetR_instance.destroy();
         CSpeechSystem_instance.sub_568020();
         if ( !cmd_flag_NOSOUND )
-            MySound_ptr->v_fun_567410();
+            g_MySound_ptr->v_fun_567410();
     }
     return true;
 }
@@ -172,16 +172,16 @@ bool dk2::dk2_main1(int argc, LPCSTR *argv) {
 
     bool useDefaultWindowName = true;
     unsigned __int8 *MbString = MyMbStringList_idx1091_getMbString(42u);  // "Dungeon Keeper II"
-    if ( MBToUni_convert(MbString, g_wchar_buf, 512) && unicodeToUtf8(g_wchar_buf, temp_string, 512) ) {
+    if ( MBToUni_convert(MbString, g_wchar_buf, 512) && unicodeToUtf8(g_wchar_buf, g_temp_string, 512) ) {
         int status_;
-        setWindowName(&status_, temp_string);
+        setWindowName(&status_, g_temp_string);
         useDefaultWindowName = false;
     }
     if (useDefaultWindowName) {
         int status_;
         setWindowName(&status_, "Bullfrog Productions Ltd");
     }
-    if ( (MyGame_instance.flags50D & 0x800000) == 0 && ge_getDeviceIdxSuitableForGame() == -1 ) {
+    if ( (MyWindow_instance.flags50D & 0x800000) == 0 && ge_getDeviceIdxSuitableForGame() == -1 ) {
         unsigned __int8 *mbString1 = MyMbStringList_idx1091_getMbString(2u);
         wchar_t wString1[512];
         if (MBToUni_convert(mbString1, wString1, 512)) {
@@ -197,7 +197,7 @@ bool dk2::dk2_main1(int argc, LPCSTR *argv) {
         }
     }
     bool success = false;
-    if(MyGame_instance.init()) {
+    if(MyWindow_instance.init()) {
         if(dk2_main2()) {
             success = true;
         } else {
@@ -207,10 +207,10 @@ bool dk2::dk2_main1(int argc, LPCSTR *argv) {
         }
     } else {
         if(patch::print_game_start_errors::enabled) {
-            patch::log::err("failed to call MyGame_instance.init()");
+            patch::log::err("failed to call MyWindow_instance.init()");
         }
     }
-    MyGame_instance.release();
+    MyWindow_instance.release();
     releaseFonts();
     CoUninitialize();
     return success;

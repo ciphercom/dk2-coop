@@ -104,8 +104,8 @@ namespace dk2 {
             switch (f0_state) {
                 case 0:
                 case 4: {
-                    CWorld *f14_cworld = self->f0_profiler->cworld;
-                    CDefaultPlayerInterface *fC_player_i = f14_cworld->profiler->player_i;
+                    CWorld *f14_cworld = self->f0_pGameSession->pWorld;
+                    CDefaultPlayerInterface *fC_player_i = f14_cworld->pGameSession->pPlayer;
                     uint16_t f0_tagId = f14_cworld->playerList.players_7[v19_slot + 2].f0_tagId;
                     char v53_strVtag_buf[sizeof(TbUniStringVTag)];
                     TbUniStringVTag &v53_strVtag = *(TbUniStringVTag *) v53_strVtag_buf;
@@ -126,7 +126,7 @@ namespace dk2 {
                     continue;
                 case 1:
                 case 6: {
-                    CWorld *v27_world = self->f0_profiler->cworld;
+                    CWorld *v27_world = self->f0_pGameSession->pWorld;
                     CWorld_instance.fA3C3 = f0_state != 1 ? 2113 : 2077;
                     v27_world->v_sub_509860(1);
                     return false;
@@ -175,7 +175,7 @@ namespace dk2 {
                 v29_doProcess = 1;
             }
             if (v29_doProcess) {
-                CWorld *v31_world = self->f0_profiler->cworld;
+                CWorld *v31_world = self->f0_pGameSession->pWorld;
                 int v52_aBool = self->fFDF2;
                 self->case2_timeMs = v28_timeMs;
                 self->timeoutThresholdTimeMs = v28_timeMs;

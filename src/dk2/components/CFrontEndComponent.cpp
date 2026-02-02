@@ -45,7 +45,7 @@ void dk2::CFrontEndComponent::showTitleScreen() {
             extensionFlags);
     if ( status >= 0 ) {
         static_MyDdSurfaceEx_BltWait(&status, this->pMyDdSurfaceEx, 0, 0, &this->titleScreen, 0, 0);
-        MyGame_instance.prepareScreen();
+        MyWindow_instance.prepareScreen();
         if ( MyDdSurface_addRef(&this->titleScreen.dd_surf, 0) )
             MyDdSurface_release(&status, &this->titleScreen.dd_surf);
 
@@ -56,7 +56,7 @@ void dk2::CFrontEndComponent::showTitleScreen() {
             DWORD waitEnd = getTimeMs() + patch::skippable_title_screen::waiting_time;
             while ( getTimeMs() <= waitEnd && !patch::skippable_title_screen::skipKeyPressed() ) ;
         }
-        MyGame_instance.prepareScreen();
+        MyWindow_instance.prepareScreen();
     }
 }
 
@@ -86,9 +86,9 @@ dk2::CComponent *dk2::CFrontEndComponent::mainGuiLoop() {
             auto &sysCmd = *(TbSysCommand_Process *) sysCmdBuf;
             *(void **) &sysCmd = TbSysCommand_Process::vftable;
             int status;
-            MySound_ptr->v_fun_567A40(&status, &sysCmd);
+            g_MySound_ptr->v_fun_567A40(&status, &sysCmd);
             if (this->draw2dGui_0())
-                MyGame_instance.prepareScreen();
+                MyWindow_instance.prepareScreen();
             g_lastRedawTime = nowMs + 16;
         }
         if (isAppExitStatusSet())
@@ -514,21 +514,21 @@ int dk2::CFrontEndComponent::launchGame() {
     WeaNetR_instance.reinitializeNetworkSystem();
     MyResources_instance.gameCfg.useFe2d_unk1 = MyResources_instance.gameCfg.useFe2d_unk2 == 1;
     this->isUseFe3d = MyResources_instance.gameCfg.useFe3d;
-    MyGame_instance.recreateOnPrepare = 0;
+    MyWindow_instance.recreateOnPrepare = 0;
     uint32_t screenWidth = 640u;
     uint32_t screenHeight = 480u;
     patch::screen_resolution::patchMenuWindowResolution(screenWidth, screenHeight);
-    if (!MyGame_instance.prepareScreenEx(
+    if (!MyWindow_instance.prepareScreenEx(
                screenWidth, screenHeight,
                MyResources_instance.video_settings.display_bitnes,
                MyResources_instance.video_settings.isWindowed,
                this->isUseFe3d != 1,
                this->isUseFe3d == 1
                )) return 0;
-    this->pMyDdSurfaceEx = MyGame_instance.getCurOffScreenSurf();
+    this->pMyDdSurfaceEx = MyWindow_instance.getCurOffScreenSurf();
     int status;
     MyDdSurfaceEx_fillWithColor(
-        &status, MyGame_instance.getCurOffScreenSurf(), NULL,
+        &status, MyWindow_instance.getCurOffScreenSurf(), NULL,
         Bgraf {0, 0, 0, 0xFF, 0}, 0
     );
     MyDdSurfaceEx_fillWithColor(
@@ -560,7 +560,7 @@ int dk2::CFrontEndComponent::launchGame() {
     CWorld_instance.releaseSurface();
     RECT v16_rect{12, 435, 201, 473};
     MyDdSurfaceEx_fillWithColor(
-        &status, MyGame_instance.getCurOffScreenSurf(), &v16_rect,
+        &status, MyWindow_instance.getCurOffScreenSurf(), &v16_rect,
         Bgraf {0, 0, 0, 0xFF, 0}, 0
     );
     MyDdSurfaceEx_fillWithColor(
@@ -781,12 +781,12 @@ void dk2::CFrontEndComponent::isMapPresent(SessionMapInfo *mapInfo, wchar_t *map
 
 void dk2::CFrontEndComponent::showMovie(LPSTR pszFileName) {
     int status;
-    if (MyGame_instance.isWindowed || !MyResources_instance.gameCfg.showMovies) return;
+    if (MyWindow_instance.isWindowed || !MyResources_instance.gameCfg.showMovies) return;
 
-    MyGame_sub_559770((__int16) &MyGame_instance);
+    MyWindow_sub_559770((__int16) &MyWindow_instance);
     this->fun_536E20(0, 0);
     MyDdSurfaceEx_fillWithColor(
-        &status, MyGame_instance.getCurOffScreenSurf(), NULL,
+        &status, MyWindow_instance.getCurOffScreenSurf(), NULL,
         Bgraf {0, 0, 0, 0xFF, 0}, 0
     );
     MyDdSurfaceEx_fillWithColor(
@@ -804,7 +804,7 @@ void dk2::CFrontEndComponent::showMovie(LPSTR pszFileName) {
         char sysCmdBuf[sizeof(TbSysCommand_StopAll)];
         auto& sysCmd = *(TbSysCommand_StopAll*) sysCmdBuf;
         *(void**) &sysCmd = TbSysCommand_StopAll::vftable;
-        MySound_ptr->v_fun_567A40(&status, &sysCmd);
+        g_MySound_ptr->v_fun_567A40(&status, &sysCmd);
     }
 
     IDirectSound* v13_pDirectSound = NULL;
@@ -813,7 +813,7 @@ void dk2::CFrontEndComponent::showMovie(LPSTR pszFileName) {
         auto& sysCmd = *(TbSysCommand_GetDirectSoundObject*) sysCmdBuf;
         *(void**) &sysCmd = TbSysCommand_GetDirectSoundObject::vftable;
         sysCmd.ppDirectSound = &v13_pDirectSound;
-        MySound_ptr->v_fun_567A40(&status, &sysCmd);
+        g_MySound_ptr->v_fun_567A40(&status, &sysCmd);
     }
 
     if (v13_pDirectSound) {
@@ -828,10 +828,10 @@ void dk2::CFrontEndComponent::showMovie(LPSTR pszFileName) {
     MovieRenderer_instance.dd2 = NULL;
     MovieRenderer_instance.obj_58 = 0;
     MovieRenderer_instance.soundBuffer = NULL;
-    int v14 = MyGame_instance.f18;
-    if ((MyGame_instance.f18 & 1) != 0) {
+    int v14 = MyWindow_instance.f18;
+    if ((MyWindow_instance.f18 & 1) != 0) {
         copyToFullscreenSurf(&status, 0);
-        MyGame_instance.f18 = v14 + 1;
+        MyWindow_instance.f18 = v14 + 1;
     }
     {
         LPDIRECTDRAWSURFACE lpDdSurf = MyDdSurface_addRef(&g_primarySurf.dd_surf, 1);
@@ -844,7 +844,7 @@ void dk2::CFrontEndComponent::showMovie(LPSTR pszFileName) {
         lpDdSurf->Release();
     }
     g_pMovieRenderer = NULL;
-    MyGame_instance.addWmActivateCallback(CFrontEndComponent_WM_ACTIVATE_cb, this);
+    MyWindow_instance.addWmActivateCallback(CFrontEndComponent_WM_ACTIVATE_cb, this);
     g_pMovieRenderer = static_MovieRenderer_sub_5A8F70(pszFileName, getHWindow(), &MovieRenderer_instance);
     if (g_pMovieRenderer) {
         while (static_MovieRenderer_sub_5A8FB0(g_pMovieRenderer)) {
@@ -856,12 +856,12 @@ void dk2::CFrontEndComponent::showMovie(LPSTR pszFileName) {
         g_movieKeyActed = 0;
         g_pMovieRenderer = NULL;
     }
-    MyGame_instance.removeWmActivateCallback(CFrontEndComponent_WM_ACTIVATE_cb);
+    MyWindow_instance.removeWmActivateCallback(CFrontEndComponent_WM_ACTIVATE_cb);
     MovieRenderer_instance.lpdd->Release();
     MovieRenderer_instance.p_primarySurf->Release();
     MovieRenderer_instance.p_offScreenSurf->Release();
     MyDdSurfaceEx_fillWithColor(
-        &status, MyGame_instance.getCurOffScreenSurf(), NULL,
+        &status, MyWindow_instance.getCurOffScreenSurf(), NULL,
         Bgraf {0, 0, 0, 0xFF, 0}, 0
     );
     MyDdSurfaceEx_fillWithColor(
@@ -875,7 +875,7 @@ void dk2::CFrontEndComponent::showMovie(LPSTR pszFileName) {
 }
 
 void dk2::CFrontEndComponent::TcpIpInternet_updateStatusLine(unsigned int a1) {
-    if (MyGame_instance.isWindowed != 0) return;
+    if (MyWindow_instance.isWindowed != 0) return;
     MyDdSurfaceEx *PrimarySurf = &g_primarySurf; // MyInputManagerCb_instance.inputSurf.v_getPrimarySurf(),  // 0079D200 &g_primarySurf
     int status;
     if ( *MyDdSurfaceEx_resolveDesc(&status, PrimarySurf, 0) < 0 ) return;
@@ -905,3 +905,34 @@ void dk2::CFrontEndComponent::TcpIpInternet_updateStatusLine(unsigned int a1) {
     MyDdSurfaceEx *v9 = &g_primarySurf;  // MyInputManagerCb_instance.inputSurf.v_getPrimarySurf(),  // 0079D200 &g_primarySurf
     MyDdSurfaceEx_unlock(v9);
 }
+
+int __cdecl dk2::CFrontEndComponent_onKeyboardActionWithCtrl(
+        int keyCode,
+        int isPressed,
+        unsigned int controlKeyFlags,
+        CFrontEndComponent *frontend) {
+    frontend->timestampMs = getTimeMs();
+    if (!isPressed) return 1;
+
+    if (controlKeyFlags == 3 && keyCode == 0x20) {  // DIK_D
+        const char *PacketRecordStr = getPacketRecordStr();
+        char Buffer[260];
+        sprintf(Buffer, "%s\\%s.sav", PacketRecordStr, "DemoLoad");
+        if (fs_fileExists(Buffer)) {
+            MyResources_instance.packetRecord.loadSavFile("DemoLoad", 1, 0);
+            if (frontend->isUseFe3d)
+                MyResources_instance.gameCfg.unk_f16C = 1;
+            frontend->gotoComponent(&CGameComponent_instance);
+        }
+    }
+    if (keyCode == 0xB7)                        // DIK_SYSRQ
+        frontend->key_DIK_SYSRQ = 1;
+    if (frontend->f30C1A) {
+        updateKeyBind(keyCode, controlKeyFlags, frontend);
+        return 1;
+    }
+    if (keyCode == 0x1C && controlKeyFlags == 2)// DIK_RETURN
+        MyWindow_instance.prepareScreen2();
+    return 1;
+}
+

@@ -130,7 +130,7 @@ dk2::MyResources *dk2::MyResources::init_resources() {
         strcat(exeDir, "\\");
         // patch::log::dbg("replace exe dir path2: %s -> %s\n", cmdl, exeDir);
     }
-    MyGame_log_printf(&MyGame_instance, "HD Path: %s\n", exeDir);
+    MyWindow_log_printf(&MyWindow_instance, "HD Path: %s\n", exeDir);
     _strcpy(this->executableDir, exeDir);
     this->resolveMovies();
     sprintf(this->editorDir, "%sdata\\editor\\", this->executableDir);

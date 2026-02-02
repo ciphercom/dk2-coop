@@ -138,21 +138,21 @@ namespace dk2 {
     void callActivateCallbacks(WPARAM wParam) {
         if ( (WORD) wParam ) {
             for (int i = 0; i < 8; ++i) {
-                if (MyGame_instance.WM_ACTIVATE_callbacks[i])
-                    MyGame_instance.WM_ACTIVATE_callbacks[i](0, 0, 0, MyGame_instance.WM_ACTIVATE_userData[i]);
+                if (MyWindow_instance.WM_ACTIVATE_callbacks[i])
+                    MyWindow_instance.WM_ACTIVATE_callbacks[i](0, 0, 0, MyWindow_instance.WM_ACTIVATE_userData[i]);
             }
-            MyGame_instance.fE71 = 1;
-            if ( MyGame_instance.fE75 ) {
-                MyGame_instance.fE75 = 0;
-                MyGame_instance.recreateRequest = 1;
+            MyWindow_instance.fE71 = 1;
+            if ( MyWindow_instance.fE75 ) {
+                MyWindow_instance.fE75 = 0;
+                MyWindow_instance.recreateRequest = 1;
             }
         } else {
             for (int i = 0; i < 8; ++i) {
-                if ( MyGame_instance.WM_ACTIVATE_callbacks[i] )
-                    MyGame_instance.WM_ACTIVATE_callbacks[i](1, 0, 0, MyGame_instance.WM_ACTIVATE_userData[i]);
+                if ( MyWindow_instance.WM_ACTIVATE_callbacks[i] )
+                    MyWindow_instance.WM_ACTIVATE_callbacks[i](1, 0, 0, MyWindow_instance.WM_ACTIVATE_userData[i]);
             }
-            MyGame_instance.fE75 = 1;
-            MyGame_instance.fE71 = 0;
+            MyWindow_instance.fE75 = 1;
+            MyWindow_instance.fE71 = 0;
         }
     }
 

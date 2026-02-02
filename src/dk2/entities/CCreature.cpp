@@ -42,7 +42,7 @@ int dk2::CCreature::processDealDamage() {
     Vec3i f16_pos;
     memset(&f16_pos, 0, sizeof(f16_pos));
     int v25;
-    if ( !g_pWorld->profiler->c_bridge->v_f10C_createMesh2_v(this, 0, &f16_pos, &v25)) f16_pos = v7_target->f16_pos;
+    if ( !g_pWorld->pGameSession->pBridge->v_f10C_createCPhysicalThing(this, 0, &f16_pos, &v25)) f16_pos = v7_target->f16_pos;
     if (v7_target->fE_type == 0 ) {  // CCreature
         CCreature *targetCreature = (CCreature *) v7_target;
         if (targetCreature->fun_4E0460() && targetCreature->lairId ) {
@@ -138,7 +138,7 @@ int dk2::CCreature::processDealDamage() {
         if ( v7_target->v_f28_hasNoHealth() )
             this->setCurrentState_48AD30(239);
     }
-    this->field_2A = MySound_ptr->v_CSoundSystem_fun_5678F0(
+    this->field_2A = g_MySound_ptr->v_CSoundSystem_fun_5678F0(
             this->field_2A,
             this->creatureData->f6E3,
             219,

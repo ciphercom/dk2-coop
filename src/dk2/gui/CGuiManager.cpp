@@ -80,8 +80,8 @@ void dk2::createPanelButtons(
 
 
 int dk2::CGuiManager::createElements(WindowCfg **ppCurWinCfg, CDefaultPlayerInterface *a3_defPlayerI) {
-    this->width = MyGame_instance.dwWidth;
-    this->height = MyGame_instance.dwHeight;
+    this->width = MyWindow_instance.dwWidth;
+    this->height = MyWindow_instance.dwHeight;
     this->pWindow_first = &this->windowListEnd;
     this->pbtn_A0 = NULL;
     this->f24 = 0;
@@ -132,7 +132,7 @@ int dk2::CGuiManager::createElements(WindowCfg **ppCurWinCfg, CDefaultPlayerInte
         int idx;
         do {
             if (entry->idx < 27)
-                entry->f24 = MySound_ptr->v_fun_567790("GLOBAL\\", entry->str);
+                entry->f24 = g_MySound_ptr->v_fun_567790("GLOBAL\\", entry->str);
             idx = entry[1].idx;
             ++entry;
         } while (idx != -1);

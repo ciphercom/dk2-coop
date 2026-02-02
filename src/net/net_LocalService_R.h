@@ -42,6 +42,7 @@ namespace net {
   };
   #pragma pack(pop)
   static_assert(sizeof(MyLocalService) == 0x28);
+  static_assert(sizeof(MyLocalService) == sizeof(dk2::replaced_net_LocalService));
 
 }
 

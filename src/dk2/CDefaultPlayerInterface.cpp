@@ -27,7 +27,7 @@
 int dk2::CDefaultPlayerInterface::tickKeyboard2() {
     int v18_try_catch;
 
-    Pos2i *MousePos = MyGame_instance.getMousePos();
+    Pos2i *MousePos = MyWindow_instance.getMousePos();
     int x = MousePos->x;
     int y = MousePos->y;
     int controlKeyFlags = MyInputManagerCb_static_buildControlFlags();
@@ -36,8 +36,8 @@ int dk2::CDefaultPlayerInterface::tickKeyboard2() {
     int v13_isLShift = v5_isLShift;
     int ignoreModifiers = 0;
     if (v15_isLControl || v5_isLShift) ignoreModifiers = 1;
-    int dwWidth = MyGame_instance.dwWidth;
-    int dwHeight = MyGame_instance.dwHeight;
+    int dwWidth = MyWindow_instance.dwWidth;
+    int dwHeight = MyWindow_instance.dwHeight;
 
     if (!patch::control_windowed_mode::enabled) {
         if (x < 5)
@@ -105,7 +105,7 @@ int dk2::CDefaultPlayerInterface::tickKeyboard2() {
 
 
 void dk2::CDefaultPlayerInterface::createSurfacesForView_42CDF0(RtGuiView *view) {
-    CBridge *f10_c_bridge = this->profiler->c_bridge;
+    CBridge *pBridge = this->pGameSession->pBridge;
     char *rowPos = (char *) view->surf.lpSurface;
     int v4_bytesPerPix = view->dwRGBBitCount / 8;
     int v13_lineSize = 32 * view->surf.lPitch;
@@ -133,7 +133,7 @@ void dk2::CDefaultPlayerInterface::createSurfacesForView_42CDF0(RtGuiView *view)
                 _id = view->Arrp31x400_ids[_idx];
             }
 
-            f10_c_bridge->v_f68(_id, &v15_surf, 1);
+            pBridge->v_f68_paintSurfToMapId(_id, &v15_surf, 1);
             linePos += v4_bytesPerPix * 128;
         }
         rowPos = &v10__allyWindowText[v13_lineSize];
@@ -174,10 +174,10 @@ BOOL __cdecl dk2::CDefaultPlayerInterface_onMouseAction(
         unsigned int a2_isPressed,
         Pos2i a3_coord,
         CDefaultPlayerInterface *a4_dplif) {
-    CBridge *f10_c_bridge = a4_dplif->profiler->c_bridge;
-    CCamera *a4_dplifa = f10_c_bridge->v_getCamera();
+    CBridge *pBridge = a4_dplif->pGameSession->pBridge;
+    CCamera *a4_dplifa = pBridge->v_fD0_getCamera();
     if (a4_dplif->cgui_manager.f18) return 1;
-    CCamera *v6_camera = f10_c_bridge->v_getCamera();
+    CCamera *v6_camera = pBridge->v_fD0_getCamera();
     BOOL result = v6_camera->isInputAllowed();
     if (!result) return result;
     if (a4_dplif->fFD
@@ -188,7 +188,7 @@ BOOL __cdecl dk2::CDefaultPlayerInterface_onMouseAction(
            && !a4_dplif->f10C
            && (a4_dplif->cgui_manager.fun_52C0A0(a3_coord, a1_KeyCode_F0toF3, a2_isPressed)
                || a4_dplif->sub_41FCF0(a3_coord.x, a3_coord.y, a1_KeyCode_F0toF3, a2_isPressed))
-        || a4_dplif->profiler->inMenu) {
+        || a4_dplif->pGameSession->inMenu) {
         return 1;
     }
     Pos2i v8_coord = a3_coord;
@@ -237,10 +237,9 @@ namespace dk2 {
 
 void dk2::CDefaultPlayerInterface::handleRightClick(unsigned int a2_isPressed, ObjUnderHand *a3_underHand) {
     int v43_try;
-    MyProfiler *f4_profiler = this->profiler;
-    CBridge *f10_c_bridge = f4_profiler->c_bridge;
+    CBridge *pBridge = this->pGameSession->pBridge;
     this->pCWorld->v_getCTag_508C40(this->playerTagId);
-    unsigned int cameraMode = f10_c_bridge->v_fCC();
+    unsigned int cameraMode = pBridge->v_fCC_getCameraMode();
     if (cameraMode == 7) {
         this->cgui_manager.sub_52CCB0();
         if (a2_isPressed) {
@@ -299,7 +298,7 @@ void dk2::CDefaultPlayerInterface::handleRightClick(unsigned int a2_isPressed, O
             case 2u: {  // your CCreature
                 unsigned int f1C_type = ((CCreature *) sceneObjects[a3_underHand->tagId])->sub_4918B0(this->playerTagId);
                 if (!f1C_type) return;
-                unsigned __int16 fD84_direction = this->profiler->c_bridge->v_getCamera()->direction;
+                unsigned __int16 fD84_direction = this->pGameSession->pBridge->v_fD0_getCamera()->direction;
                 GameAction v38_act;
                 v38_act.data1 = a3_underHand->tagId;
                 v38_act.data2 = fD84_direction;
@@ -316,7 +315,7 @@ void dk2::CDefaultPlayerInterface::handleRightClick(unsigned int a2_isPressed, O
                 if (belongsToPlayer) {
                     unsigned int f1C_type = creature->sub_4918B0(v24_playerTagId);
                     if (f1C_type) {
-                        unsigned __int16 v25_camDirection = this->profiler->c_bridge->v_getCamera()->direction;
+                        unsigned __int16 v25_camDirection = this->pGameSession->pBridge->v_fD0_getCamera()->direction;
                         GameAction v39_act;
                         v39_act.data1 = a3_underHand->tagId;
                         v39_act.data2 = v25_camDirection;
@@ -344,7 +343,7 @@ void dk2::CDefaultPlayerInterface::handleRightClick(unsigned int a2_isPressed, O
             case 4u: {  // CObject
                 unsigned int f1C_type = ((CObject *) sceneObjects[a3_underHand->tagId])->typeObj->flags;
                 if ((f1C_type & 0x200) == 0) return;
-                unsigned __int16 v30_camDirection = this->profiler->c_bridge->v_getCamera()->direction;
+                unsigned __int16 v30_camDirection = this->pGameSession->pBridge->v_fD0_getCamera()->direction;
                 GameAction v41_act;
                 v41_act.data2 = v30_camDirection;
                 v41_act.data1 = a3_underHand->tagId;
@@ -357,7 +356,7 @@ void dk2::CDefaultPlayerInterface::handleRightClick(unsigned int a2_isPressed, O
             case 7u: {  // CTrap
                 CTrap *trap = (CTrap *) sceneObjects[a3_underHand->tagId];
                 if (trap->typeData->objTypeId != 36 || (trap->triggerTrapsInRange_flags & 0x20) != 0) return;
-                unsigned __int16 v33_direction = this->profiler->c_bridge->v_getCamera()->direction;
+                unsigned __int16 v33_direction = this->pGameSession->pBridge->v_fD0_getCamera()->direction;
                 __int16 v34_playerTagId = this->playerTagId;
                 GameAction v42_act;
                 v42_act.data1 = a3_underHand->tagId;
@@ -456,7 +455,7 @@ int dk2::CPlayer::dropThingFromHand(Vec3i *a2_pos, uint16_t *a3_pDirection) {
         creature->setCurrentState_48AD30(76);
         creature->lastPosition = *v5_pos;
         creature->pilotNavigation.calcPath_setPosVel_4D1070(creature);
-        MySound_ptr->v_CSoundSystem_fun_5678F0(0, creature->creatureData->f6E3, 196, v5_pos);
+        g_MySound_ptr->v_CSoundSystem_fun_5678F0(0, creature->creatureData->f6E3, 196, v5_pos);
         creature->sub_48CC90();
     } else if (v6_thing->fE_type == 2) {
         CObject *object = (CObject *) v6_thing;
@@ -494,7 +493,7 @@ int dk2::CPlayer::dropThingFromHand(Vec3i *a2_pos, uint16_t *a3_pDirection) {
                 }
             }
         }
-        object->field_2A = MySound_ptr->v_CSoundSystem_fun_5678F0(
+        object->field_2A = g_MySound_ptr->v_CSoundSystem_fun_5678F0(
                 object->field_2A,
                 object->typeObj->f10E,
                 196,
@@ -564,7 +563,7 @@ namespace dk2 {
         GameAction act;
         act.data1 = x_if12;  // x
         act.data2 = y_if12;  // y
-        uint16_t v19_direction = self->profiler->c_bridge->v_getCamera()->direction;
+        uint16_t v19_direction = self->pGameSession->pBridge->v_fD0_getCamera()->direction;
         act.data3 = tagId | (v19_direction << 16);
         act.actionKind = 61;  // DropItemFromHand
         act.playerTagId = self->playerTagId;
@@ -587,11 +586,11 @@ namespace dk2 {
  *
  * CDefaultPlayerInterface_onMouseAction
  *   00402D00 CDefaultPlayerInterface__fun_402D00
- *     00526FF0 MyProfiler_attachPlayerI
+ *     00526FF0 MyGameSession_attachPlayerI
  *       00525370 CGameComponent_mainGuiLoop
  *
  * 004039A0 CDefaultPlayerInterface__fun_4039A0
- *   00526590 MyProfiler_draw3dScene
+ *   00526590 MyGameSession_draw3dScene
  *     00525370 CGameComponent_mainGuiLoop
  */
 void dk2::CDefaultPlayerInterface::pushDropThingFromHandAction(CThing *a2_thing, ObjUnderHand *a3_underHand) {
@@ -697,17 +696,17 @@ int dk2::CDefaultPlayerInterface::sub_42C7D0(int a2_width, int a3_height, int a4
     rtGuiView->blocksBuf = dk2::operator_new(v19_blocksCount_bytes);
     if (!rtGuiView->blocksBuf) return 0;
     
-    CBridge * bridge = this->profiler->c_bridge;
+    CBridge *pBridge = this->pGameSession->pBridge;
     for (unsigned int _y = 0; _y < rtGuiView->height_32blocks; ++_y) {
         for (unsigned int _x = 0; _x < rtGuiView->width_128blocks; ++_x) {
-            sprintf(temp_string, "%s Page%d_%d", a5_name, _x, _y);
+            sprintf(g_temp_string, "%s Page%d_%d", a5_name, _x, _y);
             int* pInt;
             if(patch::expand_surf_idx_array::enabled) {
                 pInt = patch::expand_surf_idx_array::getPIdx(rtGuiView, _x, _y);
             } else {
                 pInt = &rtGuiView->Arrp31x400_ids[_x + rtGuiView->width_128blocks * _y];
             }
-            if (!bridge->v_createMyScaledSurface(temp_string, 128, 32, 257, pInt)) {
+            if (!pBridge->v_createMyScaledSurface(g_temp_string, 128, 32, 257, pInt)) {
                 operator delete(rtGuiView->blocksBuf);
                 rtGuiView->blocksBuf = NULL;
                 return FALSE;
@@ -724,7 +723,7 @@ int dk2::CDefaultPlayerInterface::sub_42C7D0(int a2_width, int a3_height, int a4
 }
 
 void dk2::CDefaultPlayerInterface::sub_42CEE0(RtGuiView *view, int a3_x, int a4_y, int a5) {
-    CBridge *f10_c_bridge = this->profiler->c_bridge;
+    CBridge *pBridge = this->pGameSession->pBridge;
     CWorldEntry v19_worldEntry;
     v19_worldEntry.constructor();
     char v21_renderInfo_buf[sizeof(CRenderInfo)];
@@ -765,11 +764,11 @@ void dk2::CDefaultPlayerInterface::sub_42CEE0(RtGuiView *view, int a3_x, int a4_
             v21_renderInfo._heightScale = 32;
             v21_renderInfo.f14 = 0;
             v21_renderInfo.f18 = 0;
-            v21_renderInfo.f48 = -1;
-            v21_renderInfo.f49 = -1;
-            v21_renderInfo.f4A = -1;
+            v21_renderInfo.x48 = -1;
+            v21_renderInfo.y49 = -1;
+            v21_renderInfo.z4A = -1;
             v21_renderInfo.f4B = -1;
-            f10_c_bridge->v_f5C(_x, _y, a5, &v21_renderInfo);
+            pBridge->v_f5C_createMeshAt(_x, _y, a5, &v21_renderInfo);
         }
     }
     v22_tryLevel = -1;

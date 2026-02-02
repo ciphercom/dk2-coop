@@ -25,14 +25,10 @@ collect_sources(WEANETR_SOURCES weanetr_dll)
 add_library(${TARGET} SHARED
         main.cpp
         dkii_exe_functions.cpp
-        dk2/MyGame.cpp
+        dk2/MyWindow.cpp
         dk2/MyHeap.cpp
         dk2/MyDxMouse.cpp
         dk2/MyDxKeyboard.cpp
-        dk2/components/CFrontEndComponent.cpp
-        dk2/components/CGameComponent.cpp
-        dk2/components/CEntryComponent.cpp
-        dk2/components/CNetworkComponent.cpp
         dk2/CDefaultPlayerInterface.cpp
         dk2/CPCEngineInterface.cpp
         dk2/PlayerCfg.cpp
@@ -53,8 +49,12 @@ add_library(${TARGET} SHARED
         dk2/MyComputerPlayer_drop_condition.h
         dk2/computer_player_flags.cpp
         dk2/computer_player_flags.h
-        dk2/MyCESurfHandle.cpp
-        dk2/MyScaledSurface.cpp
+
+        dk2/components/CFrontEndComponent.cpp
+        dk2/components/CGameComponent.cpp
+        dk2/components/CEntryComponent.cpp
+        dk2/components/CNetworkComponent.cpp
+        dk2/components/CComponent.cpp
 
         dk2/math/int_float.cpp
 
@@ -75,6 +75,19 @@ add_library(${TARGET} SHARED
         dk2/engine/CWindowTest.cpp
         dk2/engine/WinEventHandlers.cpp
         dk2/engine/DdModeList.cpp
+
+        dk2/engine/scene/scene.cpp
+        dk2/engine/scene/surface.cpp
+        dk2/engine/scene/MyCESurfHandle.cpp
+        dk2/engine/scene/MyScaledSurface.cpp
+        dk2/engine/scene/SurfaceHolder.cpp
+        dk2/engine/scene/SurfHashList.cpp
+        dk2/engine/scene/SurfHashList2.cpp
+        dk2/engine/scene/CEngineDDSurface.cpp
+        dk2/engine/scene/MyDirectDraw.cpp
+
+        dk2/engine/primitives/CEngine2DSprite.cpp
+        dk2/engine/primitives/CEngine2DRotatableSprite.cpp
 
         dk2/surface/surface_functions.cpp
 

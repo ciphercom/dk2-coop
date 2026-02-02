@@ -1,7 +1,7 @@
 //
 // Created by DiaLight on 08.07.2024.
 //
-#include "dk2/MyGame.h"
+#include "dk2/MyWindow.h"
 
 #include <patches/logging.h>
 
@@ -19,11 +19,58 @@
 #include "patches/micro_patches.h"
 #include "patches/remember_window_location_and_size.h"
 
-void __cdecl dk2::MyGame_static_destroy() {
-    CWindowTest_destroy(&MyGame_instance.c_window_test);
+void __cdecl dk2::MyWindow_static_destroy() {
+    CWindowTest_destroy(&MyWindow_instance.c_window_test);
 }
 
-int dk2::MyGame::prepareScreenEx(
+int dk2::MyWindow::collect3dDevices() {
+    if (this->pIDirect3D2) {
+        this->pIDirect3D2->Release();
+        this->pIDirect3D2 = NULL;
+    }
+    this->d3devCount = 0;
+    LPDIRECTDRAW lpdd = ge_dk2dd_get(NULL);
+    if (lpdd->QueryInterface(CLSID_IDirect3D2, (LPVOID *) &this->pIDirect3D2) >= 0
+        && this->pIDirect3D2->EnumDevices([](GUID FAR *lpGuid, LPSTR lpDeviceDescription,
+                                                LPSTR lpDeviceName, LPD3DDEVICEDESC a4, LPD3DDEVICEDESC a5,
+                                                LPVOID lpContext) -> HRESULT {
+        MyWindow *self = (MyWindow *) lpContext;
+        if (self->d3devCount >= 16) return DIENUM_STOP;
+        MyD3DevInfo *pInfo = &self->d3devArr[self->d3devCount];
+        pInfo->lpGuid = *lpGuid;
+        pInfo->lpDeviceDescription = lpDeviceDescription;
+        pInfo->lpDeviceName = lpDeviceName;
+        pInfo->desc1 = a4;
+        pInfo->desc2 = a5;
+        ++self->d3devCount;
+        return DIENUM_CONTINUE;
+    }, this) < 0) {
+        this->pIDirect3D2->Release();
+        this->pIDirect3D2 = NULL;
+    }
+    unsigned int *p_fE85_totalDisplayMemory = &this->totalDisplayMemory;
+    DDSCAPS caps;
+    caps.dwCaps = 0x10000000;
+    this->totalDisplayMemory = 0;
+    IDirectDraw2 *lpdd2;
+    int result = ge_dk2dd_get(NULL)->QueryInterface(CLSID_IDirectDraw2, (LPVOID *) &lpdd2);
+    if (result < 0) return result;
+    DWORD freeMemory;
+    if (lpdd2->GetAvailableVidMem(&caps, (LPDWORD) &this->totalDisplayMemory, &freeMemory) < 0) {
+        IDirectDraw2 *lpdd2_ = lpdd2;
+        *p_fE85_totalDisplayMemory = 0;
+        return lpdd2_->Release();
+    }
+    unsigned int availVidMem = 2
+                               * MyResources_instance.video_settings.display_width
+                               * MyResources_instance.video_settings.display_height
+                               + *p_fE85_totalDisplayMemory;
+    *p_fE85_totalDisplayMemory = availVidMem;
+    MyWindow_log_printf(this, "Available Video Memory %dK\n", availVidMem >> 10);
+    return lpdd2->Release();
+}
+
+int dk2::MyWindow::prepareScreenEx(
         uint32_t dwWidth,
         uint32_t dwHeight,
         uint32_t dwRGBBitCount,
@@ -73,7 +120,7 @@ int dk2::MyGame::prepareScreenEx(
         }
         if(!found) {
             patch::log::err("Screen Mode %d*%d (%d bpp) is not available", dwWidth, dwHeight, dwRGBBitCount);
-            MyGame_log_printf(this, "Screen Mode %d*%d (%d bpp) is not available\n", dwWidth, dwHeight, dwRGBBitCount);
+            MyWindow_log_printf(this, "Screen Mode %d*%d (%d bpp) is not available\n", dwWidth, dwHeight, dwRGBBitCount);
             for (int ddraw_idx = 0; ddraw_idx < dev->modeListCount; ++ddraw_idx) {
                 DxModeInfo* cur = &dev->modeList[ddraw_idx];
                 patch::log::dbg("- %dx%d (%d bpp)", cur->dwWidth, cur->dwHeight, cur->dwRGBBitCount);
@@ -108,8 +155,8 @@ int dk2::MyGame::prepareScreenEx(
         if (screenHardware3D_)
             initFlags = 0x58;
     }
-    if (!cmd_flag_NOSOUND && MySound_ptr->v_sub_567210())
-        MySound_ptr->v_fun_5677D0();
+    if (!cmd_flag_NOSOUND && g_MySound_ptr->v_sub_567210())
+        g_MySound_ptr->v_fun_5677D0();
     this->c_window_test.recreate();
     if (isWindowed) {
         int x = 50;
@@ -137,10 +184,10 @@ int dk2::MyGame::prepareScreenEx(
         }
     }
     if (!cmd_flag_NOSOUND) {
-        if (MySound_ptr->v_sub_567210())
-            MySound_ptr->v_fun_5677E0();
+        if (g_MySound_ptr->v_sub_567210())
+            g_MySound_ptr->v_fun_5677E0();
         else
-            MySound_ptr->v_set_number_of_channels(
+            g_MySound_ptr->v_set_number_of_channels(
                     MyResources_instance.soundCfg.numberOfChannels);
         MyResources_instance.soundCfg.readOrCreate();
     }
@@ -153,7 +200,7 @@ int dk2::MyGame::prepareScreenEx(
     this->f18 = 0;
     this->collect3dDevices();
     this->colors.init(NULL);
-    setDebugStringFun(MyGame_static_559050_parse);
+    setDebugStringFun(MyWindow_static_559050_parse);
     if (MyResources_instance.video_settings.zbuffer_bitnes == 16) {
         if (!this->createZBufferSurf(0x10u) && !this->createZBufferSurf(0x20u))
             this->createZBufferSurf(0x18u);
@@ -186,6 +233,28 @@ int dk2::MyGame::prepareScreenEx(
     return 1;
 }
 
+int dk2::MyWindow::prepareScreen2() {
+    if (this->dwRGBBitCount == 8) {
+        PALETTEENTRY dst[256];
+        readPaletteEntry(dst, 0, 256);
+        this->prepareScreenEx(
+                this->dwWidth, this->dwHeight,
+                this->dwRGBBitCount, this->isWindowed,
+                this->_prepareScreen_a6,
+                1);
+        updatePalette(dst, 0, 256);
+        this->colors.init(dst);
+        return this->collect3dDevices();
+    } else {
+        this->prepareScreenEx(
+                this->dwWidth, this->dwHeight,
+                this->dwRGBBitCount, this->isWindowed,
+                this->_prepareScreen_a6,
+                1);
+        return this->collect3dDevices();
+    }
+}
+
 namespace dk2 {
 
     bool getNextResolution(int & w, int & h) {
@@ -202,7 +271,7 @@ namespace dk2 {
 
 }
 
-int dk2::MyGame_prepareWithSettings(int * pHardware3d) {
+int dk2::MyWindow_prepareWithSettings(int * pHardware3d) {
     int screen_swap = MyResources_instance.video_settings.screen_swap;
     int dwRGBBitCount = MyResources_instance.video_settings.display_bitnes;
     int display_width = MyResources_instance.video_settings.display_width;
@@ -219,9 +288,9 @@ int dk2::MyGame_prepareWithSettings(int * pHardware3d) {
         *pHardware3d = 0;
         screen_swap = 0;
     }
-    MyGame_instance.recreateOnPrepare = 1;
+    MyWindow_instance.recreateOnPrepare = 1;
     while (true) {
-        if (MyGame_instance.prepareScreenEx(
+        if (MyWindow_instance.prepareScreenEx(
                 display_width,
                 display_height,
                 dwRGBBitCount,
@@ -230,7 +299,7 @@ int dk2::MyGame_prepareWithSettings(int * pHardware3d) {
                 *pHardware3d)) return 1;
         if(!getNextResolution(display_width, display_height)) break;
     }
-    if (MyGame_instance.prepareScreenEx(
+    if (MyWindow_instance.prepareScreenEx(
             640, 480, 16,
             isFullscreen, screen_swap,
             *pHardware3d)) return 1;
@@ -239,11 +308,11 @@ int dk2::MyGame_prepareWithSettings(int * pHardware3d) {
 
 namespace dk2 {
 
-    void inline_selectDrawEngine(dk2::MyGame *game);
+    void inline_selectDrawEngine(dk2::MyWindow *window);
 
 }
 
-int dk2::MyGame::init() {
+int dk2::MyWindow::init() {
     inline_selectDrawEngine(this);
     int status;
     if (*MyInputManagerCb_static_initKeyInputs(&status) < 0) {
@@ -280,18 +349,18 @@ int dk2::MyGame::init() {
         }
     }
     setCustomDefWindowProcA(myCustomDefWindowProcA);
-    WinEventHandlers_instance.addHandler(0, static_MyGame_Event07_cb, this);
+    WinEventHandlers_instance.addHandler(0, static_MyWindow_Event07_cb, this);
     this->fE71 = 0;
     this->fE75 = 0;
     this->recreateRequest = 0;
-    this->fE7D = 0;
+    this->doCallInit3d = 0;
     this->moonAge = calc_moon_age();
     this->f0 = 1;
     this->fF51 = 0;
     return 1;
 }
 
-void dk2::MyGame::release() {
+void dk2::MyWindow::release() {
     int status;
     if (g_isGameWindowCreated == 1) {
         setDebugStringFun(debugMsgBox);
@@ -307,7 +376,7 @@ void dk2::MyGame::release() {
     }
     MyInputManagerCb_instance.static_releaseMouse();
     MyInputManagerCb_instance.static_releaseKeyboard();
-    WinEventHandlers_instance.removeHandler(0, static_MyGame_Event07_cb, 0);
+    WinEventHandlers_instance.removeHandler(0, static_MyWindow_Event07_cb, 0);
     if (MyLogger_isInitialized(&this->logObj_err))
         MyLogger_destroy(&status, &this->logObj_err);
     if (MyLogger_isInitialized(&this->logObj_out))
@@ -328,7 +397,7 @@ namespace patch {
 
 }
 
-void dk2::MyGame::removeWmActivateCallback(void *ptr) {;
+void dk2::MyWindow::removeWmActivateCallback(void *ptr) {;
     for (int i = 0; i < 8; ++i) {
         if (patch::try_unpack_jmp(this->WM_ACTIVATE_callbacks[i]) != patch::try_unpack_jmp(ptr)) continue;
         this->WM_ACTIVATE_callbacks[i] = NULL;
@@ -337,7 +406,7 @@ void dk2::MyGame::removeWmActivateCallback(void *ptr) {;
     }
 }
 
-int dk2::MyGame::selectSurfToRender() {
+int dk2::MyWindow::selectSurfToRender() {
     MyDdSurfaceEx *pSurf;
     if ( this->isWindowed )
         pSurf = this->c_window_test.getCurOffScreenSurf();
@@ -360,7 +429,7 @@ int dk2::MyGame::selectSurfToRender() {
     return 1;
 }
 
-int dk2::MyGame::getSurf_unlock() {
+int dk2::MyWindow::getSurf_unlock() {
     int result = this->f48;
     if (!result) return 0;
 
@@ -373,14 +442,14 @@ int dk2::MyGame::getSurf_unlock() {
     return result;
 }
 
-dk2::MyDdSurfaceEx *dk2::MyGame::getCurOffScreenSurf() {
+dk2::MyDdSurfaceEx *dk2::MyWindow::getCurOffScreenSurf() {
     if (this->isWindowed)
         return this->c_window_test.getCurOffScreenSurf();
     else
         return g_pCurOffScreen;
 }
 
-int dk2::MyGame::takeScreenshot() {
+int dk2::MyWindow::takeScreenshot() {
     MyDdSurfaceEx* CurOffScreenSurf;
     if (this->isWindowed)
         CurOffScreenSurf = this->c_window_test.getCurOffScreenSurf();
@@ -432,7 +501,7 @@ int dk2::MyGame::takeScreenshot() {
     return 1;
 }
 
-int dk2::MyGame::createZBufferSurf(uint32_t dwMipMapCount) {
+int dk2::MyWindow::createZBufferSurf(uint32_t dwMipMapCount) {
     int dwWidth = this->dwWidth;
     int dwHeight = this->dwHeight;
     DDSURFACEDESC desc;
@@ -467,7 +536,7 @@ int dk2::MyGame::createZBufferSurf(uint32_t dwMipMapCount) {
     return 0;
 }
 
-int dk2::MyGame::handleError(char *a2_file, int a3_line, const char *a4_text, char *a5_text) {
+int dk2::MyWindow::handleError(char *a2_file, int a3_line, const char *a4_text, char *a5_text) {
     if (g_isHandlingError)
         return 0;
     g_isHandlingError = 1;
@@ -529,7 +598,7 @@ int dk2::MyGame::handleError(char *a2_file, int a3_line, const char *a4_text, ch
     }
 }
 
-void dk2::MyGame::displayError(char *a2_file, int a3_line, const char *a4_text, char *a5_text2) {
+void dk2::MyWindow::displayError(char *a2_file, int a3_line, const char *a4_text, char *a5_text2) {
     this->surf_Blt();
     MyDdSurfaceEx* CurOffScreenSurf;
     if (this->isWindowed)

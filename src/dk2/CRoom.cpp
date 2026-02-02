@@ -307,7 +307,7 @@ int dk2::CPlayer::fun_4C5C30_buildRoom(
     v15_vec.x = (a2_x << 12) + 2048;
     v15_vec.y = (a3_y << 12) + 2048;
     v15_vec.z = 0;
-    MySound_ptr->CSoundSystem::fun_5678F0(0, v13, 241, &v15_vec);
+    g_MySound_ptr->v_CSoundSystem_fun_5678F0(0, v13, 241, &v15_vec);
     return 1;
 }
 
@@ -378,13 +378,13 @@ int dk2::CPlayer::destroyRoom(int a2_x, int a3_y, int a4_bool) {
         g_pCWorld->sub_50FB70(this->f0_tagId, &v15_vec, salePrice, 0);
         int v12 = v10_terrainDataObj->f195;
         if (v12) {
-            MySound_ptr->v_CSoundSystem_fun_5678F0(0, v12, 245, &v15_vec);
+            g_MySound_ptr->v_CSoundSystem_fun_5678F0(0, v12, 245, &v15_vec);
             return 1;
         }
     } else {
         int v14 = v10_terrainDataObj->f195;
         if (v14)
-            MySound_ptr->v_CSoundSystem_fun_5678F0(0, v14, 244, &v15_vec);
+            g_MySound_ptr->v_CSoundSystem_fun_5678F0(0, v14, 244, &v15_vec);
     }
     return 1;
 }

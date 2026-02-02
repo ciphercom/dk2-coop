@@ -66,7 +66,7 @@ namespace patch {
             memset(
                 localSurf.lpSurface,
                 0,
-                localSurf.dwHeight * localSurf.lPitch);
+                localSurf.size.h * localSurf.lPitch);
             dk2::setDrawSurface(&localSurf);
             dk2::Size2i _sz {(btnSize.w - 16*6) / 6 + 16, btnSize.h};
 
@@ -138,10 +138,10 @@ namespace patch {
         char result = dk2::g_initialized73E9D4;
         if (!dk2::g_initialized73E9D4) {
             dk2::g_initialized73E9D4 = 1;
-            memset(dk2::d70D578_x30, 0, sizeof(dk2::d70D578_x30));
-            memset(dk2::buttonHighlight_x30, 0, 30u);
+            memset(dk2::g_d70D578_x30, 0, sizeof(dk2::g_d70D578_x30));
+            memset(dk2::g_buttonHighlight_x30, 0, 30u);
             result = 0;
-            memset(dk2::btnSoundLoaded_73E9A0_x30, 0, 30u);
+            memset(dk2::g_btnSoundLoaded_73E9A0_x30, 0, 30u);
         }
         uint16_t x16Idx = 5;  // Singleplayer
         uint16_t btnIdx = 4;
@@ -162,16 +162,16 @@ namespace patch {
         // dk2::calcBounds(alignTy, btnPos, x16Idx, btnIdx, frontend, scaledBounds);
         {
             auto &textSurf = prerendered._surf64_x16x30x6[4]; // regular text
-            scaledBounds.minY = textSurf.dwHeight;
-            int v14 = (scaledBounds.maxX - btnPos.minX) - textSurf.dwWidth;
+            scaledBounds.minY = textSurf.size.h;
+            int v14 = (scaledBounds.maxX - btnPos.minX) - textSurf.size.w;
             if (v14 > 0) {
                 btnPos.minX = (v14 >> 1) + btnPos.minX;
             } else {
                 btnPos.minX = btnPos.minX - ((v14 >> 31) ^ v14) / 2;
             }
 
-            scaledBounds.minX = textSurf.dwWidth;
-            int v16 = (scaledBounds.maxY - btnPos.minY) - textSurf.dwHeight;
+            scaledBounds.minX = textSurf.size.w;
+            int v16 = (scaledBounds.maxY - btnPos.minY) - textSurf.size.h;
             if (v16 > 0) {
                 btnPos.minY += v16 >> 1;
             } else {
@@ -186,18 +186,18 @@ namespace patch {
             if (mousePos.x >= aabb22.minX && mousePos.x < aabb22.maxX
                 && mousePos.y >= aabb22.minY && mousePos.y < aabb22.maxY
             ) {
-                if (!dk2::btnSoundLoaded_73E9A0_x30[btnIdx]) {
-                    dk2::MySound_ptr->v_fun_567810(0, frontend->f5AB9, 783);
-                    dk2::btnSoundLoaded_73E9A0_x30[btnIdx] = 1;
+                if (!dk2::g_btnSoundLoaded_73E9A0_x30[btnIdx]) {
+                    dk2::g_MySound_ptr->v_fun_567810(0, frontend->f5AB9, 783);
+                    dk2::g_btnSoundLoaded_73E9A0_x30[btnIdx] = 1;
                 }
                 frontend->arr_x16x30_hovered[x16Idx][btnIdx] = 1;
-                dk2::buttonHighlight_x30[btnIdx] = 8;
+                dk2::g_buttonHighlight_x30[btnIdx] = 8;
             }
         }
 
         // render hover glowing
-        char highlightLevel = dk2::buttonHighlight_x30[btnIdx] - 1;
-        dk2::buttonHighlight_x30[btnIdx] = highlightLevel;
+        char highlightLevel = dk2::g_buttonHighlight_x30[btnIdx] - 1;
+        dk2::g_buttonHighlight_x30[btnIdx] = highlightLevel;
         if (highlightLevel > 0) {
             int layer;
             if (highlightLevel <= 4)
@@ -230,10 +230,10 @@ namespace patch {
             NULL,
             0);
 
-        highlightLevel = dk2::buttonHighlight_x30[btnIdx];
+        highlightLevel = dk2::g_buttonHighlight_x30[btnIdx];
         if (highlightLevel < 0) {
-            dk2::btnSoundLoaded_73E9A0_x30[btnIdx] = 0;
-            dk2::buttonHighlight_x30[btnIdx] = -1;
+            dk2::g_btnSoundLoaded_73E9A0_x30[btnIdx] = 0;
+            dk2::g_buttonHighlight_x30[btnIdx] = -1;
         }
         return highlightLevel;
     }
@@ -264,7 +264,7 @@ namespace patch {
             case 0:
                 a3_frontend->playerIdx11 = 0;
                 if (!dk2::MyResources_instance.gameCfg.useFe2d_unk1) {
-                    dk2::CCamera *cam = a3_frontend->bridge->v_getCamera();
+                    dk2::CCamera *cam = a3_frontend->bridge->v_fD0_getCamera();
                     cam->flags_E3C |= 8u;
                     cam->loadEnginePath(0x10Fu, 2u, 0xCu, 1);
                 }

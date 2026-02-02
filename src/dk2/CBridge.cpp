@@ -19,7 +19,7 @@ void dk2::CBridge::sub_43E320(
         unsigned int a3_y,
         MyTerrainDataObj *a4,
         CEngineStaticMeshDataArrays *a5_arrays) {
-    CWorld *f14_cworld = this->f0_pMyProfiler->cworld;
+    CWorld *f14_cworld = this->f0_pGameSession->pWorld;
     MyMapElement *v7_mapElem = f14_cworld->getMapElem(a2_x, a3_y);
     int v11_bool1 = this->v_fDC(a2_x, a3_y);
     int v8_bool2 = 0;
@@ -144,7 +144,7 @@ dk2::MySurface * dk2::CBridge::loadPng(const char *name) {
     }
     if (loader) {
         if (*loader->readHeader(&status, &file, &this->surf) >= 0) {
-            MyFileContent_instance.resize(this->surf.dwHeight * this->surf.lPitch);
+            MyFileContent_instance.resize(this->surf.size.h * this->surf.lPitch);
             this->surf.lpSurface = MyFileContent_instance.buf;
             if (*loader->readBody(&status, &this->surf, &file, NULL) >= 0) {
                 try_level = -1;
@@ -153,12 +153,12 @@ dk2::MySurface * dk2::CBridge::loadPng(const char *name) {
             }
         }
     }
-    sprintf(temp_string, "Unable to load Bitmap Resource, '%s'. Continue will use 'NoTexture'", name);
-    patch::log::dbg(temp_string);
+    sprintf(g_temp_string, "Unable to load Bitmap Resource, '%s'. Continue will use 'NoTexture'", name);
+    patch::log::dbg(g_temp_string);
     loader = MyFile_openImage(&file, &MyResources_instance.engineTexturesFileMan, "NoTexture", MyResources_instance.gameCfg.fun_55D540());
     if (loader) {
         if (*loader->readHeader(&status, &file, &this->surf) >= 0) {
-            MyFileContent_instance.resize(this->surf.dwHeight * this->surf.lPitch);
+            MyFileContent_instance.resize(this->surf.size.h * this->surf.lPitch);
             this->surf.lpSurface = MyFileContent_instance.buf;
             if (*loader->readBody(&status, &this->surf, &file, NULL) >= 0) {
                 try_level = -1;
@@ -167,7 +167,7 @@ dk2::MySurface * dk2::CBridge::loadPng(const char *name) {
             }
         }
     }
-    MyGame_log_printf(&MyGame_instance, "Unable to Load Bitmap Resource, '%s'\n", name);
+    MyWindow_log_printf(&MyWindow_instance, "Unable to Load Bitmap Resource, '%s'\n", name);
     try_level = -1;
     file.destructor();
     return NULL;

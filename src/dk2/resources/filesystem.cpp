@@ -270,7 +270,7 @@ int *__cdecl dk2::fs_DirIter_destroy(int *pstatus, DirIter *dirIter) {
     return *pstatus = 0, pstatus;
 }
 
-FILE *__cdecl dk2::_fopen(const char *FileName, const char *Mode) {
+FILE *__cdecl dk2::__fopen(const char *FileName, const char *Mode) {
     {  // patch
         char filePath[MAX_PATH];
         if(patch::alternative_resources::tryUse(filePath, MAX_PATH, FileName)) {

@@ -360,7 +360,7 @@ void __cdecl dk2::CButton_handleLeftClick_538000(int a1_arg1, int a2_arg2,CFront
             break;
         case 2:  // Multiplayer game
             if (!MyResources_instance.gameCfg.useFe2d_unk1) {
-                CCamera *cam = a3_frontend->bridge->v_getCamera();
+                CCamera *cam = a3_frontend->bridge->v_fD0_getCamera();
                 cam->flags_E3C |= 8u;
                 cam->loadEnginePath(0x10Fu, 3u, 0xCu, 1);
             }
@@ -369,7 +369,7 @@ void __cdecl dk2::CButton_handleLeftClick_538000(int a1_arg1, int a2_arg2,CFront
             break;
         case 5:  // Options
             if (!MyResources_instance.gameCfg.useFe2d_unk1) {
-                CCamera *cam = a3_frontend->bridge->v_getCamera();
+                CCamera *cam = a3_frontend->bridge->v_fD0_getCamera();
                 cam->flags_E3C |= 8u;
                 cam->loadEnginePath(0x100u, 3u, 0xCu, 1);
             }
@@ -378,7 +378,7 @@ void __cdecl dk2::CButton_handleLeftClick_538000(int a1_arg1, int a2_arg2,CFront
             break;
         case 6:  // Extras
             if (!MyResources_instance.gameCfg.useFe2d_unk1) {
-                CCamera *cam = a3_frontend->bridge->v_getCamera();
+                CCamera *cam = a3_frontend->bridge->v_fD0_getCamera();
                 cam->flags_E3C |= 8u;
                 cam->loadEnginePath(0x103u, 3u, 0xCu, 1);
             }
@@ -391,7 +391,7 @@ void __cdecl dk2::CButton_handleLeftClick_538000(int a1_arg1, int a2_arg2,CFront
             if (BtnBySomeId)
                 BtnBySomeId->f5D_isVisible = static_DirFileList_instance2_saves_sav_getCount() > 0;
             if (!MyResources_instance.gameCfg.useFe2d_unk1) {
-                CCamera *cam = a3_frontend->bridge->v_getCamera();
+                CCamera *cam = a3_frontend->bridge->v_fD0_getCamera();
                 cam->flags_E3C |= 8u;
                 cam->loadEnginePath(0x10Fu, 3u, 0xCu, 1);
             }
@@ -404,7 +404,7 @@ void __cdecl dk2::CButton_handleLeftClick_538000(int a1_arg1, int a2_arg2,CFront
         case 10:  // Skirmish
             a3_frontend->playerIdx11 = 0;
             if (!MyResources_instance.gameCfg.useFe2d_unk1) {
-                CCamera *cam = a3_frontend->bridge->v_getCamera();
+                CCamera *cam = a3_frontend->bridge->v_fD0_getCamera();
                 cam->flags_E3C |= 8u;
                 cam->loadEnginePath(0x10Fu, 3u, 0xCu, 1);
             }
@@ -414,7 +414,7 @@ void __cdecl dk2::CButton_handleLeftClick_538000(int a1_arg1, int a2_arg2,CFront
         case 11:  // My Pet Dungeon
             memset(a3_frontend->wstr19, 0, 0x208u);
             if (!MyResources_instance.gameCfg.useFe2d_unk1) {
-                CCamera *cam = a3_frontend->bridge->v_getCamera();
+                CCamera *cam = a3_frontend->bridge->v_fD0_getCamera();
                 cam->flags_E3C |= 8u;
                 cam->loadEnginePath(0x106u, 3u, 0xCu, 1);
             }
@@ -423,7 +423,7 @@ void __cdecl dk2::CButton_handleLeftClick_538000(int a1_arg1, int a2_arg2,CFront
             break;
         case 12:  // Extras->Credits
             if (!MyResources_instance.gameCfg.useFe2d_unk1) {
-                CCamera *cam = a3_frontend->bridge->v_getCamera();
+                CCamera *cam = a3_frontend->bridge->v_fD0_getCamera();
                 cam->flags_E3C |= 8u;
                 cam->loadEnginePath(0x109u, 3u, 0xCu, 1);
             }
@@ -433,7 +433,7 @@ void __cdecl dk2::CButton_handleLeftClick_538000(int a1_arg1, int a2_arg2,CFront
         case 13:  // Continue Campaign
             CFrontEndComponent_sub_538B90(0, a3_frontend);
             if (!MyResources_instance.gameCfg.useFe2d_unk1) {
-                CCamera *cam = a3_frontend->bridge->v_getCamera();
+                CCamera *cam = a3_frontend->bridge->v_fD0_getCamera();
                 cam->flags_E3C |= 8u;
                 cam->loadEnginePath(0xFBu, 3u, 0xCu, 1);
             }
@@ -442,7 +442,7 @@ void __cdecl dk2::CButton_handleLeftClick_538000(int a1_arg1, int a2_arg2,CFront
             break;
         case 15:  // Main_Options.Apply
             if (!MyResources_instance.gameCfg.useFe2d_unk1) {
-                CCamera *cam = a3_frontend->bridge->v_getCamera();
+                CCamera *cam = a3_frontend->bridge->v_fD0_getCamera();
                 cam->flags_E3C |= 8u;
                 cam->loadEnginePath(0x101u, 3u, 0xCu, 1);
             }
@@ -451,7 +451,7 @@ void __cdecl dk2::CButton_handleLeftClick_538000(int a1_arg1, int a2_arg2,CFront
             break;
         case 16:  // Main_Extras.Apply
             if (!MyResources_instance.gameCfg.useFe2d_unk1) {
-                CCamera *cam = a3_frontend->bridge->v_getCamera();
+                CCamera *cam = a3_frontend->bridge->v_fD0_getCamera();
                 cam->flags_E3C |= 8u;
                 cam->loadEnginePath(0x104u, 3u, 0xCu, 1);
             }
@@ -470,7 +470,7 @@ namespace dk2 {
         switch (g_pathAnimationEndSwitch) {
         case 1:
             if ( !MyResources_instance.gameCfg.useFe2d_unk1 ) {
-                CCamera *cam = front->bridge->v_getCamera();
+                CCamera *cam = front->bridge->v_fD0_getCamera();
                 cam->flags_E3C |= 8u;
                 cam->loadEnginePath(0xFAu, 3u, 0xCu, 1);
             }
@@ -557,7 +557,7 @@ namespace dk2 {
             break;
         case 28:  // Main_Options.Apply || Main_Extras.Apply
             if (!MyResources_instance.gameCfg.useFe2d_unk1) {
-                CCamera *cam = front->bridge->v_getCamera();
+                CCamera *cam = front->bridge->v_fD0_getCamera();
                 cam->flags_E3C |= 8u;
                 cam->loadEnginePath(0x112u, 3u, 0xCu, 1);
             }
@@ -566,7 +566,7 @@ namespace dk2 {
             break;
         case 29:
             if (!MyResources_instance.gameCfg.useFe2d_unk1) {
-                CCamera *cam = front->bridge->v_getCamera();
+                CCamera *cam = front->bridge->v_fD0_getCamera();
                 cam->flags_E3C |= 8u;
                 cam->loadEnginePath(0x112u, 3u, 0xCu, 1);
             }
@@ -587,15 +587,15 @@ namespace dk2 {
 
 void __cdecl dk2::CFrontEndComponent_subTickMainGui(CFrontEndComponent *a1_front) {
     int status;
-    MySound_ptr->v_fun_567BE0(255);
+    g_MySound_ptr->v_fun_567BE0(255);
     CSpeechSystem_instance.SetMusicVolume(1);
-    MySound_ptr->v_fun_5674F0();
+    g_MySound_ptr->v_fun_5674F0();
 
     uint8_t cmd_buf[sizeof(TbSysCommand_Process)];
     TbSysCommand_Process &cmd = *(TbSysCommand_Process *) cmd_buf;
     // v14_cmd.__vftable = (TbSysCommand_Process_vtbl *)&TbSysCommand::Process::`vftable';
     *(void **) &cmd = TbSysCommand_Process::vftable;
-    MySound_ptr->v_fun_567A40(&cmd.status, &cmd);
+    g_MySound_ptr->v_fun_567A40(&cmd.status, &cmd);
 
     CFrontEndComponent *v1_front = a1_front;
     if ( a1_front->_aBool_221 == 1 ) {
@@ -625,7 +625,7 @@ void __cdecl dk2::CFrontEndComponent_subTickMainGui(CFrontEndComponent *a1_front
         case 0x25:
             CFrontEndComponent_sub_538B90(0, v1_front);
             if (!MyResources_instance.gameCfg.useFe2d_unk1) {
-                CCamera *cam = v1_front->bridge->v_getCamera();
+                CCamera *cam = v1_front->bridge->v_fD0_getCamera();
                 cam->flags_E3C |= 8u;
                 cam->loadEnginePath(0xFBu, 3u, 0xCu, 1);
             }
@@ -635,7 +635,7 @@ void __cdecl dk2::CFrontEndComponent_subTickMainGui(CFrontEndComponent *a1_front
             break;
         case 9:
             if (!MyResources_instance.gameCfg.useFe2d_unk1) {
-                CCamera *cam = v1_front->bridge->v_getCamera();
+                CCamera *cam = v1_front->bridge->v_fD0_getCamera();
                 cam->flags_E3C |= 8u;
                 cam->loadEnginePath(0x103u, 3u, 0xCu, 1);
             }
@@ -647,7 +647,7 @@ void __cdecl dk2::CFrontEndComponent_subTickMainGui(CFrontEndComponent *a1_front
         case 0xA:
         case 0x27:
             if (!MyResources_instance.gameCfg.useFe2d_unk1) {
-                CCamera *cam = v1_front->bridge->v_getCamera();
+                CCamera *cam = v1_front->bridge->v_fD0_getCamera();
                 cam->flags_E3C |= 8u;
                 cam->loadEnginePath(0x100u, 3u, 0xCu, 1);
             }
@@ -657,7 +657,7 @@ void __cdecl dk2::CFrontEndComponent_subTickMainGui(CFrontEndComponent *a1_front
             break;
         case 0x26:
             if (!MyResources_instance.gameCfg.useFe2d_unk1) {
-                CCamera *cam = v1_front->bridge->v_getCamera();
+                CCamera *cam = v1_front->bridge->v_fD0_getCamera();
                 cam->flags_E3C |= 8u;
                 cam->loadEnginePath(0x108u, 3u, 0xCu, 1);
             }
@@ -681,7 +681,7 @@ void __cdecl dk2::CFrontEndComponent_subTickMainGui(CFrontEndComponent *a1_front
             return;
         }
     }
-    if (v1_front->bridge->v_getCamera()->_mode != 18) {
+    if (v1_front->bridge->v_fD0_getCamera()->_mode != 18) {
         execSwitch(v1_front);
     }
 }

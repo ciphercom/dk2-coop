@@ -17,7 +17,7 @@ namespace {
     };
 
     void selectNext() {
-        IDirect3DDevice3 *dev3 = dk2::mydd_triangles.d3d3_halDevice;
+        IDirect3DDevice3 *dev3 = dk2::MyDirectDraw_instance_triangles.d3d3_halDevice;
         if (dev3 == nullptr) {
             printf("show_wireframe failed. d3d3_halDevice == NULL\n");
             return;

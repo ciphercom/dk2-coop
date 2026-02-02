@@ -1075,14 +1075,14 @@ uint8_t __cdecl dk2::Button_addAiPlayer(int a1, int a2, CFrontEndComponent *a3_f
 
     WCHAR WideCharStr[30];
     MBToUni_convert(v8_mbstr, WideCharStr, 29);
-    unicodeToUtf8(g_wchar_buf, temp_string, 512);
+    unicodeToUtf8(g_wchar_buf, g_temp_string, 512);
 
     CHAR MultiByteStr[32];
     unicodeToUtf8(WideCharStr, MultiByteStr, 30);
     swprintf(
             g_playerDescs_73F858[v5_playerIdx].playerDesc,
             L"%s\x01%lu\x01%lu\x01%s\x01",
-            temp_string,
+            g_temp_string,
             g_MyPlayerConfig_instance_arr[v5_playerIdx].totalTimeMs_shr4,
             g_MyPlayerConfig_instance_arr[v5_playerIdx]._physMem_mb,
             MultiByteStr);

@@ -25,7 +25,7 @@ namespace dk2 {
 
     void callWinEvent_ev5_ty11(MyDxDevice *dev);
 
-    void __stdcall static_MyGame_Event07_cb(int listNum, void *arg, void *obj);
+    void __stdcall static_MyWindow_Event07_cb(int listNum, void *arg, void *obj);
 
 }
 

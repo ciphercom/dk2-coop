@@ -31,7 +31,7 @@ void println(dk2::CEngineSurface &surf) {
 }
 void println(dk2::MySurface &surf) {
     printf("dk2surf: %dx%d pitch:%d bpp:%d bitmask:{%08X %08X %08X %08X} isbpp:%d surf:%p\n",
-           surf.dwWidth, surf.dwHeight,
+           surf.size.w, surf.size.h,
            surf.lPitch,
            surf.desc.dwRGBBitCount,
            surf.desc.dwRBitMask,
@@ -128,10 +128,10 @@ CImg<unsigned char> toimg_error(int width, int height) {
     return img;
 }
 CImg<unsigned char> toimg(dk2::MySurface &surf) {
-    if (surf.desc.dwRGBBitCount == 32) return from_argb(surf.dwWidth, surf.dwHeight, surf.lPitch, surf.lpSurface);
+    if (surf.desc.dwRGBBitCount == 32) return from_argb(surf.size.w, surf.size.h, surf.lPitch, surf.lpSurface);
     printf("[toimg error] ");
     println(surf);
-    return toimg_error(surf.dwWidth, surf.dwHeight);
+    return toimg_error(surf.size.w, surf.size.h);
 }
 CImg<unsigned char> toimg(dk2::MyDdSurface &surf) {
     DDSURFACEDESC desc;

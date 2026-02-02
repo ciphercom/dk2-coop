@@ -17,9 +17,9 @@ namespace dk2 {
     ) {
         auto &textSurf = frontend->surf64_x16x30x6[x16Idx][btnIdx][4]; // regular text
         if (alignTy == 0) { // center by y
-            scaledBounds.minX = textSurf.dwWidth;
+            scaledBounds.minX = textSurf.size.w;
             int scalefHeight = scaledBounds.maxY - scaledBounds.minY;
-            int heightLeft = scalefHeight - textSurf.dwHeight;
+            int heightLeft = scalefHeight - textSurf.size.h;
             if (heightLeft > 0) {
                 btnPos.minY = (heightLeft >> 1) + scaledBounds.minY;
             } else {
@@ -28,13 +28,13 @@ namespace dk2 {
             return;
         }
         if (alignTy == 1) { // center by y
-            scaledBounds.minY = textSurf.dwHeight;
-            int v18 = (scaledBounds.maxX - btnPos.minX) - textSurf.dwWidth;
+            scaledBounds.minY = textSurf.size.h;
+            int v18 = (scaledBounds.maxX - btnPos.minX) - textSurf.size.w;
             if (v18 > 0)
                 btnPos.minX += v18;
 
-            scaledBounds.minX = textSurf.dwWidth;
-            int v16 = (scaledBounds.maxY - btnPos.minY) - textSurf.dwHeight;
+            scaledBounds.minX = textSurf.size.w;
+            int v16 = (scaledBounds.maxY - btnPos.minY) - textSurf.size.h;
             if (v16 > 0) {
                 btnPos.minY += v16 >> 1;
             } else {
@@ -43,16 +43,16 @@ namespace dk2 {
             return;
         }
         if (alignTy == 2) { // center by x and y
-            scaledBounds.minY = textSurf.dwHeight;
-            int v14 = (scaledBounds.maxX - btnPos.minX) - textSurf.dwWidth;
+            scaledBounds.minY = textSurf.size.h;
+            int v14 = (scaledBounds.maxX - btnPos.minX) - textSurf.size.w;
             if (v14 > 0) {
                 btnPos.minX = (v14 >> 1) + btnPos.minX;
             } else {
                 btnPos.minX = btnPos.minX - ((v14 >> 31) ^ v14) / 2;
             }
 
-            scaledBounds.minX = textSurf.dwWidth;
-            int v16 = (scaledBounds.maxY - btnPos.minY) - textSurf.dwHeight;
+            scaledBounds.minX = textSurf.size.w;
+            int v16 = (scaledBounds.maxY - btnPos.minY) - textSurf.size.h;
             if (v16 > 0) {
                 btnPos.minY += v16 >> 1;
             } else {
@@ -67,10 +67,10 @@ char __cdecl dk2::CClickButton_render_532670(CButton *btn, CFrontEndComponent *f
     char result = g_initialized73E9D4;
     if (!g_initialized73E9D4) {
         g_initialized73E9D4 = 1;
-        memset(d70D578_x30, 0, sizeof(d70D578_x30));
-        memset(buttonHighlight_x30, 0, 30u);
+        memset(g_d70D578_x30, 0, sizeof(g_d70D578_x30));
+        memset(g_buttonHighlight_x30, 0, 30u);
         result = 0;
-        memset(btnSoundLoaded_73E9A0_x30, 0, 30u);
+        memset(g_btnSoundLoaded_73E9A0_x30, 0, 30u);
     }
     CButton *v3 = btn;
     if (btn->f5D_isVisible != 1)
@@ -93,18 +93,18 @@ char __cdecl dk2::CClickButton_render_532670(CButton *btn, CFrontEndComponent *f
         if (mousePos.x >= aabb22.minX && mousePos.x < aabb22.maxX
             && mousePos.y >= aabb22.minY && mousePos.y < aabb22.maxY
         ) {
-            if (!btnSoundLoaded_73E9A0_x30[btnIdx]) {
-                MySound_ptr->v_fun_567810(0, frontend->f5AB9, 783);
-                btnSoundLoaded_73E9A0_x30[btnIdx] = 1;
+            if (!g_btnSoundLoaded_73E9A0_x30[btnIdx]) {
+                g_MySound_ptr->v_fun_567810(0, frontend->f5AB9, 783);
+                g_btnSoundLoaded_73E9A0_x30[btnIdx] = 1;
             }
             frontend->arr_x16x30_hovered[x16Idx][btnIdx] = 1;
-            buttonHighlight_x30[btnIdx] = 8;
+            g_buttonHighlight_x30[btnIdx] = 8;
         }
     }
 
     // render hover glowing
-    char highlightLevel = buttonHighlight_x30[btnIdx] - 1;
-    buttonHighlight_x30[btnIdx] = highlightLevel;
+    char highlightLevel = g_buttonHighlight_x30[btnIdx] - 1;
+    g_buttonHighlight_x30[btnIdx] = highlightLevel;
     if (highlightLevel > 0) {
         int layer;
         if (highlightLevel <= 4)
@@ -136,10 +136,10 @@ char __cdecl dk2::CClickButton_render_532670(CButton *btn, CFrontEndComponent *f
         NULL,
         0);
 
-    highlightLevel = buttonHighlight_x30[btnIdx];
+    highlightLevel = g_buttonHighlight_x30[btnIdx];
     if (highlightLevel < 0) {
-        btnSoundLoaded_73E9A0_x30[btnIdx] = 0;
-        buttonHighlight_x30[btnIdx] = -1;
+        g_btnSoundLoaded_73E9A0_x30[btnIdx] = 0;
+        g_buttonHighlight_x30[btnIdx] = -1;
     }
     return highlightLevel;
 }
@@ -364,7 +364,7 @@ char dk2::CFrontEndComponent::renderButtonsText_5329A0(
         memset(
             this->surf66_x16[a3_x16Idx].lpSurface,
             0,
-            this->surf66_x16[a3_x16Idx].dwHeight * this->surf66_x16[a3_x16Idx].lPitch);
+            this->surf66_x16[a3_x16Idx].size.h * this->surf66_x16[a3_x16Idx].lPitch);
         int v68_posY = 0;
         for (int btnIdx = 0; btnIdx < btnsCount; ++btnIdx) {
             Size2i *v67_pSize = &v93_sizes[btnIdx];
@@ -597,7 +597,7 @@ char dk2::CFrontEndComponent::bakeButton(int a2_wndId, unsigned __int8 x16Idx, i
     memset(
         this->surf66_x16[x16Idx].lpSurface,
         0,
-        this->surf66_x16[x16Idx].dwHeight * this->surf66_x16[x16Idx].lPitch);
+        this->surf66_x16[x16Idx].size.h * this->surf66_x16[x16Idx].lPitch);
     int posY_ = 0;
     if (btnsCount) {
         int btnIdx = 0;

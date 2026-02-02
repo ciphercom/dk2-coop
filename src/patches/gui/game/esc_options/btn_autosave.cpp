@@ -199,8 +199,8 @@ namespace {
 void patch::autosave::Autosave_tick() {
     if (dk2::MyResources_instance.gameCfg.useFe_playMode == 3) return;  // multiplayer
 
-    auto *profiler = &dk2::CGameComponent_instance.mt_profiler;
-    dk2::CCamera *v2_camera = profiler->c_bridge->v_getCamera();
+    auto *pGameSession = &dk2::CGameComponent_instance.gameSession;
+    dk2::CCamera *v2_camera = pGameSession->pBridge->v_fD0_getCamera();
     int result = dk2::CCamera_mode_sub_44D870(v2_camera->_mode);
     if (result == 1) {
         // some camera state or multiplayer
@@ -209,7 +209,7 @@ void patch::autosave::Autosave_tick() {
     dk2::CDefaultPlayerInterface *defplif = &dk2::CDefaultPlayerInterface_instance;
     if (defplif->pCWorld == NULL) return;
 
-    if (profiler->inMenu) {
+    if (pGameSession->inMenu) {
         if (!g_lastTickIsMenu) {
             g_enterMenuTime = dk2::getTimeMs();
             g_lastTickIsMenu = true;

@@ -35,13 +35,13 @@ dk2::CComponent *dk2::CGameComponent::mainGuiLoop() {
     GUID zero = {0};
     if (memcmp(&MyResources_instance.video_settings.deviceGuid, &zero, sizeof(GUID)) == 0) {
         MyD3DevInfo devInfo_;
-        if (MyGame_instance.sub_558F40(2u, &devInfo_)) {
+        if (MyWindow_instance.sub_558F40(2u, &devInfo_)) {
             MyResources_instance.video_settings.selectDevice(&devInfo_);
         }
     }
 
-    int v31 = 1;
-    if (!MyGame_prepareWithSettings(&v31)) return NULL;
+    int hardware3d = 1;
+    if (!MyWindow_prepareWithSettings(&hardware3d)) return NULL;
     if (MyResources_instance.gameCfg.useFe3d && !CFrontEndComponent_instance.launchGame()) return NULL;
     Pos2i v29 {0, 0};
     int status;
@@ -50,7 +50,7 @@ dk2::CComponent *dk2::CGameComponent::mainGuiLoop() {
     CWorld_instance.releaseSurface();
     CWorld_instance.fun_511250();
     if (!MyResources_instance.gameCfg.useFe2d_unk1)
-        this->mt_profiler.constructor2();
+        this->gameSession.init();
     CCommunicationInterface* v2_comm_i;
     v2_comm_i = &CNetworkCommunication_instance;
     if (MyResources_instance.gameCfg.useFe_playMode != 3)
@@ -62,15 +62,15 @@ dk2::CComponent *dk2::CGameComponent::mainGuiLoop() {
         if (!CBridge_instance.connectEngine(&CPCEngineInterface_instance_start))
             return NULL;
         if (!MyResources_instance.gameCfg.useFe2d_unk1) {
-            if (!this->mt_profiler.attachCommunicationInterface(v2_comm_i))
+            if (!this->gameSession.attachCommunicationInterface(v2_comm_i))
                 return NULL;
-            if (!this->mt_profiler.attachCBridge(&CBridge_instance, &MyResources_instance.video_settings)) {
-                if (v31) {
-                    v31 = 0;
+            if (!this->gameSession.attachCBridge(&CBridge_instance, &MyResources_instance.video_settings)) {
+                if (hardware3d) {
+                    hardware3d = 0;
                     MyResources_instance.video_settings.setSelected3dEngine(4);
-                    if (!MyGame_prepareWithSettings(&v31))
+                    if (!MyWindow_prepareWithSettings(&hardware3d))
                         return NULL;
-                    if (!this->mt_profiler.attachCBridge(&CBridge_instance, &MyResources_instance.video_settings))
+                    if (!this->gameSession.attachCBridge(&CBridge_instance, &MyResources_instance.video_settings))
                         return NULL;
                 }
             }
@@ -78,10 +78,10 @@ dk2::CComponent *dk2::CGameComponent::mainGuiLoop() {
     }
     if (!MyResources_instance.gameCfg.useFe2d_unk1) {
         if (MyResources_instance.gameCfg.useFe3d) {
-            CFrontEndComponent_instance.sub_535950(this->mt_profiler.c_bridge);
+            CFrontEndComponent_instance.sub_535950(this->gameSession.pBridge);
         }
         if (!MyResources_instance.gameCfg.useFe2d_unk1) {
-            if (!this->mt_profiler.attachCWorld(&CWorld_instance))
+            if (!this->gameSession.attachCWorld(&CWorld_instance))
                 return NULL;
         }
     }
@@ -128,24 +128,24 @@ dk2::CComponent *dk2::CGameComponent::mainGuiLoop() {
         if (!CWorld_instance.loadLevel(MultiByteStr)) {
             CWorld_instance.fun_5111E0();
             CWorld_instance.releaseSurface();
-            sprintf(temp_string, "Unable to load level, %s", MultiByteStr);
+            sprintf(g_temp_string, "Unable to load level, %s", MultiByteStr);
             return NULL;
         }
         CWorld_instance.fun_5111E0();
     }
     if (!MyResources_instance.gameCfg.useFe2d_unk1) {
-        CWorld* cworld = this->mt_profiler.cworld;
+        CWorld* cworld = this->gameSession.pWorld;
         int playerTagId = cworld->v_getMEPlayerTagId();
         if (!MyResources_instance.gameCfg.useFe3d) {
-            int v8 = this->mt_profiler.cworld->v_getMEPlayerTagId();
-            if (!this->mt_profiler.attachPlayerI(&CDefaultPlayerInterface_instance, v8))
+            int v8 = this->gameSession.pWorld->v_getMEPlayerTagId();
+            if (!this->gameSession.attachPlayerI(&CDefaultPlayerInterface_instance, v8))
                 return 0;
-            this->mt_profiler.player_i->playerTagId = playerTagId;
+            this->gameSession.pPlayer->playerTagId = playerTagId;
         }
         if (CPCEngineInterface_instance_start.pCBridge) {
             CBridge* cBridge = CPCEngineInterface_instance_start.pCBridge;
-            cBridge->v_fC0(playerTagId);
-            cBridge->v_fC8(g_neutralPlayerId);
+            cBridge->v_fC0_setPlayerId(playerTagId);
+            cBridge->v_fC8_setNeutralPlayerId(g_neutralPlayerId);
         }
         CWorld_instance.showLoadingScreen();
         CWorld_instance.releaseSurface();
@@ -197,7 +197,7 @@ dk2::CComponent *dk2::CGameComponent::mainGuiLoop() {
             flame_config::save();
         patch::protocol_dump::tick();
         patch::replace_mouse_dinput_to_user32::release_handled_dinput_actions();
-        if (!MyGame_instance.isNeedBlt()) {
+        if (!MyWindow_instance.isNeedBlt()) {
             MyCollectDxAction_Action dxAct;
             while (MyInputManagerCb_static_popDxAction(&dxAct)) {
                 if (dxAct.type == 2)
@@ -207,7 +207,7 @@ dk2::CComponent *dk2::CGameComponent::mainGuiLoop() {
             if (this->exit_flag)
                 break;
         }
-        int needBlt = MyGame_instance.isNeedBlt();
+        int needBlt = MyWindow_instance.isNeedBlt();
         if (isAppExitStatusSet())
             this->exit_flag = 1;
         if (MyResources_instance.gameCfg.useFe3d) {
@@ -228,24 +228,24 @@ dk2::CComponent *dk2::CGameComponent::mainGuiLoop() {
             if (CFrontEndComponent_instance.is_component_destroy)
                 this->exit_flag = 1;
         }
-        if (!MyResources_instance.gameCfg.useFe2d_unk1 && !this->mt_profiler.draw3dScene(needBlt))
+        if (!MyResources_instance.gameCfg.useFe2d_unk1 && !this->gameSession.tick(needBlt))
             this->exit_flag = 1;
-        if (needBlt && (this->mt_profiler.f268 || MyResources_instance.gameCfg.f12C)) {
-            MyGame_instance.takeScreenshot();
-            this->mt_profiler.f268 = 0;
+        if (needBlt && (this->gameSession.f268 || MyResources_instance.gameCfg.f12C)) {
+            MyWindow_instance.takeScreenshot();
+            this->gameSession.f268 = 0;
         }
         if (MyResources_instance.gameCfg.useFe3d) {
             if (CFrontEndComponent_instance.key_DIK_SYSRQ) {
-                MyGame_instance.takeScreenshot();
+                MyWindow_instance.takeScreenshot();
                 CFrontEndComponent_instance.key_DIK_SYSRQ = 0;
             }
             if (MyResources_instance.gameCfg.useFe3d)
                 CFrontEndComponent_instance.draw2dGui();
         }
         if (needBlt) {
-            MyGame_instance.prepareScreen();
+            MyWindow_instance.prepareScreen();
             if (MyResources_instance.video_settings.selected_3D_engine != 4)
-                MyGame_instance.surf_Blt();
+                MyWindow_instance.surf_Blt();
         }
         patch::autosave::Autosave_tick();
         ++this->fpsCalc_drawCount;
@@ -264,27 +264,27 @@ dk2::CComponent *dk2::CGameComponent::mainGuiLoop() {
             this->fps = *fpsResult;
             this->fpsCalc_lastTimeMs = getTimeMs();
             this->fpsCalc_drawCount = 0;
-            // patch::log::dbg("tps: %.2f", dk2ex::toFloat(this->fps));
+//            patch::log::dbg("tps: %.2f", dk2ex::toFloat(this->fps));
         }
     }
     // hook::AFTER_GAME_LOOP
     if (!MyResources_instance.gameCfg.useFe2d_unk1) {
-        CCamera* v16_camera = this->mt_profiler.c_bridge->v_getCamera();
+        CCamera* pCamera = this->gameSession.pBridge->v_fD0_getCamera();
         Vec3i pos;
         pos.x = 0;
         pos.y = 0;
         pos.z = 0;
-        v16_camera->fun_449AC0(&pos);
-        v16_camera->updateCameraMode(3, 0);
+        pCamera->fun_449AC0(&pos);
+        pCamera->updateCameraMode(3, 0);
     }
     if (!MyResources_instance.gameCfg.useFe3d)
-        this->mt_profiler.detach(&CDefaultPlayerInterface_instance);
+        this->gameSession.detachPlayerI(&CDefaultPlayerInterface_instance);
     if (!MyResources_instance.gameCfg.useFe2d_unk1) {
-        this->mt_profiler.clearCommunicationInterface((int) v2_comm_i);
-        this->mt_profiler.clearCWorld(&CWorld_instance);
-        this->mt_profiler.clearCBridge(&CBridge_instance);
+        this->gameSession.clearCommunicationInterface((int) v2_comm_i);
+        this->gameSession.clearCWorld(&CWorld_instance);
+        this->gameSession.clearCBridge(&CBridge_instance);
         CBridge_instance.fun_43ACF0();
-        this->mt_profiler.dumpStats();
+        this->gameSession.dumpStats();
     }
     TbWickedSpriteBank_sub_5B2D80(&this->wicked_sprite_bank);
     int useFe3d = MyResources_instance.gameCfg.useFe3d;
@@ -299,7 +299,7 @@ dk2::CComponent *dk2::CGameComponent::mainGuiLoop() {
         pos.y = 0;
         MyInputManagerCb_static_setMousePos(&pos);
         MyDdSurfaceEx_fillWithColor(
-            &status, MyGame_instance.getCurOffScreenSurf(), NULL,
+            &status, MyWindow_instance.getCurOffScreenSurf(), NULL,
             Bgraf{0, 0, 0, 0xFF, 0}, 0);
         MyDdSurfaceEx_fillWithColor(
             &status,
@@ -308,11 +308,11 @@ dk2::CComponent *dk2::CGameComponent::mainGuiLoop() {
             Bgraf{0, 0, 0, 0xFF, 0}, 0);
         Sleep(50);
         AABB aabb;
-        aabb.maxY = MyGame_instance.dwHeight;
+        aabb.maxY = MyWindow_instance.dwHeight;
         aabb.minX = 0;
         aabb.minY = 0;
-        aabb.maxX = MyGame_instance.dwWidth;
-        if (MyGame_instance.selectSurfToRender()) {
+        aabb.maxX = MyWindow_instance.dwWidth;
+        if (MyWindow_instance.selectSurfToRender()) {
             if (CWorld_instance.fA3C3) {
                 uint8_t __buf[sizeof(MyTextRenderer)];
                 MyTextRenderer& v40 = *(MyTextRenderer*) &__buf;
@@ -330,8 +330,8 @@ dk2::CComponent *dk2::CGameComponent::mainGuiLoop() {
                     NULL);
                 v40.destructor();
             }
-            MyGame_instance.getSurf_unlock();
-            MyGame_instance.prepareScreen();
+            MyWindow_instance.getSurf_unlock();
+            MyWindow_instance.prepareScreen();
             Sleep(5000);
         }
         useFe3d = MyResources_instance.gameCfg.useFe3d;

@@ -231,9 +231,9 @@ namespace dk2 {
         mcb->v_call(listNum, arg);
     }
 
-    void __stdcall static_MyGame_Event07_cb(int listNum, void *arg, void *obj) {  // listNum=0
+    void __stdcall static_MyWindow_Event07_cb(int listNum, void *arg, void *obj) {  // listNum=0
         auto *evarg = (Event0_winShown7 *) arg;
-        auto *game = (MyGame *) obj;
+        auto *window = (MyWindow *) obj;
         if ( evarg->eventType == 4 ) return;  // window active event
         if ( evarg->eventType == 6 ) {  // create DD event
             g_isCreateDDState = 1;
@@ -333,14 +333,17 @@ void dk2::WinEventHandlers::removeHandler(
     EnterCriticalSection(critSec);
     if (listNum != 6) {
         MyLList_WinEventCb* llist = &this->arr[listNum];
-        for (auto* cur = llist->first; cur; cur = cur->next) {
-            auto* cur_next = cur->next;
-            auto* cur_prev = cur->prev;
+        MyLList_WinEventCb_entry *next = NULL;
+        for (auto *cur = llist->first; cur; cur = next) {
+            next = cur->next;
+
             WinEventCb* cb = cur->value;
-            if (!obj && cb->fun != fun) continue;
-            if (obj && (cb->fun != fun || cb->obj_0 != obj)) continue;
+            if (cb->fun != fun) continue;
+            if (obj && cb->obj_0 != obj) continue;
 
             {  // erase
+                auto* cur_next = cur->next;
+                auto* cur_prev = cur->prev;
                 if (cur == llist->first) {
                     llist->first = cur_next;
                 } else {

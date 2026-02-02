@@ -46,9 +46,9 @@ bool patch::buffer_overrun_fix::enabled = true;
 
 void draw_missing_argb32(dk2::MySurface &surf, int scale) {
     uint8_t *line = (uint8_t *) surf.lpSurface;
-    for (int y = 0; y < surf.dwHeight; ++y) {
+    for (int y = 0; y < surf.size.h; ++y) {
         uint8_t *pos = line;
-        for (int x = 0; x < surf.dwWidth; ++x) {
+        for (int x = 0; x < surf.size.w; ++x) {
             uint32_t *pix = (uint32_t *) pos;
             if ((((x/ scale) ^ (y / scale)) & 1) == 0) {
                 *pix = 0xFF202020;
@@ -125,7 +125,7 @@ bool patch::fix_close_window::window_proc(HWND hWnd, UINT Msg, WPARAM wParam, LP
     switch(Msg) {
         case WM_CLOSE: {
             dk2::CDefaultPlayerInterface *playetIf = &dk2::CDefaultPlayerInterface_instance;
-            if (playetIf->profiler != nullptr) {  // game is running
+            if (playetIf->pGameSession) {  // game is running
                 dk2::GameAction action;
                 ZeroMemory(&action, sizeof(action));
                 action.actionKind = dk2::GA_ExitToWindows;

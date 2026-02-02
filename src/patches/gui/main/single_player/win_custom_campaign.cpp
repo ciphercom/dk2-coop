@@ -32,7 +32,7 @@ namespace {
         {  // CFrontEndComponent_static_539490
             dk2::MyResources_instance.gameCfg.useFe2d_unk1;
             if ( !dk2::MyResources_instance.gameCfg.useFe2d_unk1 ) {
-                dk2::CCamera *cam = comp->bridge->v_getCamera();
+                dk2::CCamera *cam = comp->bridge->v_fD0_getCamera();
                 cam->flags_E3C |= 8u;
                 cam->loadEnginePath(0x110u, 2u, 0xCu, 1);
             }

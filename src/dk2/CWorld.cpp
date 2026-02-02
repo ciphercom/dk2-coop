@@ -338,7 +338,7 @@ int dk2::CWorld::loadFromFile(const char *a2_savePath) {
     CNetworkCommunication_instance.fun_524050(1, 0);
     if (MyResources_instance.gameCfg.useFe_playMode != 3)
         return 1;
-    CCommunicationInterface* f18_communication_interface = this->profiler->communication_interface;
+    CCommunicationInterface* f18_communication_interface = this->pGameSession->pCommunication;
     int v7_save2else1 = (this->flags < 0) + 1; // isSaveFile + 1
     this->showLoadingScreen();
     if (this->is_surface_filled) {
@@ -379,7 +379,7 @@ namespace dk2 {
             ResourceExtensionFlags);
         if (a1_pstatus >= 0) {
             self->is_surface_filled = 1;
-            MyDdSurfaceEx *CurOffScreenSurf = MyGame_instance.getCurOffScreenSurf();
+            MyDdSurfaceEx *CurOffScreenSurf = MyWindow_instance.getCurOffScreenSurf();
             static_MyDdSurfaceEx_BltWait(&a1_pstatus, CurOffScreenSurf, 0, 0, &self->surface, NULL, 0);
             MyDdSurfaceEx *PrimarySurf = &g_primarySurf;  // MyInputManagerCb_instance.inputSurf.v_getPrimarySurf(),  // 0079D200 &g_primarySurf
             static_MyDdSurfaceEx_BltWait(&a1_pstatus, PrimarySurf, 0, 0, &self->surface, NULL, 0);
@@ -398,15 +398,15 @@ void dk2::CWorld::showLoadingScreen() {
     char Buffer[260];
     if (MyResources_instance.playerCfg.kbLayoutId == 17) {
         if (MyResources_instance.gameCfg.useFe_playMode == 3) {
-            sprintf(Buffer, "LoadingScreen-Japanese\\M-LoadingScreen%dx%d", MyGame_instance.dwWidth, MyGame_instance.dwHeight);
+            sprintf(Buffer, "LoadingScreen-Japanese\\M-LoadingScreen%dx%d", MyWindow_instance.dwWidth, MyWindow_instance.dwHeight);
         } else {
-            sprintf(Buffer, "LoadingScreen-Japanese\\LoadingScreen%dx%d", MyGame_instance.dwWidth, MyGame_instance.dwHeight);
+            sprintf(Buffer, "LoadingScreen-Japanese\\LoadingScreen%dx%d", MyWindow_instance.dwWidth, MyWindow_instance.dwHeight);
         }
     } else {
         if (MyResources_instance.gameCfg.useFe_playMode == 3) {
-            sprintf(Buffer, "LoadingScreen\\M-LoadingScreen%dx%d", MyGame_instance.dwWidth, MyGame_instance.dwHeight);
+            sprintf(Buffer, "LoadingScreen\\M-LoadingScreen%dx%d", MyWindow_instance.dwWidth, MyWindow_instance.dwHeight);
         } else {
-            sprintf(Buffer, "LoadingScreen\\LoadingScreen%dx%d", MyGame_instance.dwWidth, MyGame_instance.dwHeight);
+            sprintf(Buffer, "LoadingScreen\\LoadingScreen%dx%d", MyWindow_instance.dwWidth, MyWindow_instance.dwHeight);
         }
     }
     showAndPaint(this, Buffer);

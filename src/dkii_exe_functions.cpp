@@ -6,7 +6,7 @@
 
 #include "dk2/sound/MySnd_ListThread.h"
 #include "dk2/sound/MyBUnk673FD8.h"
-#include "dk2/MyGame.h"
+#include "dk2/MyWindow.h"
 #include "dk2/MyMouseUpdater.h"
 #include "dk2/MyObj673FD4.h"
 #include "dk2/MyUnk67457C.h"
@@ -19,7 +19,7 @@
 #include "weanetr_dll/MLDPlay.h"
 
 
-int32_t dk2::MyGame::isOsCompatible() {
+int32_t dk2::MyWindow::isOsCompatible() {
     if(patch::modern_windows_support::enabled) {
         return !dk2::isOsVersionGE(11, 0, 0);
     }

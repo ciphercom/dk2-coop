@@ -48,7 +48,7 @@ namespace dk2 {
         self->created = 0;
         BullfrogWindow_destroy();
         DestroyWindow(self->hWnd);
-        BullfrogWindow_create(&status, MyGame_instance.getSelectedGuid(), 1, NULL, NULL);
+        BullfrogWindow_create(&status, MyWindow_instance.getSelectedGuid(), 1, NULL, NULL);
     }
 
     dk2::CWindowTest *dk2::CWindowTest::scalar_destructor(char a2) {
@@ -190,7 +190,7 @@ int *dk2::CWindowTest::create(int *pstatus, AABB *rect) {
 int *dk2::CWindowTest::recreateBullfrog(int *pstatus) {
     int status;
     BullfrogWindow_destroy();
-    GUID *guid = MyGame_instance.getSelectedGuid();
+    GUID *guid = MyWindow_instance.getSelectedGuid();
     if (*BullfrogWindow_create(&status, guid, 0, this->hWnd, NULL) < 0) {
         patch::log::err("recreate dd window failed");
         return *pstatus = -1, pstatus;
@@ -303,14 +303,14 @@ int *dk2::CWindowTest::fillWithColor(int *pstatus, RECT *a3_rect, Bgraf *a4_bgra
     MyDdSurfaceEx* f58_pCurOffScreenSurf = this->pCurOffScreenSurf;
     if (!f58_pCurOffScreenSurf) return *pstatus = 0, pstatus;
     MySurface* surf = f58_pCurOffScreenSurf->updateDesc();
-    AABB v13 {0, 0, (int) surf->dwWidth, (int) surf->dwHeight};
+    AABB v13 {0, 0, (int) surf->size.w, (int) surf->size.h};
     RECT dstRect;
     if (a3_rect) {
         AABB aabb {a3_rect->left, a3_rect->top, a3_rect->right, a3_rect->bottom};
         AABB v14;
         dstRect = *(RECT*) aabb.intersection(&v14, &v13);
     } else {
-        dstRect = {0, 0, (LONG) surf->dwWidth, (LONG) surf->dwHeight};
+        dstRect = {0, 0, (LONG) surf->size.w, (LONG) surf->size.h};
     }
     MyDdSurfaceEx_fillWithColor(pstatus, this->pCurOffScreenSurf, &dstRect, *a4_bgrau, 0);
     return pstatus;
@@ -329,7 +329,7 @@ int *dk2::CWindowTest::probably_do_show_window_ev0_7(int *pstatus, AABB *rect) {
         BullfrogWindow_destroy();
         DestroyWindow(this->hWnd);
 
-        GUID* guid = MyGame_instance.getSelectedGuid();
+        GUID* guid = MyWindow_instance.getSelectedGuid();
         BullfrogWindow_create(&status, guid, 1, NULL, NULL);
     }
 
@@ -370,9 +370,9 @@ int *dk2::CWindowTest::probably_do_show_window_ev0_7(int *pstatus, AABB *rect) {
 
         clientRect.constructor();
         clientRect.minY = screenPoint.y;
-        clientRect.maxX = desc->dwWidth;
+        clientRect.maxX = desc->size.w;
         clientRect.minX = screenPoint.x;
-        clientRect.maxY = desc->dwHeight;
+        clientRect.maxY = desc->size.h;
         MyDdSurfaceEx_fillWithColor(
             &status, this->pCurOffScreenSurf, (RECT*) &clientRect,
             Bgraf{200, 200, 200, 0xFF, 0}, 0);
@@ -400,7 +400,7 @@ void dk2::CWindowTest::recreate() {
     this->created = 0;
     BullfrogWindow_destroy();
     DestroyWindow(this->hWnd);
-    GUID* SelectedGuid = MyGame_instance.getSelectedGuid();
+    GUID* SelectedGuid = MyWindow_instance.getSelectedGuid();
     BullfrogWindow_create(&status, SelectedGuid, 1, NULL, NULL);
 }
 

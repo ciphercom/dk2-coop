@@ -10,6 +10,7 @@ namespace patch {
 
     void flameInit(int argc, const char **argv);
     void flameCleanup();
+    void flameStaticCleanup();
 
 }
 

@@ -294,4 +294,35 @@ int dk2::dk2_start() {
     exit(result);
 }
 
+void __cdecl dk2::_doexit(UINT uExitCode, int a2_callOnExitList, int a3_dontExitProcess) {
+    dk2::__lockexit();
+    if (g_doexit_complete == 1) {
+        TerminateProcess(GetCurrentProcess(), uExitCode);
+    }
+    g_7A56C0 = 1;
+    g_7A56BC = a3_dontExitProcess;
+    if (!a2_callOnExitList) {
+        auto *first = (void (**)(void)) dk2::_onexit_list_start;
+        if (dk2::_onexit_list_start) {
+            auto *cur = (void (**)(void)) (dk2::_onexit_list_end - 4);
+            if (dk2::_onexit_list_end - 4 >= (unsigned int) dk2::_onexit_list_start) {
+                do {
+                    if (*cur) {
+                        (*cur)();
+                        first = (void (**)(void)) dk2::_onexit_list_start;
+                    }
+                    --cur;
+                } while (cur >= first);
+            }
+        }
+        patch::flameStaticCleanup();
+        dk2::__initterm(&dk2::__xt_a_0, &dk2::__xt_a_0 + 2);
+    }
+    dk2::__initterm(&dk2::__xt_a_1, &dk2::__xt_a_1 + 2);
+    if (!a3_dontExitProcess) {
+        g_doexit_complete = 1;
+        ExitProcess(uExitCode);
+    }
+    dk2::__unlockexit();
+}
 

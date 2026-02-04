@@ -28,6 +28,7 @@
 #include "patches/protocol_dump.h"
 #include "patches/welcome_window/welcome_window.h"
 #include "patches/wine_support.h"
+#include "dk2_functions.h"
 
 
 flame_config::define_flame_option<bool> o_console(
@@ -135,6 +136,12 @@ void patch::flameCleanup() {
 #if __has_include(<dk2_research.h>)
     bug_hunter::stop_keyWatcher();
 #endif
+    if (flame_config::changed()) flame_config::save();
+}
+
+void patch::flameStaticCleanup() {
+    // all global dk2 objects destructors was called
+    patch::log::dbg("flame static cleanup");
     if (flame_config::changed()) flame_config::save();
 }
 

@@ -183,6 +183,7 @@
 005BC3F0 int *DxDevice_updateCoopLevelAndSignal_ev5(int *, MyDxDevice *)
 00634860 void *___onexitinit()
 00636500 _iobuf *__cdecl __fopen(const char *, const char *)
+006372C0 void __cdecl _doexit(uint32_t, int, int)
 00637A00 void *__cdecl _realloc(void *, size_t)
 00637BB0 void *__cdecl _malloc_1(size_t)
 00637BD0 void *__cdecl __nh_malloc(size_t, int)

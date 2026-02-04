@@ -27829,7 +27829,7 @@ global: va=0041EDC0,name=fun_41EDC0,size=432,member_of=vtbl_0066C4A4
     ret: kind=void
     arg: kind=ptr
       type: kind=struct,id=vtbl_0066C4A4
-global: va=0041EF70,name=sub_41EF70,size=1284
+global: va=0041EF70,name=CEngine2DMeshSurface_create2,size=1284
   type: kind=function,declspec=stdcall
     ret: kind=int,size=4,signed=True
     arg: kind=float,size=4
@@ -27837,10 +27837,10 @@ global: va=0041EF70,name=sub_41EF70,size=1284
     arg: kind=float,size=4
     arg: kind=float,size=4
     arg: kind=float,size=4
-    arg: kind=int,size=4,signed=True
+    arg: kind=float,size=4
     arg: kind=int,size=4,signed=True
     arg: kind=ptr
-      type: kind=float,size=4
+      type: kind=struct,id=vecf_xyz
     arg: kind=int,size=4,signed=True
 global: va=0041F480,name=sub_41F480,size=384
   type: kind=function,declspec=thiscall
@@ -47044,7 +47044,7 @@ global: va=00509700,name=fun_509700,size=7,member_of=vtbl_0066E3EC
     ret: kind=ptr
       type: kind=int,size=1,signed=True,winapi=char
     arg: kind=ptr
-      type: kind=int,size=1,signed=True,winapi=char
+      type: kind=struct,id=vtbl_0066E3EC
 global: va=00509710,name=fun_509710,size=28,member_of=vtbl_0066E3EC
   type: kind=function,declspec=thiscall
     ret: kind=int,size=4,signed=True
@@ -80940,6 +80940,9 @@ global: va=00638F80,name=__vsnprintf,size=104
       type: kind=int,size=1,signed=True,winapi=char
     arg: kind=ptr
       type: kind=int,size=1,signed=True,winapi=char
+global: va=00639220,name=___endstdio,size=20
+  type: kind=function,declspec=stdcall
+    ret: kind=int,size=1,signed=True,winapi=char
 global: va=00639240,name=__isnan,size=48
   type: kind=function,declspec=cdecl
     ret: kind=int,size=4,signed=True
@@ -86192,6 +86195,12 @@ global: va=007A569C,name=g_argv,size=4
     type: kind=ptr,is_const=True,winapi=LPCSTR
       type: kind=int,size=1,signed=True,winapi=CHAR,fname=CHAR
 global: va=007A56B4,name=g_modFileName,size=4
+  type: kind=int,size=4,signed=True
+global: va=007A56BC,name=g_7A56BC,size=1
+  type: kind=int,size=1,signed=True,winapi=char
+global: va=007A56C0,name=g_7A56C0,size=4
+  type: kind=int,size=4,signed=True
+global: va=007A56C4,name=g_doexit_complete,size=4
   type: kind=int,size=4,signed=True
 global: va=007A5708,name=g_environmentStrings,size=4
   type: kind=ptr

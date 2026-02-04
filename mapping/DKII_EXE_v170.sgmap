@@ -5070,9 +5070,12 @@ struct: id=vtbl_0066EF3C,path=dk2/components,name=CFrontEndComponent,size=201210
       type: kind=int,size=2,signed=True
   field: name=f5AAC_playersCount
     type: kind=int,size=1
-  field: name=gap5AAD
-    type: kind=array,count=12
-      type: kind=int,size=1
+  field: name=field_5AAD
+    type: kind=int,size=4,signed=True
+  field: name=field_5AB1
+    type: kind=int,size=4,signed=True
+  field: name=field_5AB5
+    type: kind=int,size=4,signed=True
   field: name=field_5AB9
     type: kind=int,size=4
   field: name=field_5ABD
@@ -5085,11 +5088,21 @@ struct: id=vtbl_0066EF3C,path=dk2/components,name=CFrontEndComponent,size=201210
     type: kind=int,size=4,signed=True
   field: name=field_5ACD
     type: kind=int,size=4,signed=True
-  field: name=gap5AD1
-    type: kind=array,count=55
-      type: kind=int,size=1
-  field: name=field_5B08
-    type: kind=int,size=1,signed=True,winapi=char
+  field: name=field_5AD1
+    type: kind=int,size=4,signed=True
+  field: name=field_5AD5
+    type: kind=int,size=4,signed=True
+  field: name=field_5AD9
+    type: kind=int,size=4,signed=True
+  field: name=field_5ADD
+    type: kind=int,size=4,signed=True
+  field: name=field_5AE1
+    type: kind=int,size=4,signed=True
+  field: name=field_5AE5
+    type: kind=array,count=8
+      type: kind=int,size=4,signed=True
+  field: name=field_5B05
+    type: kind=int,size=4,signed=True
   field: name=f5B09_arr_x16x30_hovered
     type: kind=array,count=16
       type: kind=array,count=30
@@ -7876,7 +7889,7 @@ struct: id=instance_0066F7FC,path=dk2/sound,name=CSoundSystem_vtbl,size=128
       type: kind=function,declspec=thiscall
         ret: kind=int,size=4,signed=True
         arg: kind=ptr
-          type: kind=int,size=4
+          type: kind=void
         arg: kind=ptr,is_const=True
           type: kind=int,size=1,signed=True,winapi=char
         arg: kind=ptr,is_const=True
@@ -8110,8 +8123,12 @@ struct: id=vtbl_0066F994,name=CSpeechSystem,size=376,vtable=instance_0066F994
       type: kind=int,size=1
   field: name=field_C8
     type: kind=int,size=4,signed=True
-  field: name=fcc_gap
-    type: kind=array,count=128
+  field: name=field_CC
+    type: kind=int,size=4,signed=True
+  field: name=field_D0
+    type: kind=int,size=4,signed=True
+  field: name=fd4_gap
+    type: kind=array,count=120
       type: kind=int,size=1
   field: name=field_14C
     type: kind=int,size=4,signed=True
@@ -25217,7 +25234,7 @@ struct: id=instance_0066F90C,path=dk2/sound,name=TbAudioSystem_vtbl,size=28
       type: kind=function,declspec=thiscall
         ret: kind=int,size=4,signed=True
         arg: kind=ptr
-          type: kind=int,size=4
+          type: kind=void
   field: name=f10
     type: kind=ptr
       type: kind=function,declspec=thiscall
@@ -56908,8 +56925,7 @@ global: va=005674F0,name=fun_5674F0,size=521,member_of=vtbl_0066F7FC
     ret: kind=ptr
       type: kind=void
     arg: kind=ptr
-      type: kind=ptr
-        type: kind=void
+      type: kind=struct,id=vtbl_0066F7FC
 global: va=005676FC,name=jpt_56757D,size=20
   type: kind=array,count=5
     type: kind=ptr
@@ -56975,7 +56991,7 @@ global: va=00567A10,name=fun_567A10,size=42,member_of=vtbl_0066F7FC
 global: va=00567A40,name=fun_567A40,size=45,member_of=vtbl_0066F7FC
   type: kind=function,declspec=thiscall
     ret: kind=ptr
-      type: kind=int,size=4
+      type: kind=int,size=4,signed=True
     arg: kind=ptr
       type: kind=struct,id=vtbl_0066F7FC
     arg: kind=ptr
@@ -57121,7 +57137,7 @@ global: va=005681D0,name=SetMusicVolume,size=437,member_of=vtbl_0066F994
   type: kind=function,declspec=thiscall
     ret: kind=int,size=4,fname=DWORD
     arg: kind=ptr
-      type: kind=int,size=4
+      type: kind=struct,id=vtbl_0066F994
     arg: kind=int,size=4,signed=True
 global: va=00568390,name=sub_568390,size=253,member_of=vtbl_0066F994
   type: kind=function,declspec=thiscall
@@ -71703,10 +71719,11 @@ global: va=00608240,name=sub_608240,size=151
 global: va=006082E0,name=TbSysCommand::Process::fun_6082E0,size=22
   type: kind=function,declspec=stdcall
     ret: kind=ptr
-      type: kind=int,size=4
+      type: kind=int,size=4,signed=True
     arg: kind=ptr
-      type: kind=int,size=4
-    arg: kind=int,size=4,signed=True
+      type: kind=int,size=4,signed=True
+    arg: kind=ptr
+      type: kind=struct,id=vtbl_00673E48
 global: va=00608300,name=TbSysCommand::StopAll::fun_608300,size=21
   type: kind=function,declspec=stdcall
     ret: kind=ptr
@@ -72115,12 +72132,11 @@ global: va=00608D20,name=sub_608D20,size=47
       type: kind=int,size=4
     arg: kind=int,size=4,signed=True
     arg: kind=int,size=4,signed=True
-global: va=00608D50,name=sub_608D50,size=30
+global: va=00608D50,name=sub_608D50,size=30,member_of=vtbl_00673E48
   type: kind=function,declspec=thiscall
     ret: kind=int,size=4,signed=True
     arg: kind=ptr
-      type: kind=ptr
-        type: kind=void
+      type: kind=struct,id=vtbl_00673E48
     arg: kind=int,size=4,signed=True
     arg: kind=int,size=4,signed=True
 global: va=00608D70,name=sub_608D70,size=42
@@ -72139,11 +72155,11 @@ global: va=00608DA0,name=fun_608DA0,size=60,member_of=vtbl_0066F90C
       type: kind=int,size=4
     arg: kind=ptr
       type: kind=int,size=4
-global: va=00608DE0,name=sub_608DE0,size=39
+global: va=00608DE0,name=sub_608DE0,size=39,member_of=vtbl_00673E48
   type: kind=function,declspec=thiscall
     ret: kind=int,size=4,signed=True
     arg: kind=ptr
-      type: kind=int,size=4
+      type: kind=struct,id=vtbl_00673E48
     arg: kind=int,size=4,signed=True
     arg: kind=int,size=1,signed=True,winapi=char
     arg: kind=int,size=1,signed=True,winapi=char

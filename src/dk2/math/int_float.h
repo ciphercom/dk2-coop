@@ -19,6 +19,12 @@ namespace dk2ex {
 
     float toFloat(dk2::IntFloat12 &value);
 
+    struct Vec3if {
+        dk2::IntFloat12 x;
+        dk2::IntFloat12 y;
+        dk2::IntFloat12 z;
+    };
+
 }
 
 

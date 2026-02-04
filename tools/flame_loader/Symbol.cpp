@@ -29,15 +29,21 @@ namespace {
 }
 std::istream& operator>>(std::istream &is, Symbol& data) {
     std::string va;
+    std::string end_va;
+    std::string type;
     std::string name;
     std::string replace;
     if (!std::getline(is, va, ' ')
+        || !std::getline(is, end_va, ' ')
+        || !std::getline(is, type, ' ')
         || !std::getline(is, name, ' ')) {
         std::cout << "failed" << std::endl;
         return is;
     }
     getlineOpt(is, replace);
     data.va = std::stoul(va, nullptr, 16);
+    data.end_va = std::stoul(end_va, nullptr, 16);
+    data.is_function = type == "F";
     data.name = name;
     if (!replace.empty()) {
         if (replace != "REPLACE") {

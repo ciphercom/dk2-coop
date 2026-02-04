@@ -355,27 +355,49 @@ bool collectImportsExports(HMODULE flame, std::map<std::string, void *> &flameIm
     return true;
 }
 
+std::vector<VaReloc>::iterator find_ge_byDst(std::vector<VaReloc> &vec, uint32_t va) {
+    return std::lower_bound(vec.begin(), vec.end(), va, [](VaReloc &bl, uint32_t va) {  // <=
+        return bl.to < va;
+    });
+}
+
 bool connectFlameAndDkii(
     const std::vector<Symbol> &dkiiSyms,
     const std::vector<VaReloc> &dkiiRelocs,
     const std::map<std::string, void *> &flameImports,
     const std::map<std::string, void *> &flameExports
 ) {
+    // prepare for binary search by reference destination va
+    std::vector<VaReloc> dkiiRelocsByDst = dkiiRelocs;
+    std::sort(dkiiRelocsByDst.begin(), dkiiRelocsByDst.end(), [](VaReloc &l, VaReloc &r){
+        return l.to < r.to;
+    });  // by ascending
+
     for(auto &s : dkiiSyms) {
         if(s.replace) {
             if(const auto &it = flameExports.find(s.name); it != flameExports.end()) {
                 auto *fptr = it->second;
 //                log_inf("%p %s", fptr, s.name.c_str());
                 std::vector<const VaReloc*> refs;
-                for (const auto& r : dkiiRelocs) {
-                    if(r.ty == VaReloc::RT_NOT_VA32) continue;
-                    if(r.to != s.va) continue;
+                // binary search, the leftmost index value of which is greater than or equal to s.va
+                auto it2 = find_ge_byDst(dkiiRelocsByDst, s.va);
+                for(; it2 != dkiiRelocsByDst.end(); ++it2) {
+                    auto& r = *it2;
+                    if(s.is_function) {
+                        if(r.to != s.va) break;  // function references can only point to the start of a function
+                    } else {
+                        if(r.to >= s.end_va) break;  // data references can point to the middle of a data body
+                    }
+                    if(r.ty == VaReloc::RT_NOT_VA32) continue;  // ignore false positive refs
                     refs.push_back(&r);
+                    size_t offs = r.to - s.va;  // calculate the offset from the start of the data to the reference point pointing to
+                    uint32_t newTo = (uint32_t) fptr + offs;  // apply offset for replaced data
+                    // patch reference
                     DWORD p;
                     VirtualProtect((LPVOID) r.from, 4, PAGE_EXECUTE_READWRITE, &p);
                     switch(r.ty) {
-                    case VaReloc::RT_VA32: *(uint32_t *) r.from = (uint32_t) fptr; break;
-                    case VaReloc::RT_REL32: *(uint32_t *) r.from = (uint32_t) fptr - (r.from + 4); break;
+                    case VaReloc::RT_VA32: *(uint32_t *) r.from = newTo; break;
+                    case VaReloc::RT_REL32: *(uint32_t *) r.from = newTo - (r.from + 4); break;
                     }
                     VirtualProtect((LPVOID) r.from, 4, p, &p);
                 }

@@ -28,6 +28,14 @@ def find_le(symbols_map: list[PdbProc], rva: int) -> PdbProc:
 
 def collect_sym_map(pdb: my_pdb.MyPdb):
     pdb_symbols_map: list[PdbProc] = []
+    for sym in pdb.symrecs:
+        if my_pdb.CV_PublicSym32.match(sym.ty):
+            pub = typing.cast(my_pdb.CV_PublicSym32, sym)
+            if pub.segment <= len(pdb.section_headers.sections):
+                sec = pdb.section_headers.sections[pub.segment - 1]
+                va = sec.VirtualAddress + pub.offset
+                pdb_symbols_map.append(PdbProc(va, 1, pub.name))
+            pass
     for mod in pdb.mod_symbols:
         for sym in mod.symbols:
             if my_pdb.CV_Thunk32Sym.match(sym.ty):
@@ -38,13 +46,15 @@ def collect_sym_map(pdb: my_pdb.MyPdb):
             elif my_pdb.CV_ProcSym.match(sym.ty):
                 proc = typing.cast(my_pdb.CV_ProcSym, sym)
                 sec = pdb.section_headers.sections[proc.segment - 1]
-                rva = sec.VirtualAddress + proc.code_offset
-                pdb_symbols_map.append(PdbProc(rva, proc.code_size, proc.name))
+                va = sec.VirtualAddress + proc.code_offset
+                pdb_symbols_map.append(PdbProc(va, proc.code_size, proc.name))
             elif my_pdb.CV_ExportSym.match(sym.ty):
                 exp = typing.cast(my_pdb.CV_ExportSym, sym)
                 pass
             elif my_pdb.CV_PublicSym32.match(sym.ty):
                 pub = typing.cast(my_pdb.CV_PublicSym32, sym)
+                sec = pdb.section_headers.sections[pub.segment - 1]
+                va = sec.VirtualAddress + pub.offset
                 pass
     pdb_symbols_map.sort(key=lambda e: e.rva)
     return pdb_symbols_map

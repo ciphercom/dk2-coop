@@ -31,6 +31,10 @@ class MyBytes:
   def base(self) -> int:
     return ctypes.addressof(self._c_data)
 
+  @functools.cached_property
+  def end(self) -> int:
+    return self.base + self.size
+
 
 class MyStream:
 

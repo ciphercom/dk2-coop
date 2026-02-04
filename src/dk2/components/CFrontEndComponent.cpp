@@ -936,3 +936,47 @@ int __cdecl dk2::CFrontEndComponent_onKeyboardActionWithCtrl(
     return 1;
 }
 
+dk2::NameCfg *dk2::CFrontEndComponent::sub_535A30() {
+    this->f5AE1 = 0;
+    this->f5B05 = 0;
+    this->f5ADD = 0;
+    this->f5AD1 = 0;
+    this->f5AD9 = 0;
+    this->f5AD5 = 0;
+    memset(this->f5AE5, 0, sizeof(this->f5AE5));
+    this->f5AAD = 0;
+    this->f5AB1 = 0;
+    this->f5AB5 = 0;
+    this->f5AB9 = 0;
+    this->f5ABD = 0;
+    this->f5AC1 = 0;
+    this->f5AC5 = 0;
+    this->f5AC9 = 0;
+    this->f5ACD = 0;
+    this->f5AAD = g_MySound_ptr->v_fun_567790("GLOBAL\\", "OPTIONS_MUSIC");
+    this->f5AB1 = g_MySound_ptr->v_fun_567790("GLOBAL\\", "OPTIONS_SPEECH");
+    this->f5AC5 = g_MySound_ptr->v_fun_567790("GLOBAL\\", "ONE_SHOT_ATMOS");
+    this->f5AC9 = g_MySound_ptr->v_fun_567790("GLOBAL\\", "MUSIC");
+    this->f5AB9 = g_MySound_ptr->v_fun_567790("GLOBAL\\", "FRONT_END");
+    this->f5AB5 = g_MySound_ptr->v_fun_567790("GLOBAL\\", "OBJECT_FE_MAP");
+    this->f5ABD = g_MySound_ptr->v_fun_567790("GLOBAL\\", "OBJECT_FE_WINDOW");
+    this->f5ACD = g_MySound_ptr->v_fun_567790("GLOBAL\\", "OBJECT_FE_PENDULUM");
+    this->f5AC1 = g_MySound_ptr->v_fun_567790("GLOBAL\\", "OBJECT_FE_PARCHMENT");
+    NameCfg *result = nameList;
+    if (nameList[0].idx != -1) {
+        int next_idx;
+        do {
+            int idx = result->idx;
+            if (result->idx >= 27 && idx <= 36) {
+                if (idx == 32)
+                    result->f24 = this->f5AB9;
+                else
+                    result->f24 = this->f5AC1;
+            }
+            next_idx = result[1].idx;
+            ++result;
+        } while (next_idx != -1);
+    }
+    return result;
+}
+

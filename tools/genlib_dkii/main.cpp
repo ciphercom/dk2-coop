@@ -186,7 +186,8 @@ int main(int argc, char * argv[]) {
                 os << " DATA";
             }
             os << std::endl;
-            map_os << fmtHex32(global->va) << " " << name;
+            map_os << fmtHex32(global->va) << " " << fmtHex32(global->va + global->size)
+                << " " << (global->type->kind == TK_Function ? "F" : "D") << " " << name;
             if(isReplace) map_os << " REPLACE";
             map_os << std::endl;
 

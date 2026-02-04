@@ -31,6 +31,7 @@ add_library(${TARGET} SHARED
         dk2/MyDxKeyboard.cpp
         dk2/CDefaultPlayerInterface.cpp
         dk2/CPCEngineInterface.cpp
+        dk2/MyGameSession.cpp
         dk2/PlayerCfg.cpp
         dk2/RegKey.cpp
         dk2/MyComputerPlayer.cpp

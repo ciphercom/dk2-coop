@@ -110,6 +110,9 @@
 00559350 void MyWindow::displayError(char *, int, const char *, char *)
 005596D0 void MyWindow::removeWmActivateCallback(void *)
 
+# MyGameSession
+00526590 int MyGameSession::tick(int)
+
 # CNetworkComponent
 00527790 CComponent *CNetworkComponent::runUntilDestroy()
 
@@ -192,7 +195,6 @@
 # CClickButton
 00528610 CClickButton *CClickButton::handleClick(CDefaultPlayerInterface *)
 00532670 char __cdecl CClickButton_render_532670(CButton *, CFrontEndComponent *)
-00532670 char __cdecl CClickButton_render_532670(CButton *, CFrontEndComponent *)
 
 # CTextInput
 0052AA10 int CTextInput::fun_52AA10_configure(ButtonCfg *)
@@ -208,6 +210,7 @@
 00533570 char CFrontEndComponent::bakeButton(int, uint8_t, int)
 005340F0 void CFrontEndComponent::showTitleScreen()
 00534210 int CFrontEndComponent::load()
+00535A30 NameCfg *CFrontEndComponent::sub_535A30()
 00537AE0 void CFrontEndComponent::TcpIpInternet_updateStatusLine(uint32_t)
 005384F0 void __cdecl CFrontEndComponent_subTickMainGui(CFrontEndComponent *)
 0053BCD0 void CFrontEndComponent::showMovie(CHAR *)
@@ -419,4 +422,7 @@
 
 # MyUnk67457C
 0061C090 int MyUnk67457C::sub_61C090()
+
+# globals
+006AC8A0 NameCfg nameList[38]
 

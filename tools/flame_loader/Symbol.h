@@ -14,6 +14,8 @@
 
 struct Symbol {
     uint32_t va = 0;
+    uint32_t end_va = 0;
+    bool is_function = 0;
     std::string name;
     bool replace = false;
 

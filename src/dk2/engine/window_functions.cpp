@@ -169,16 +169,16 @@ LRESULT dk2::myCustomDefWindowProcA(HWND hWnd, UINT Msg, WPARAM wParam, LPARAM l
     case WM_CHAR: {
         char mbs[4];
         *(uint32_t *) mbs = (uint32_t) wParam;
-        Msg = 0;
+        wchar_t wcs[2] {};
         if ( MultiByteToWideChar(
                 0, 0,
                 mbs, -1,
-                (LPWSTR) &Msg, 2
-                ) > 0 ) MyInputManagerCb_static_windowMsgW(WM_CHAR, Msg);
+                (LPWSTR) wcs, 2
+                ) > 0 ) MyInputManagerCb_static_windowMsgW(WM_CHAR, *(uint32_t *) wcs);
         break;
     }
     case WM_IME_SETCONTEXT: return 0;
-    case (WM_USER + 0x10): MyInputManagerCb_static_windowMsgW(0x102, (int) wParam); break;
+    case (WM_USER + 0x10): MyInputManagerCb_static_windowMsgW(0x102, wParam); break;
     default: break;
     }
     return DefWindowProcA(hWnd, Msg, wParam, lParam);

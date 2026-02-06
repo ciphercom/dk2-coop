@@ -146,6 +146,7 @@
 005A5DA0 int __cdecl dk2_main(int, LPCSTR *)
 005A63B0 int __cdecl parse_command_line(int, const char **)
 005B2DB0 HWND getHWindow()
+005B2DD0 BOOL process_win_inputs()
 #005B2E70 int __cdecl d_getCustomDefWindowProcA()
 #005B2E80 int *__cdecl d_setLibIconName(int *, int16_t)
 005B3900 int *__cdecl fs_createDirectory(int *, const char *)

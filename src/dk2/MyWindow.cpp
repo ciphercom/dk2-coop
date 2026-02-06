@@ -70,6 +70,18 @@ int dk2::MyWindow::collect3dDevices() {
     return lpdd2->Release();
 }
 
+BOOL dk2::process_win_inputs() {
+    MSG Msg;
+    int msg_limit = 2000;
+    while (true) {
+        if (!PeekMessageA(&Msg, NULL, 0, 0, 1u)) return false;
+        if (!msg_limit--) break;
+        TranslateMessage(&Msg);
+        DispatchMessageA(&Msg);
+    }
+    return true;
+}
+
 int dk2::MyWindow::prepareScreenEx(
         uint32_t dwWidth,
         uint32_t dwHeight,

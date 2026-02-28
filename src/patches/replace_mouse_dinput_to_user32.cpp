@@ -12,6 +12,7 @@
 #include "dk2/dk2_memory.h"
 #include <vector>
 #include <windowsx.h>
+#include "patches/logging.h"
 
 // click flags
 #define DK2_Shift 0x01
@@ -74,6 +75,7 @@ namespace {
     bool appIsActive = false;
     POINT g_savedPos;
     bool g_wasRelative = false;
+    POINT g_lastPos = {0, 0};
 }
 
 void handle_fpv_mouse_move(HWND hWnd, POINT pos) {
@@ -92,22 +94,26 @@ void handle_fpv_mouse_move(HWND hWnd, POINT pos) {
     POINT clientResetPos;
     clientResetPos.x = (clientRect.left + clientRect.right) / 2;
     clientResetPos.y = (clientRect.top + clientRect.bottom) / 2;
-    POINT lastPos = clientResetPos;
 
     float sensitivity = dk2::MyResources_instance.playerCfg.mouseSensitivity / 10.0;
-    if(pos.x != lastPos.x) {
-        float delta = (float) (pos.x - lastPos.x) / (float) clientSize.x * 640;
+    if(pos.x != g_lastPos.x) {
+        float delta = (float) (pos.x - g_lastPos.x) / (float) clientSize.x * 640;
         dk2::MyInputManagerCb_instance.f60_mouse->f24_flX_delta = delta * sensitivity;
-        lastPos.x = pos.x;
+        g_lastPos.x = pos.x;
     }
-    if(pos.y != lastPos.y) {
-        float delta = (float) (pos.y - lastPos.y) / (float) clientSize.y * 480;
+    if(pos.y != g_lastPos.y) {
+        float delta = (float) (pos.y - g_lastPos.y) / (float) clientSize.y * 480;
         dk2::MyInputManagerCb_instance.f60_mouse->f28_flY_delta = delta * sensitivity;
-        lastPos.y = pos.y;
+        g_lastPos.y = pos.y;
     }
-    POINT screenResetPos = clientResetPos;
-    ClientToScreen(hWnd, &screenResetPos);
-    SetCursorPos(screenResetPos.x, screenResetPos.y);
+
+    POINT delta {pos.x - clientResetPos.x, pos.y - clientResetPos.y};
+    if(delta.x * delta.x + delta.y * delta.y > 20*20) {  // fast check distance from center
+        POINT screenResetPos = clientResetPos;
+        ClientToScreen(hWnd, &screenResetPos);
+        SetCursorPos(screenResetPos.x, screenResetPos.y);
+        g_lastPos = clientResetPos;
+    }
 }
 
 void patch::replace_mouse_dinput_to_user32::handle_mouse_move(HWND hWnd, POINT pos) {
@@ -135,6 +141,7 @@ void patch::replace_mouse_dinput_to_user32::handle_mouse_move(HWND hWnd, POINT p
             ClientToScreen(hWnd, &screenResetPos);
             SetCursorPos(screenResetPos.x, screenResetPos.y);
             pos = clientResetPos;
+            g_lastPos = pos;
         }
         // keep mouse in the center of window
         handle_fpv_mouse_move(hWnd, pos);

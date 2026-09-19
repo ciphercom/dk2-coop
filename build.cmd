@@ -115,6 +115,9 @@ if errorlevel 1 goto :failure
 "build\%BUILD_PRESET%\src\%BUILD_CONFIG%\command_line_tests.exe"
 if errorlevel 1 goto :failure
 
+"build\%BUILD_PRESET%\src\%BUILD_CONFIG%\session_discovery_tests.exe"
+if errorlevel 1 goto :failure
+
 "build\%BUILD_PRESET%\src\%BUILD_CONFIG%\health_flower_tests.exe"
 if errorlevel 1 goto :failure
 

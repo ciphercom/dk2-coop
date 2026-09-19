@@ -18,6 +18,12 @@ The package is ready to install directly into your game folder. Start through `D
 
 Let shared cutscenes finish, then continue playing together. After a mission, return through the result screen to create and join a fresh co-op session for the next unlocked mission. To choose a different mission, create a new lobby.
 
+## Internet hosting and ports
+
+For a direct internet game, the host forwards **UDP port 7575** on their router to **UDP port 7575 on the host PC's local IPv4 address**. Reserve that local address in the router so the rule keeps pointing to the same PC. Both players allow `DKII-DX.exe` through Windows Firewall. The joining player enters the host's **public IPv4 address** in the game's Address Book, using port **7575**. On the same LAN, use the host's local address; router port forwarding is unnecessary.
+
+The menu calls the connection TCP/IP, but this game's transport uses UDP. **UDP 16000 belongs to GameRanger** and is not required for this direct connection flow. If you use GameRanger separately and it reports a network problem, follow [GameRanger's networking instructions](https://www.gameranger.com/support/network/) for UPnP or UDP 16000 forwarding.
+
 ## Report problems
 
 Use [DK2 Co-op issues](https://github.com/ciphercom/dk2-coop/issues). Include the package filename or build identity from `flame/coop-build.json`, the mission, what each person was doing, what happened and what you expected. Report unrelated problems separately. This fork's co-op issues belong here rather than in the upstream Flame tracker.

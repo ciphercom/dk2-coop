@@ -111,31 +111,39 @@
             <p>Each person needs their own installed copy of <strong>Dungeon Keeper 2 v1.70</strong> and the same co-op package.</p>
             <ol class="steps">
               <li><div><h3>Get the co-op package</h3><p>Check the project's release archive for the co-op ZIP. Both of you need the same version. Yes, both. No, your friend can't “just join”.</p></div></li>
-              <li><div><h3>Unpack your evil</h3><p>Back up any existing <code>PATCH.dll</code>, <code>flame/</code>, and <code>Data/editor/</code>, then extract the ZIP into your Dungeon Keeper 2 folder. Not your Downloads folder. We've seen your Downloads folder.</p></div></li>
-              <li><div><h3>Conquer together</h3><p>Run <code>DKII-DX.exe</code>. Choose <strong>Multiplayer → Co-op Campaign</strong> and connect using TCP/IP. The host selects the mission; the other person joins.</p></div></li>
+              <li><div><h3>Unpack your evil</h3><p>Back up your game folder, then extract the ZIP into it and replace files when prompted. Not into Downloads. We've seen your Downloads folder.</p></div></li>
+              <li><div><h3>Conquer together</h3><p>Launch <code>DKII-DX.exe</code> and choose <strong>Multiplayer → Co-op Campaign</strong>. One player hosts and picks a mission; the other joins. Both confirm readiness, then begin.</p></div></li>
             </ol>
+            <h3>Open the dungeon gates</h3>
+            <ul>
+              <li><strong>Hosting online:</strong> Forward UDP port <strong>7575</strong> on your router to port <strong>7575</strong> at your PC's local IPv4 address. Reserve that address so the rule keeps working.</li>
+              <li><strong>Joining online:</strong> Add the host's <strong>public IPv4 address</strong> to the game's Address Book, with port <strong>7575</strong>.</li>
+              <li><strong>Same local network:</strong> Use the host's local IPv4 address. No port forwarding needed.</li>
+            </ul>
+            <p>Both players must allow <code>DKII-DX.exe</code> through Windows Firewall. Your friend is supposed to get into the dungeon. That's the entire point.</p>
+            <p class="fine-print">Use <strong>UDP</strong> for the forwarding rule, even though the menu says TCP/IP. Using GameRanger instead? Follow <a href="https://www.gameranger.com/support/network/">its setup guide</a>.</p>
             <div class="download-row"><a class="small-button" href="https://github.com/ciphercom/dk2-coop/releases">Download co-op <span aria-hidden="true">»</span></a><span>Grab a friend. Grab the same build.<br>Give the heroes a very bad day.</span></div>
-            <p class="fine-print">The mod does not include Dungeon Keeper 2. Follow the package's included instructions for connection setup and release notes.</p>
+            <p class="fine-print">Dungeon Keeper 2 is not included. See the bundled README for setup notes and known limitations.</p>
           </div>
         </section>
 
         <section class="panel faq" id="questions" aria-labelledby="faq-title">
           <h2 class="section-bar" id="faq-title"><span aria-hidden="true">◆</span> Questions from the torture chamber</h2>
           <div class="section-body">
-            <details open><summary>Are we running separate dungeons?</summary><p>No. You share one Keeper faction, including its dungeon, resources, rooms, and creatures. Both people can give commands at the same time.</p></details>
-            <details><summary>Can we play the original main campaign?</summary><p>Yes! The main campaign is fully playable in co-op. The host chooses the mission through the campaign selection screen.</p></details>
+            <details open><summary>Are we running separate dungeons?</summary><p>No. One dungeon, one treasury, one army. Both of you give orders at the same time.</p></details>
+            <details><summary>Can we play the original main campaign?</summary><p>Yes. Play the main campaign together, with the host choosing each mission.</p></details>
             <details><summary>Who gets the gold?</summary><p>You share one treasury. Then your friend builds a Casino. Then you share one financial crisis.</p></details>
             <details><summary>Can I play with my mum?</summary><p>Only if she is evil. Check the box on the back of the manual.</p></details>
             <details><summary>What if my friend is a hero at heart?</summary><p>The Torture Chamber accepts all applicants.</p></details>
-            <details><summary>Whose campaign progress is saved?</summary><p>The host's campaign progress and unlocks are saved. The joining person does not need matching local unlocks. Shared progress on both computers is not currently included.</p></details>
-            <details><summary>Anything to know before we descend?</summary><p>Use matching co-op builds and let cutscenes finish without skipping. Check the release's bundled README for the latest setup notes and known limitations.</p></details>
-            <details><summary>Where do we report something broken?</summary><p>Open an issue in the <a href="https://github.com/ciphercom/dk2-coop/issues">GitHub bug tracker</a>. Include your build version and the steps that caused the problem. One bug per report, please. We are evil, not organised. Blaming your friend is optional.</p></details>
+            <details><summary>Whose campaign progress is saved?</summary><p>Progress and unlocks are saved on the host's PC only. Your friend can join without unlocking those missions themselves. They get to take credit, just not the save.</p></details>
+            <details><summary>Anything to know before we descend?</summary><p>Use the same co-op version and matching game data and gameplay settings. Let cutscenes finish; even evil has to sit through the briefing. Custom resource packs and test settings stay as you set them. Making those work together is your department.</p></details>
+            <details><summary>Where do we report something broken?</summary><p>Use the <a href="https://github.com/ciphercom/dk2-coop/issues">bug tracker</a>. Include your co-op version, mission, and what each player did. One bug per report. Blaming your friend is optional.</p></details>
           </div>
         </section>
         <section class="panel guestbook-panel" id="guestbook" aria-labelledby="guestbook-title">
           <h2 class="section-bar" id="guestbook-title"><span aria-hidden="true">✎</span> Sign the guestbook. Or else.</h2>
           <div class="section-body">
-            <p class="guestbook-note" id="guestbook-note">This form goes nowhere. It's 1999. Nothing goes anywhere.<br>Entries are not sent or saved. The Bile Demon handles archiving.</p>
+            <p class="guestbook-note" id="guestbook-note">Entries are not sent or saved.<br>The Bile Demon eats the paperwork.</p>
             <form id="guestbook-form" aria-describedby="guestbook-note">
               <fieldset disabled>
                 <legend class="sr-only">Leave a message for the dungeon</legend>

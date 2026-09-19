@@ -4,6 +4,7 @@
 
 #include <WinSock2.h>
 #include "BullfrogNET.h"
+#include "session_discovery.h"
 #include "DnsResolver.h"
 #include "dplay.h"
 #include "dplobby.h"
@@ -1111,8 +1112,10 @@ void BullfrogNET::listenThread_waitDestroy() {
     _log("DESTROYED LISTEN THREAD\n");
 }
 
-void BullfrogNET::handleSessionPacket(MyPacket_6_sessionDesc *packet, mmtime_tag &sysTime) {
-    MLDPLAY_SESSIONDESC *packetDesc = &packet->fC_desc;
+void BullfrogNET::handleSessionPacket(MyPacket_6_sessionDesc *packet, mmtime_tag &sysTime, const MySocket &source) {
+    // The advertised address may be private; recvfrom tells us which endpoint answered.
+    auto discovered = discoveredSession(packet->fC_desc, source);
+    MLDPLAY_SESSIONDESC *packetDesc = &discovered;
     if (packetDesc->guidApplication != this->f44_guidApplication) return;
     if ((packetDesc->flags & 0x10) != 0) return;
     bool flag1 = (packetDesc->flags & 0x400) != 0;
@@ -1132,14 +1135,7 @@ void BullfrogNET::handleSessionPacket(MyPacket_6_sessionDesc *packet, mmtime_tag
     int gotANewSession = 1;
     ListEntry_SessionDesc *lastSession = NULL;
     for (ListEntry_SessionDesc *cur = this->f593_sessionList; cur; cur = cur->fA8_next) {
-        if (cur->f0_desc.guidInstance == packetDesc->guidInstance) {
-            gotANewSession = 0;
-            cur->f0_desc = *packetDesc;
-            cur->fA4_timeMs = sysTime.u.ms;
-            break;
-        }
-        if (cur->f0_desc.sock.ipv4 == packetDesc->sock.ipv4) {
-            _log("IP SESSIONS THE SAME\n");
+        if (sameDiscoveredSession(cur->f0_desc, *packetDesc)) {
             gotANewSession = 0;
             cur->f0_desc = *packetDesc;
             cur->fA4_timeMs = sysTime.u.ms;
@@ -1209,7 +1205,7 @@ void BullfrogNET::EnumerateSessions_proc() {
             if ( v4_size < sizeof(MyPacket_6_sessionDesc) ) {
                 _log("\tBullfrogNET:got a session packet from a Host, but its corrupt\n");
             } else {
-                handleSessionPacket((MyPacket_6_sessionDesc *) packet, sysTime);
+                handleSessionPacket((MyPacket_6_sessionDesc *) packet, sysTime, v17_from);
             }
         }
         LeaveCriticalSection(&this->dataLock);

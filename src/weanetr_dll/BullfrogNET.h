@@ -81,7 +81,7 @@ public:
     int DestroySPSession() override;
 
 
-    void handleSessionPacket(MyPacket_6_sessionDesc *packet, mmtime_tag &sysTime);
+    void handleSessionPacket(MyPacket_6_sessionDesc *packet, mmtime_tag &sysTime, const MySocket &source);
     void EnumerateSessions_proc();
     
     int EnumerateSessions2(

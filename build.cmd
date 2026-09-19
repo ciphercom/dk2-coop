@@ -142,6 +142,9 @@ if errorlevel 1 goto :failure
 ".venv\Scripts\python.exe" "tools\package_coop_tests.py"
 if errorlevel 1 goto :failure
 
+".venv\Scripts\python.exe" "tools\check_release_tests.py"
+if errorlevel 1 goto :failure
+
 "%CMAKE_EXE%" --build --preset %BUILD_PRESET%-install
 if errorlevel 1 goto :failure
 

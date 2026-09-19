@@ -9,7 +9,7 @@ Build your dungeon together, explore with independent cameras and take turns pos
 ## Install and play
 
 1. Both people need their own Dungeon Keeper 2 v1.70 installation containing `DKII-DX.exe`, with matching game data.
-2. Download the same `DK2-Coop-*.zip` from [this fork's releases](https://github.com/ciphercom/dk2-coop/releases).
+2. Download the same `DK2-Coop-*.zip` from the [latest release](https://github.com/ciphercom/dk2-coop/releases/latest).
 3. Close the game and back up any existing `PATCH.dll`, `flame/` and `Data/editor/`. Extract the ZIP into the game folder beside `DKII-DX.exe`, accepting replacement.
 4. Start `DKII-DX.exe` normally. Choose **Multiplayer -> Co-op Campaign** on both computers and use the native TCP/IP connection flow with distinct player names.
 5. The host creates a session and selects an unlocked mission through the campaign map. The other person joins; both confirm readiness and start together.
@@ -38,7 +38,7 @@ Use `build.cmd` from this repository; it configures, builds, runs the project ch
 .\build.cmd --debug --package # Explicit Debug package
 ```
 
-Packages and SHA-256 sidecars are written to `build/releases/`.
+Packages and SHA-256 sidecars are written to `build/releases/`. Versions combine the Flame base with an increasing co-op revision, such as `1.7.0.1`. Pushing a matching version tag builds, checks and publishes the latest GitHub release automatically; see [versioning and release steps](docs/build.md#versioning).
 
 ## Upstream and credits
 

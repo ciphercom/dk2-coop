@@ -4,7 +4,7 @@ set(RESOURCES_FILE ${CMAKE_CURRENT_BINARY_DIR}/resources.rc)
 set(WELCOME__HEADER ${CMAKE_CURRENT_LIST_DIR}/patches/welcome_window/resources/resources.h)
 set(WELCOME__MAIN_BACKGROUND ${CMAKE_CURRENT_LIST_DIR}/patches/welcome_window/resources/main_background.png)
 set(VER_PRODUCT_NAME "DK2 Co-op")
-set(VER_DESCRIPTION "DK2 Co-op, based on Flame v${OUTPUT_VERSION}")
+set(VER_DESCRIPTION "DK2 Co-op, based on Flame v${FLAME_VERSION}")
 configure_file(
         ${CMAKE_CURRENT_LIST_DIR}/resources.rc.in
         ${RESOURCES_FILE}

@@ -60,16 +60,19 @@ def package(flame: Path, configuration: str = "Release", build_directory: Path |
         raise ValueError("Release payload contains an empty file")
     payload.update(directx_payload(flame))
 
-    # Use the configured artifact name so a stale install is not labeled with a newer commit.
+    # Use configured versions so source edits cannot relabel an existing build.
     # Per-file hashes identify the exact shipped payload even for uncommitted builds.
     build_directory = build_directory or flame / f"build/vs2026-{configuration.lower()}"
-    artifact = (build_directory / f"artifact_name-{configuration}.txt").read_text().strip()
+    metadata = json.loads((build_directory / f"build_metadata-{configuration}.json").read_text())
+    artifact = metadata["artifactName"]
     if not artifact.startswith("DK2-Coop-") or any(c not in "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.-" for c in artifact):
         raise ValueError("Invalid configured DK2 Co-op artifact name")
     manifest = {
         "product": "DK2 Co-op",
         "repository": "https://github.com/ciphercom/dk2-coop",
         "build": artifact,
+        "flameVersion": metadata["flameVersion"],
+        "coopVersion": metadata["coopVersion"],
         "configuration": f"Win32 {configuration}, static C++ runtime",
         "directxPackage": {"url": DXSDK_URL, "sha256": DXSDK_SHA256},
         "files": {name: hashlib.sha256(data).hexdigest() for name, data in payload.items()},

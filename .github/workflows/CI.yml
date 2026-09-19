@@ -11,6 +11,11 @@ on:
 permissions:
   contents: read
 
+# A tag has one release publisher, even when its workflow is rerun.
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   build:
     runs-on: windows-2022
@@ -28,6 +33,12 @@ jobs:
       - name: Build, test, and package
         shell: cmd
         run: build.cmd --package --${{ matrix.configuration }}
+      - name: Check release tag against the packaged version
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v') && matrix.configuration == 'release'
+        shell: pwsh
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: python tools/check_release.py build/releases "$env:RELEASE_TAG"
       - uses: actions/upload-artifact@v4
         with:
           name: DK2-Coop-${{ matrix.configuration }}
@@ -36,9 +47,9 @@ jobs:
             build/releases/*.zip.sha256
           if-no-files-found: error
 
-  # Tags prepare a reviewable draft; publishing remains a maintainer action.
-  draft-release:
-    if: startsWith(github.ref, 'refs/tags/v')
+  # Publish only an explicitly pushed version tag after both configurations pass.
+  publish-release:
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
     needs: build
     runs-on: ubuntu-latest
     permissions:
@@ -48,9 +59,9 @@ jobs:
         with:
           name: DK2-Coop-release
           path: release
-      - name: Prepare draft release
+      - name: Publish latest release
         env:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
           RELEASE_TAG: ${{ github.ref_name }}
-        run: gh release create "$RELEASE_TAG" release/* --verify-tag --draft --generate-notes --title "DK2 Co-op $RELEASE_TAG"
+        run: gh release create "$RELEASE_TAG" release/* --verify-tag --latest --generate-notes --title "DK2 Co-op $RELEASE_TAG"

@@ -33,7 +33,7 @@ add_custom_command(
         -symmap_file ${CMAKE_HOME_DIRECTORY}/libs/dkii_exe/genlib/dkii.symmap
         -dkii_fpobin_file ${CMAKE_CURRENT_BINARY_DIR}/dkii.fpo
         -flame_fpobin_file ${CMAKE_CURRENT_BINARY_DIR}/flame.fpo
-        -version "${VER_PRODUCT_NUMBER}.${VER_PRODUCT_VERSION}${VER_FILE_SUFFIX}"
+        -version "${COOP_VERSION}${VER_FILE_SUFFIX}"
         -res_file ${FLAME_RESOURCES_BIN}
         DEPENDS
         resource_compressor
@@ -46,7 +46,7 @@ add_custom_command(
 
 set(RESOURCES_FILE ${CMAKE_CURRENT_BINARY_DIR}/resources.rc)
 set(VER_PRODUCT_NAME "DK2 Co-op loader")
-set(VER_DESCRIPTION "DK2 Co-op loader and linker, based on Flame v${OUTPUT_VERSION}")
+set(VER_DESCRIPTION "DK2 Co-op loader and linker, based on Flame v${FLAME_VERSION}")
 configure_file(
         ${CMAKE_CURRENT_LIST_DIR}/resources.rc.in
         ${RESOURCES_FILE}

@@ -56,3 +56,18 @@ Build logs were summarized here and removed after verification, together with th
 - `port-release.log`: `89c71aa784354b07d0ed67bf14f8b36798d3cdbd372773c6b13ce31476f4d24b`
 - `port-debug.log`: `c3f197374b4be11c01fdf8a7c10925fc293fe91ff049804d183b89e1381c6763`
 - `port-release-final.log`: `12b6bcb26bbf1b8ce17d3c7b144a3f05c0636a65235c05eeb8d6e3b2021f773b`
+
+## Versioned release workflow verification — 2026-09-19
+
+The fork now uses a monotonic co-op release revision alongside the Flame base: initial `1.7.0.1`. The revision is maintained in source and never resets when Flame changes. The pushed tag, generated build metadata, runtime display, PE version resources and package manifest agree. Tagged workflows publish the Release package as Latest only after both configurations succeed; main/PR/manual builds remain downloadable workflow artifacts.
+
+`build.cmd --package` and `build.cmd --debug --package` both passed on VS2026 with 14 C++ regression executables and 20 Python tests per build (6 Hand, 1 possession panel, 8 packaging, 5 publication checks). Actionlint 1.7.12 and `git diff HEAD --check` passed. Independent review found no blockers. The existing Release linker warning LNK4217 concerning `nameList` remains; no new warnings occurred. GitHub-hosted execution/publication was not invoked.
+
+Verified both ZIPs, payload hashes and sidecar checksums, Windows version resources on PATCH.dll/Flame.dll, and the version string decoded from each loader's compressed resources. The actual Release ZIP passes the publication gate for `v1.7.0.1` and is rejected for `v1.7.0.2`.
+
+| Configuration | Archive in `build/releases/` | SHA-256 |
+| --- | --- | --- |
+| Release | `DK2-Coop-1.7.0.1-8b0b2730de45.zip` | `18ea3cea09247624abfd97920cf71744cf2c67bb57e9389a57c4d8cb1c89d0cc` |
+| Debug | `DK2-Coop-1.7.0.1-debug-287643a6f40c.zip` | `a01996df9683c49477148c9c0cc38a49fd8c555689e533ffd2f1aa1cc734ea7c` |
+
+Temporary version-build logs were removed after preserving these results; generated packages remain in the ignored build directory.

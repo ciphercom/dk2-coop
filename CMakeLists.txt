@@ -98,7 +98,7 @@ endif ()
 
 include(resources/CMakeLists.txt)
 
-set(OUTPUT_VERSION "${VER_PRODUCT_NUMBER}.${VER_PRODUCT_VERSION}.${VER_BUILD_NUMBER}")
+set(OUTPUT_VERSION "${COOP_VERSION}")
 if(CONFIGURE_DATE)
   string(APPEND OUTPUT_VERSION "-${CONFIGURE_DATE}")
 endif ()
@@ -133,10 +133,17 @@ if(DK2_DIR)
   )
 endif()
 
+# Package from configured metadata so source edits cannot relabel an existing build.
+set(COOP_ARTIFACT_NAME "DK2-Coop-${OUTPUT_VERSION}$<$<CONFIG:Debug>:-debug>")
+file(GENERATE
+        OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/build_metadata-$<CONFIG>.json"
+        CONTENT "{\n  \"artifactName\": \"${COOP_ARTIFACT_NAME}\",\n  \"flameVersion\": \"${FLAME_VERSION}\",\n  \"coopVersion\": \"${COOP_VERSION}\"\n}\n"
+)
+
 # Generate a configuration-specific value, then expose the historical artifact_name.txt interface.
 file(GENERATE
         OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/artifact_name-$<CONFIG>.txt"
-        CONTENT "DK2-Coop-${OUTPUT_VERSION}$<$<CONFIG:Debug>:-debug>\n"
+        CONTENT "${COOP_ARTIFACT_NAME}\n"
 )
 add_custom_target(get_artifact_name
         COMMAND ${CMAKE_COMMAND} -E copy_if_different

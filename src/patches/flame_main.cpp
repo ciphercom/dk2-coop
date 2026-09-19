@@ -94,7 +94,7 @@ void patch::flameInit(int argc, const char **argv) {
     if(skipLauncher.ty != flame_config::VT_Boolean || !skipLauncher.bool_value) {
         patch::welcome_window::welcome_data_t res;
         res.win32_class_name = L"Flame_win32";
-        res.win32_title = L"DungeonKeeper 2 Flame";
+        res.win32_title = L"Dungeon Keeper 2 Co-op";
         res.win32_size = {400, 600};
         patch::welcome_window::imgui_main(res);  // long blocking call
         if(!res.play) {

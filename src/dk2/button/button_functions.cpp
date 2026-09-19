@@ -13,6 +13,8 @@
 #include "dk2_functions.h"
 #include "dk2_globals.h"
 #include "patches/logging.h"
+#include <patches/gui/main/coop_campaign_menu.h>
+#include <patches/coop_campaign.h>
 #include "weanetr_dll/MLDPlay.h"
 
 
@@ -125,6 +127,7 @@ int __cdecl dk2::CButton_handleLeftClick_changeMenu(uint32_t idx, int command, C
             }
             break;
         case 8:
+            patch::coop_campaign_menu::reset(comp);
             comp->_tableTy = 9;
             comp->fun_533460(1);
             fillNetworkStringList();
@@ -189,6 +192,7 @@ int __cdecl dk2::CButton_handleLeftClick_changeMenu(uint32_t idx, int command, C
             MyResources_instance.playerCfg.fB39 = 0;
         } break;
         case 12: {
+            if (patch::coop_campaign_menu::commitHostSelection(comp)) break;
             Pos2i String;
             String.x = 0;
             String.y = 0;
@@ -227,6 +231,8 @@ int __cdecl dk2::CButton_handleLeftClick_changeMenu(uint32_t idx, int command, C
                 comp->fun_548610();
                 comp->f601A = 1;
             } else {
+                // Provider failure leaves the user on Multiplayer, so its route selection must clear.
+                patch::coop_campaign_menu::reset(comp);
                 comp->fun_536BA0(0, 0, 2079, 105, 0, 1, 0, 0, 0);
             }
         } break;
@@ -257,6 +263,7 @@ int __cdecl dk2::CButton_handleLeftClick_changeMenu(uint32_t idx, int command, C
                 comp->loadMapThumbnail(comp->mapName);
             break;
         case 22:
+            patch::coop_campaign_menu::reset(comp);
             if (g_network_string_list) {
                 dk2::operator_delete(g_network_string_list);
                 g_network_string_list = 0;
@@ -265,6 +272,7 @@ int __cdecl dk2::CButton_handleLeftClick_changeMenu(uint32_t idx, int command, C
             CFrontEndComponent_static_539490(0x110u, 28, comp);
             break;
         case 23: { // exit action
+            patch::coop_campaign_menu::reset(comp);
             WeaNetR_instance.enumerateSessions(0);
             if (g_networkStrInfo) {
                 dk2::operator_delete(g_networkStrInfo);
@@ -574,6 +582,7 @@ int __cdecl dk2::CButton_handleLeftClick_changeMenu(uint32_t idx, int command, C
             }
         } break;
         case 82: {
+            patch::coop_campaign_menu::clearSession(comp);
             g_networkIsHost_740360 = 0;
             comp->fun_536E20(1, 1);
             if (comp->f2E5F) {
@@ -640,10 +649,12 @@ int __cdecl dk2::CButton_handleLeftClick_changeMenu(uint32_t idx, int command, C
                 comp->fun_536BA0(0, 0, 2079, 105, 0, 1, 0, 0, 0);
         } break;
         case 83: {  // network -> tcpip -> Create
+            if (patch::coop_campaign_menu::beginHostSelection(comp)) break;
             if(handle83(comp)) {
                 comp->sub_54DEC0(221, 227, 11, comp);
                 comp->sub_54E8B0(227, 11);
                 if (comp->createMultiplayerGame() == 1 && comp->sub_546680(11) == 1) {
+                    patch::coop_campaign_menu::selectCarrier(comp);
                     MyResources_instance.gameCfg.f150 = 1;
                     comp->buildLevelConfig();
                     break;
@@ -661,6 +672,10 @@ int __cdecl dk2::CButton_handleLeftClick_changeMenu(uint32_t idx, int command, C
             WeaNetR_instance.enumerateSessions(0);
             if (g_MLDPLAY_SESSIONDESC_arr_count) {
                 if (g_listItemNum != -1 && comp->isSessionCompatible[g_listItemNum] == 1) {
+                    if (!patch::coop_campaign_menu::canJoin(comp, g_listItemNum)) {
+                        comp->fun_536E20(1, 0);
+                        break;
+                    }
                     comp->clear_MyPlayerConfig_instance_arr__setupMpGui();
                     comp->sub_54DEC0(221, 227, 11, comp);
                     if (comp->joinMultiplayerGame(g_listItemNum) == 1) {
@@ -671,6 +686,7 @@ int __cdecl dk2::CButton_handleLeftClick_changeMenu(uint32_t idx, int command, C
                         comp->f6037 = 11;
                         comp->fun_536E20(1, 0);
                         MyResources_instance.gameCfg.f150 = 0;
+                        patch::coop_campaign_menu::restrictLobby(comp);
                         break;
                     }
                 }
@@ -679,6 +695,7 @@ int __cdecl dk2::CButton_handleLeftClick_changeMenu(uint32_t idx, int command, C
             comp->_tableTy = 12;
             comp->fun_5321A0(11, 11);
             comp->fun_536E20(1, 0);
+            patch::coop_campaign_menu::clearSession(comp);
         } break;
         case 85: {
             if(!handle85(comp)) CFrontEndComponent_static_539490(0xFEu, 18, comp);
@@ -689,6 +706,7 @@ int __cdecl dk2::CButton_handleLeftClick_changeMenu(uint32_t idx, int command, C
             comp->saveAddressBookWinsock(0);
             break;
         case 89:
+            patch::coop_campaign_menu::cancelHostSelection(comp);
             CSpeechSystem_instance.add_stop_handle0(90);
             g_petDungeonLevelIdx = 0;
             static_CFrontEndComponent_updateRenderInfo_flags();
@@ -953,6 +971,14 @@ int __cdecl dk2::__onMapSelected(CButton *a1_btn, int a2, CFrontEndComponent *a3
             v34_sessionDesc.mapInfo.aiPlayersCount_flag |= 0x80;
             v34_sessionDesc.mapInfo.nameLen = wcslen(a3_comp->getMapName());
             v34_sessionDesc.mapInfo.playersCount = (a3_comp->b4_mapPlayersCount_goldDencity_loseHeartType >> 4) & 0xF;
+            if (patch::coop_campaign::active()) {
+                // Preserve the host's campaign identity each time native map metadata is rebuilt.
+                v34_sessionDesc.mapInfo.f6 = patch::coop_campaign::sessionTag();
+                // Availability still describes the unchanged carrier asset, not Controller capacity.
+                v34_sessionDesc.mapInfo.playersCount =
+                    a3_comp->mapInfoArr[a3_comp->lobbySelectedMapIdx].playerCount;
+                v34_sessionDesc.totalMaxPlayers = 2;
+            }
             WeaNetR_instance.mldplay->SetSessionDesc(&v34_sessionDesc, descSize);
             a3_comp->sub_5454F0();
             unsigned int v25_i = 0;
@@ -1136,7 +1162,7 @@ int dk2::CFrontEndComponent::initMaxPlayers(uint8_t playerCount) {
     net::MLDPLAY_SESSIONDESC v4_desc;
     DWORD v3_size = sizeof(net::MLDPLAY_SESSIONDESC);
     WeaNetR_instance.mldplay->GetSessionDesc(&v4_desc, &v3_size);
-    v4_desc.totalMaxPlayers = 4;
+    v4_desc.totalMaxPlayers = patch::coop_campaign::active() ? 2 : 4;
     return WeaNetR_instance.mldplay->SetSessionDesc(&v4_desc, v3_size);
 }
 

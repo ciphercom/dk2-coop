@@ -8,6 +8,11 @@
 #include "dk2/sound/TbSysCommand_Process.h"
 #include "dk2/entities/CPlayer.h"
 #include "math/int_float.h"
+#include "patches/scripted_camera_hooks.h"
+#include "patches/network_gem_ending.h"
+#include "patches/network_possession.h"
+#include "patches/coop_campaign.h"
+#include "patches/shared_dig_overlay.h"
 
 int dk2::MyGameSession::tick(int a2_isNeedBlt) {
     int try_level;
@@ -148,6 +153,7 @@ int dk2::MyGameSession::tick(int a2_isNeedBlt) {
                         for_each_destruct<GameAction, true>(actions.actionArr, 16);
                         return 0;
                     }
+                    patch::network_possession::afterWorldReload();
                     // ref: net=00524F50
                     this->pCommunication->v_syncGameTickInit(this->gameTick);
                     this->clickList.reset();
@@ -235,7 +241,24 @@ int dk2::MyGameSession::tick(int a2_isNeedBlt) {
                     this->saveTick288 += 30 * this->gameTicksPerSecond;
                 }
                 DWORD v25 = getTimeMs();
+                patch::scripted_camera::beforeWorldTick(*this);
+                patch::network_gem_ending::beforeWorldTick(*this);
+                // Native local input updates the dig preview through CBridge, but synchronized
+                // world dispatch bypasses it. Replay the same idempotent mark/cancel graphics
+                // for our Keeper so remote rectangles update even their still-hidden tiles.
+                if (this->pBridge && this->pPlayer) {
+                    patch::shared_dig_overlay::refresh(patch::coop_campaign::active() &&
+                        MyResources_instance.gameCfg.useFe_playMode == 3 &&
+                        !MyResources_instance.gameCfg.useFe3d && !MyResources_instance.gameCfg.useFe2d_unk1,
+                        this->pPlayer->playerTagId, actions, [&](const GameAction &action) {
+                            auto presentationAction = action;
+                            auto *nativeAction = reinterpret_cast<int16_t *>(&presentationAction);
+                            if (action.actionKind == 40) this->pBridge->idx_handler2_28(nativeAction);
+                            else this->pBridge->idx_handler2_29(nativeAction);
+                        });
+                }
                 unsigned int v26 = this->pWorld->v_tick(&actions);
+                patch::network_possession::afterWorldTick(*this);
                 unsigned int v27 = getTimeMs() - v25;
                 if (v27 > GameSession_worldHighestTickTime)
                     GameSession_worldHighestTickTime = v27;

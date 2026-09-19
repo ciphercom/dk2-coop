@@ -1,72 +1,43 @@
-# Flame
+# DK2 Co-op
 
-Flame modifies the Dungeon Keeper 2 code to fix the bugs found in both single and multiplayer.
-It works with the Disk, Steam and GOG versions of the game.
+DK2 Co-op adds **Shared Keeper co-op** to Dungeon Keeper 2: two people control one Keeper, sharing the dungeon, creatures, resources and original campaign. This is the co-op fork of [Flame](https://github.com/DiaLight/Flame), retaining its game fixes and native multiplayer foundation.
 
-Warning: Saves and network sessions between Flame and non-Flame Dungeon Keeper 2 versions are [incompatible](https://github.com/DiaLight/Flame/issues/57).
-But you can use `-original-compatible` flag to disable some patches that breaks compatibility.
+The original campaign uses DK2's existing mission map and unlock rules. The host selects an unlocked mission and retains campaign progression; the joining player does not need the same unlocks. Each Controller has separate hand contents within the shared native hand capacity, independent camera control, and access to the Keeper's actions. Only one Controller can possess a creature at a time. Scripted cutscenes and mission endings are shared.
 
-## How to report a bug
+Build your dungeon together, explore with independent cameras and take turns possessing creatures. See [playing the co-op campaign](docs/coop.md) for the session flow.
 
-1) If you have any bugs in the game, please describe them in the discord channel: https://discord.gg/RvrQpCFUZc or in the GitHub issues.
-2) It helps a lot if you include steps how to reproduce found bug
-3) Attaching a good test map is welcome
+## Install and play
 
-If you reporting several bugs, please split them to several Discord messages / GitHub issues. Please, be sure to have followed the recommended installation steps.
+1. Both people need their own Dungeon Keeper 2 v1.70 installation containing `DKII-DX.exe`, with matching game data.
+2. Download the same `DK2-Coop-*.zip` from [this fork's releases](https://github.com/ciphercom/dk2-coop/releases).
+3. Close the game and back up any existing `PATCH.dll`, `flame/` and `Data/editor/`. Extract the ZIP into the game folder beside `DKII-DX.exe`, accepting replacement.
+4. Start `DKII-DX.exe` normally. Choose **Multiplayer -> Co-op Campaign** on both computers and use the native TCP/IP connection flow with distinct player names.
+5. The host creates a session and selects an unlocked mission through the campaign map. The other person joins; both confirm readiness and start together.
 
-### What bugs are in priority to fix?
-Imagine you are playing through a storyline campaign and there are moments
-that are extremely frustrating or simply prevent you from progressing further in the game.
-These bugs, I consider them critical, and those are the ones I will focus on fixing.
+The package is ready to install directly into your game folder. Start through `DKII-DX.exe` and keep personal settings in `flame/config.toml`. It includes the runtime, editor patches by Quuz and the required x86 D3DX libraries with their Microsoft license. Use the same DK2 Co-op build, gameplay-affecting settings and resource packs on both computers.
 
-You can vote for an bug that you consider critical at your discretion by placing a rocket emoji(?) on the corresponding issue
+Let shared cutscenes finish, then continue playing together. After a mission, return through the result screen to create and join a fresh co-op session for the next unlocked mission. To choose a different mission, create a new lobby.
 
+## Report problems
 
-## How to install
-1) Go to the [releases](https://github.com/DiaLight/Flame/releases) page and download the Flame-1.7.0-*.zip file of the newest release
-2) Extract the zip file into your Dungeon Keeper 2 game directory
-3) That's it. Now you can run `DKII-DX.exe` as usual
+Use [DK2 Co-op issues](https://github.com/ciphercom/dk2-coop/issues). Include the package filename or build identity from `flame/coop-build.json`, the mission, what each person was doing, what happened and what you expected. Report unrelated problems separately. This fork's co-op issues belong here rather than in the upstream Flame tracker.
 
-Note: It is possible to find newer test builds on [github actions](https://github.com/DiaLight/Flame/actions)
+## Build and release
 
-Note 2: The `Data` directory are not required for this to work, but are recommended.
+Use `build.cmd` from this repository; it configures, builds, runs the project checks and installs the result into a local staging folder. It never copies files into game installations. A Windows C++ toolchain, CMake, Git and Python are required; see [the build and release guide](docs/build.md).
 
-## Files explained
+```powershell
+.\build.cmd                  # Debug build, checks, install/
+.\build.cmd --package        # Release build, checks, install-release/, ZIP
+.\build.cmd --debug --package # Explicit Debug package
+```
 
-The `Data` folder in the zip file contains patches by Quuz for level editor
+Packages and SHA-256 sidecars are written to `build/releases/`.
 
-# For Software Developers
+## Upstream and credits
 
-## How it is done
+[Flame by DiaLight and contributors](https://github.com/DiaLight/Flame) provides the partial DK2 recompilation, patch loader and game fixes on which this fork is built. Its upstream authorship and source history are retained. Internal names such as `PATCH.dll`, `flame/Flame.dll` and `flame/DKII.dll` remain compatible with that loader; they are also the names used in this fork's packages. The original packaged attribution is retained as `Flame-Upstream-README.txt`. Quuz created the bundled level-editor patches in `Data/editor/`.
 
-Flame is a new approach to modifying the compiled code of Dungeon Keeper 2
+Flame loads replacement functions through its DLL rather than redistributing the original game executable. Its earlier [executable-merging](https://github.com/DiaLight/Flame/tree/93e04efaba41bb3a574b33a0a8d91d2f63d4b31d) and [full-relinking](https://github.com/DiaLight/Flame/tree/46e5b0c1df93060bd01a83bb6d14d064e9c8c3dc) approaches remain documented in upstream history.
 
-Flame recompiles some functions of `DKII.EXE` into a separate `flame/Flame.dll` file.
-`DKII-DX.EXE` depends on `PATCH.dll`. I decompiled whole `PATCH.dll` functional and included it into `flame/Flame.dll`.
-Flame comes with its own `PATCH.dll` which handles loading `flame/Flame.dll` and replacing the references to
-the original functions with the references to recompiled functions.
-Recompiled functions are supplemented with switchable changes that fix some game bugs and add some functionality
-
-### History
-
-[Earlier](https://github.com/DiaLight/Flame/tree/93e04efaba41bb3a574b33a0a8d91d2f63d4b31d "Exe merge approach"), this project implemented an approach to recompiles some functions of `DKII.EXE` into a separate `.exe` file.
-Then it merges this file with the original `.exe` file, replacing the references to the original functions with the references to recompiled functions. Due to development and debug complexity the exe merge method was replaced by the dll dynamic loading with function replacement.
-
-Also [Earlier](https://github.com/DiaLight/Flame/tree/46e5b0c1df93060bd01a83bb6d14d064e9c8c3dc "Full relinking approach"), this project implemented an approach to fully relinking `DKII.EXE`,
-which contains false positive references that caused new bugs. Due to problems with false positive references, the relinking method was replaced by the exe merge method.
-
-## Build requirements
-- CMake 3.25 or higher https://cmake.org/download/
-- Visual Studio 2022
-- Dungeon Keeper II v1.70 (GOG/Steam version)
-- Python 3 https://www.python.org/downloads/windows/
-
-## How to build
-cmd (instructions is not for powershell):
-- `mkdir build && cd build`
-- `"D:\Program Files\Visual Studio Community\2022\VC\Auxiliary\Build\vcvars32.bat"`
-- `cmake -DCMAKE_BUILD_TYPE=Debug -GNinja -DCMAKE_INSTALL_PREFIX=../install ..`
-- `cmake --build .`
-- `cmake --install .`
-- `copy /Y "..\install\PATCH.dll" "<Dungeon Keeper2 dir>\PATCH.dll"`
-- `copy /Y "..\install\flame" "<Dungeon Keeper2 dir>\flame"`
+The promotional website lives in `website/`; its publishing instructions are in [docs/website.md](docs/website.md).

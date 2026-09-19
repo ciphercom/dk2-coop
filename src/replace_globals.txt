@@ -14,6 +14,8 @@
 0040D8F0 BOOL CDefaultPlayerInterface::checkAllowToDrop(CThing *, int, int)
 0040DAB0 void CDefaultPlayerInterface::pushDropThingFromHandAction(CThing *, ObjUnderHand *)
 0040E0D0 void CDefaultPlayerInterface::tickThingsInHand()
+0040DFF0 BOOL CDefaultPlayerInterface::hasThingsInHand(int)
+0040E050 uint16_t CDefaultPlayerInterface::sub_40E050()
 0042C7D0 int CDefaultPlayerInterface::sub_42C7D0(int, int, int, const char *, RtGuiView *)
 0042CDF0 void CDefaultPlayerInterface::createSurfacesForView_42CDF0(RtGuiView *)
 0042CEE0 void CDefaultPlayerInterface::sub_42CEE0(RtGuiView *, int, int, int)
@@ -31,6 +33,12 @@
 
 # CCamera
 00449CA0 void CCamera::zoomRel_449CA0(int)
+0044A370 char CCamera::loadEnginePath(uint32_t, uint32_t, uint32_t, int)
+0044D8F0 int CCamera::sub_44D8F0()
+0050E5C0 int CWorld::callActionHandler(GameAction *)
+005094B0 BOOL CWorld::hasThingsInHand(int)
+005094D0 int CWorld::getThingsInHand_count(int)
+005094F0 int CWorld::getThingInPlayerHand(int, uint32_t, uint16_t *)
 
 # CMap
 00450770 uint32_t CMap::attachToRoom(int, int, uint16_t, int16_t, int, int)
@@ -48,7 +56,14 @@
 004B75C0 int MyCreatureCollection::fun_4B75C0()
 
 # CPlayer
+004C7B20 BOOL CPlayer::fun_4C7B20(uint32_t *)
 004BC710 int CPlayer::dropThingFromHand(Vec3i *, uint16_t *)
+004BC500 int CPlayer::takeThingInHand(uint16_t)
+004C09F0 int CPlayer::doPlayerAction_4C09F0(int, int, int, int)
+004BCAB0 int CPlayer::fun_4BCAB0(uint32_t, uint16_t *)
+004BCB60 int CPlayer::calcChecksum()
+004B8D40 int CPlayer::fun_4B8D40(MyFile_Disc **)
+004B9250 int CPlayer::fun_4B9250(MyFile_Disc **)
 004C0EE0 int CPlayer::act4_dropThingFromHand()
 004C3200 int CPlayer::creatureDidWorkshopWork(int, CCreature *)
 004C5C30 int CPlayer::fun_4C5C30_buildRoom(int, int, int, int, int, int, int)
@@ -403,6 +418,10 @@
 # MyCb6723D0
 005DBCD0 void MyCb6723D0::call(int, void *)
 
+# InputCursor
+005DBB10 void InputCursor::Event1_2Handler_updateCursor()
+005DBB60 int InputCursor::Event1_3Handler()
+
 # MyCbHandle
 005DBD70 void MyCbHandle::add_MyCallback(uint32_t *, MyCallback *)
 005DBDC0 void MyCbHandle::release_MyCallback()
@@ -425,6 +444,25 @@
 # MyUnk67457C
 0061C090 int MyUnk67457C::sub_61C090()
 
+# Original gem ending for the co-op campaign route
+004BE630 int16_t CPlayer::fun_4BE630(int)
+00474100 int CState::sub_474100()
+004741D0 int CState::sub_4741D0()
+004744F0 int CState::sub_4744F0()
+00405010 BOOL __cdecl CDefaultPlayerInterface_onKeyboardAction(int, int, uint32_t, CDefaultPlayerInterface *, int)
+
 # globals
 006AC8A0 NameCfg nameList[38]
 
+
+# Controller-local possession for fresh co-op campaign sessions
+004483D0 int CBridge::idx_handler_B(uint16_t *)
+00448440 int CBridge::idx_handler_C(uint16_t *)
+004AEEA0 int CShot::sub_4AEEA0()
+004B7CD0 int MyCreatureCollection::createCShot(int, int, Vec3i *, uint16_t *, CShot **, int)
+00513340 int __stdcall GameActionHandler_N37(GameAction *)
+00513480 int __stdcall GameActionHandler_N39(GameAction *)
+005134E0 int __stdcall GameActionHandler_N3A(GameAction *)
+005135B0 int __stdcall GameActionHandler_N3B(GameAction *)
+00513600 int __stdcall GameActionHandler_N3C(GameAction *)
+00527130 BOOL MyGameSession::pushAction(GameAction *)

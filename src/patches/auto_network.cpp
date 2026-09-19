@@ -170,3 +170,19 @@ bool patch::auto_network::main(dk2::CFrontEndComponent *front) {
 void patch::auto_network::onSessionsUpdated(dk2::CFrontEndComponent *front) {
     tryAutoconnect(front);
 }
+
+bool patch::auto_network::openTcpIp(dk2::CFrontEndComponent *front) {
+    // Reuse the provider list collected by Multiplayer; do not activate startup auto-connect.
+    for (int i = 0; i < 5; ++i) {
+        auto *line = reinterpret_cast<wchar_t *>(dk2::TableStr_selectLine(i,
+            reinterpret_cast<uint16_t *>(dk2::g_network_string_list)));
+        if (!line) break;
+        if (wcscmp(line, L"WinSock TCP/IP Internet Connection") != 0) continue;
+        dk2::g_listItemNum = i;
+        dk2::CButton_handleLeftClick_changeMenu(0, 13, front);
+        return true;
+    }
+    // Missing transport is a recoverable native provider error, not a different launch route.
+    front->fun_536BA0(0, 0, 2079, 105, 0, 1, 0, 0, 0);
+    return false;
+}

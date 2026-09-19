@@ -89,4 +89,3 @@ void cmdl::dump() {
 void command_line_init(int argc, const char **argv) {
     parseCommandLine(argc, argv, cmdl::dict, cmdl::flags, cmdl::values);
 }
-

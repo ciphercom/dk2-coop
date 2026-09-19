@@ -12,6 +12,8 @@ namespace dk2 {
 namespace patch::auto_network {
     extern bool enabled;
     bool main(dk2::CFrontEndComponent *front);
+    /** Open the existing TCP/IP provider without choosing a session or role. */
+    bool openTcpIp(dk2::CFrontEndComponent *front);
     void onSessionsUpdated(dk2::CFrontEndComponent *front);
 }
 

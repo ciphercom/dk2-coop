@@ -18,7 +18,10 @@
 #include "gog_patch.h"
 #include "patches/big_resolution_fix/expand_surf_idx_array.h"
 #include "patches/micro_patches.h"
+#include "patches/network_gem_ending_ui.h"
+#include "patches/network_hands.h"
 #include "tools/bug_hunter.h"
+#include <intrin.h>
 #if __has_include(<dk2_research.h>)
    #include <dk2_research.h>
 #endif
@@ -219,6 +222,12 @@ namespace dk2 {
         for (int i = 0; i < self->thingsInHand_count; ++i) {
             CPI_ThingInHand *cur = &self->thingsInHand[i];
             if (cur->hasUnderHand) continue;
+            if (patch::network_hands::enabled()) {
+                auto *keeper = static_cast<CPlayer *>(self->pCWorld->v_getCTag_508C40(self->playerTagId));
+                patch::network_hands::invariant(keeper);
+                // Input may arrive before the next pending-cache tick removes a lost pickup race.
+                if (keeper->hasThingInHand(cur->tagId) && !patch::network_hands::localOwns(cur->tagId)) continue;
+            }
             thingInHand = cur;
             break;
         }
@@ -376,10 +385,17 @@ void dk2::CDefaultPlayerInterface::handleRightClick(unsigned int a2_isPressed, O
         return;
     }
     if (scheduleDropAfterTakingActionComplete(this, a3_underHand)) return;
-    if (!this->pCWorld->v_hasThingsInHand_5094B0(this->playerTagId)) return;
-    int thingInHandIdx = this->pCWorld->v_getNumThingsInPlayerHand_5094D0(this->playerTagId) - 1;
     uint16_t v36_thingInHandTagId;
-    if (!this->pCWorld->v_getThingInPlayerHand_5094F0(this->playerTagId, thingInHandIdx, &v36_thingInHandTagId)) return;
+    if (patch::network_hands::enabled()) {
+        auto *keeper = static_cast<CPlayer *>(this->pCWorld->v_getCTag_508C40(this->playerTagId));
+        patch::network_hands::invariant(keeper);
+        v36_thingInHandTagId = patch::network_hands::localLatest(*keeper);
+        if (!v36_thingInHandTagId) return;
+    } else {
+        if (!this->pCWorld->v_hasThingsInHand_5094B0(this->playerTagId)) return;
+        int thingInHandIdx = this->pCWorld->v_getNumThingsInPlayerHand_5094D0(this->playerTagId) - 1;
+        if (!this->pCWorld->v_getThingInPlayerHand_5094F0(this->playerTagId, thingInHandIdx, &v36_thingInHandTagId)) return;
+    }
     if (!this->pCWorld->v_isCoordReachable_510000(a3_underHand->x, a3_underHand->y)) return;
     CThing *thingInHand = (CThing *) sceneObjects[v36_thingInHandTagId];
     if (!this->checkAllowToDrop(thingInHand, a3_underHand->x, a3_underHand->y)) return;
@@ -529,6 +545,9 @@ void dk2::CDefaultPlayerInterface::tickThingsInHand() {
         CPI_ThingInHand *curThing = &this->thingsInHand[i];
         if (sceneObjectsPresent[curThing->tagId]) {
             int hasThingInHand = v16_player->hasThingInHand(curThing->tagId);
+            // A lost pickup race must clear our request, never drop the winner's creature.
+            const bool heldByPartner = hasThingInHand && !patch::network_hands::localOwns(curThing->tagId);
+            if (heldByPartner) hasThingInHand = 0;
             if (hasThingInHand && curThing->hasUnderHand) {
                 dropThing(this, curThing);
                 ++i;
@@ -536,7 +555,7 @@ void dk2::CDefaultPlayerInterface::tickThingsInHand() {
                 continue;
             }
             if (
-                    !hasThingInHand &&
+                    !hasThingInHand && !heldByPartner &&
                     curThing->dropped != 1 &&
                     (v17_timeMs - curThing->timeMs) <= 2000
                     ) {
@@ -723,6 +742,9 @@ int dk2::CDefaultPlayerInterface::sub_42C7D0(int a2_width, int a3_height, int a4
 }
 
 void dk2::CDefaultPlayerInterface::sub_42CEE0(RtGuiView *view, int a3_x, int a4_y, int a5) {
+    // Keep the victory prompt unavailable until the shared ending and local gem UI finish.
+    if (patch::network_gem_ending_ui::hideVictoryPrompt(this, view,
+        reinterpret_cast<uintptr_t>(_ReturnAddress()))) return;
     CBridge *pBridge = this->pGameSession->pBridge;
     CWorldEntry v19_worldEntry;
     v19_worldEntry.constructor();

@@ -21,12 +21,13 @@ add_custom_command(
         -exp_file ${CMAKE_CURRENT_LIST_DIR}/dkii_exp.def
         -map_file ${CMAKE_CURRENT_LIST_DIR}/dkii.symmap
         -asm_stub_file ${CMAKE_CURRENT_LIST_DIR}/dkii_stub.asm
-        COMMAND cmd /C ${CMAKE_HOME_DIRECTORY}/tools/genlib/gen_lib.bat
-        ${LIB_PROGRAM} ${CMAKE_HOME_DIRECTORY}/libs/dkii_exe/genlib/dkii.def ${ABS_GENLIB_LIB}
+        COMMAND "${CMAKE_HOME_DIRECTORY}/tools/genlib/gen_lib.bat"
+        "${LIB_PROGRAM}" "${CMAKE_HOME_DIRECTORY}/libs/dkii_exe/genlib/dkii.def" "${ABS_GENLIB_LIB}"
         DEPENDS
         ${CMAKE_HOME_DIRECTORY}/mapping/DKII_EXE_v170.sgmap
         ${CMAKE_HOME_DIRECTORY}/src/replace_globals.txt
         COMMENT "genlib DKII.EXE"
+        VERBATIM
 )
 
 
@@ -65,9 +66,9 @@ set(OUTPUT_NAME "DKII")
 set_target_properties(${TARGET} PROPERTIES OUTPUT_NAME "${OUTPUT_NAME}")
 
 install(FILES $<TARGET_FILE:${TARGET}> DESTINATION "flame")
-if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-    target_link_options(${TARGET} PRIVATE /PDBALTPATH:${OUTPUT_NAME}.pdb)
-    install(FILES $<TARGET_PDB_FILE:${TARGET}> DESTINATION "flame")
-    target_link_options(${TARGET} PRIVATE /ILK:${CMAKE_CURRENT_BINARY_DIR}/${OUTPUT_NAME}.ilk)  # dont put ilk to bin dir
-endif()
+target_link_options(${TARGET} PRIVATE
+        "$<$<CONFIG:Debug>:/PDBALTPATH:${OUTPUT_NAME}.pdb>"
+        "$<$<CONFIG:Debug>:/ILK:${CMAKE_CURRENT_BINARY_DIR}/${OUTPUT_NAME}.ilk>"  # dont put ilk to bin dir
+)
+install(FILES $<TARGET_PDB_FILE:${TARGET}> DESTINATION "flame" CONFIGURATIONS Debug)
 set_target_properties(${TARGET} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/flame")

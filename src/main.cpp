@@ -15,6 +15,7 @@
 #include "dk2/resources/DirIter.h"
 #include "patches/flame_main.h"
 #include "tools/bug_hunter.h"
+#include "tools/instance_mutex_name.h"
 
 namespace dk2 {
 
@@ -219,9 +220,12 @@ bool dk2::dk2_main1(int argc, LPCSTR *argv) {
 int __cdecl dk2::dk2_main(int argc, LPCSTR *argv) {
     bug_hunter::displayCrash();
     uint32_t try_level = 0;
+    const std::string mutexName = patch::instance_mutex::currentName();
     MyMutex mutex;
-    mutex.constructor("DKII MUTEX");
-    if (!mutex.alredyExists) {
+    mutex.constructor(mutexName.c_str());
+    const bool anotherInstanceIsRunning = mutex.alredyExists;
+
+    if (!anotherInstanceIsRunning) {
         patch::flameInit(argc, argv);
         bool result = dk2_main1(argc, argv);
         patch::flameCleanup();

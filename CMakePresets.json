@@ -1,0 +1,102 @@
+{
+  "version": 6,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 25,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "vs2026-release",
+      "inherits": "vs2026-debug",
+      "displayName": "Visual Studio 2026 Win32 Release",
+      "description": "Optimized 32-bit build with a separate install directory.",
+      "binaryDir": "${sourceDir}/build/vs2026-release",
+      "cacheVariables": {
+        "CMAKE_INSTALL_PREFIX": "${sourceDir}/install-release"
+      }
+    },
+    {
+      "name": "vs2026-debug",
+      "displayName": "Visual Studio 2026 Win32 Debug",
+      "description": "32-bit Debug build using the Visual Studio generator.",
+      "generator": "Visual Studio 18 2026",
+      "architecture": "Win32",
+      "binaryDir": "${sourceDir}/build/vs2026-debug",
+      "cacheVariables": {
+        "CMAKE_INSTALL_PREFIX": "${sourceDir}/install",
+        "NO_VCRUNTIME": "ON"
+      }
+    },
+    {
+      "name": "vs2022-debug",
+      "inherits": "vs2026-debug",
+      "displayName": "Visual Studio 2022 Win32 Debug",
+      "generator": "Visual Studio 17 2022",
+      "binaryDir": "${sourceDir}/build/vs2022-debug"
+    },
+    {
+      "name": "vs2022-release",
+      "inherits": "vs2026-release",
+      "displayName": "Visual Studio 2022 Win32 Release",
+      "generator": "Visual Studio 17 2022",
+      "binaryDir": "${sourceDir}/build/vs2022-release"
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "vs2026-release",
+      "configurePreset": "vs2026-release",
+      "configuration": "Release"
+    },
+    {
+      "name": "vs2026-release-install",
+      "configurePreset": "vs2026-release",
+      "configuration": "Release",
+      "targets": [
+        "install"
+      ]
+    },
+    {
+      "name": "vs2026-debug",
+      "displayName": "Build Visual Studio 2026 Win32 Debug",
+      "configurePreset": "vs2026-debug",
+      "configuration": "Debug"
+    },
+    {
+      "name": "vs2026-debug-install",
+      "displayName": "Install Visual Studio 2026 Win32 Debug",
+      "configurePreset": "vs2026-debug",
+      "configuration": "Debug",
+      "targets": [
+        "install"
+      ]
+    },
+    {
+      "name": "vs2022-debug",
+      "configurePreset": "vs2022-debug",
+      "configuration": "Debug"
+    },
+    {
+      "name": "vs2022-debug-install",
+      "configurePreset": "vs2022-debug",
+      "configuration": "Debug",
+      "targets": [
+        "install"
+      ]
+    },
+    {
+      "name": "vs2022-release",
+      "configurePreset": "vs2022-release",
+      "configuration": "Release"
+    },
+    {
+      "name": "vs2022-release-install",
+      "configurePreset": "vs2022-release",
+      "configuration": "Release",
+      "targets": [
+        "install"
+      ]
+    }
+  ]
+}

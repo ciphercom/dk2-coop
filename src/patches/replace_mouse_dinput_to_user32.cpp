@@ -3,6 +3,7 @@
 //
 
 #include "replace_mouse_dinput_to_user32.h"
+#include "network_possession.h"
 #include "dk2_globals.h"
 #include "dk2/MouseRgbDxAction.h"
 #include "dk2/ControlKeysUpdater.h"
@@ -122,7 +123,7 @@ void patch::replace_mouse_dinput_to_user32::handle_mouse_move(HWND hWnd, POINT p
     if(dk2::g_pWorld != NULL) {
         if(dk2::CPlayer *pl = (dk2::CPlayer *) dk2::sceneObjects[dk2::g_pWorld->v_getMEPlayerTagId()]) {
             if (!dk2::CDefaultPlayerInterface_instance.inMenu) {
-                if(pl->creaturePossessed != 0 || dk2::CDefaultPlayerInterface_instance.isMouseRotateOrSoomPressed) {
+                if(patch::network_possession::relativeMouse(pl->creaturePossessed != 0) || dk2::CDefaultPlayerInterface_instance.isMouseRotateOrSoomPressed) {
                     relativeMode = true;
                 }
             }

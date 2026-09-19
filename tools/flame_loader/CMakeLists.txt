@@ -45,8 +45,8 @@ add_custom_command(
 )
 
 set(RESOURCES_FILE ${CMAKE_CURRENT_BINARY_DIR}/resources.rc)
-set(VER_PRODUCT_NAME "Flame loader")
-set(VER_DESCRIPTION "Runtime Flame loader and linker v${OUTPUT_VERSION}")
+set(VER_PRODUCT_NAME "DK2 Co-op loader")
+set(VER_DESCRIPTION "DK2 Co-op loader and linker, based on Flame v${OUTPUT_VERSION}")
 configure_file(
         ${CMAKE_CURRENT_LIST_DIR}/resources.rc.in
         ${RESOURCES_FILE}
@@ -75,10 +75,10 @@ target_compile_definitions(${TARGET} PRIVATE BELIKE_DDRAW=1)  # aka PATCH.dll
 set_target_properties(${TARGET} PROPERTIES OUTPUT_NAME "${OUTPUT_NAME}")
 
 install(FILES $<TARGET_FILE:${TARGET}> DESTINATION ".")
-if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-    target_link_options(${TARGET} PRIVATE /PDBALTPATH:flame/${OUTPUT_NAME}.pdb)
-    install(FILES $<TARGET_PDB_FILE:${TARGET}> DESTINATION "flame")
-    set_target_properties(${TARGET} PROPERTIES PDB_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/flame")  # put PATCH.pdb to flame dir
-    target_link_options(${TARGET} PRIVATE /ILK:${CMAKE_CURRENT_BINARY_DIR}/${OUTPUT_NAME}.ilk)  # dont put ilk to bin dir
-endif()
+target_link_options(${TARGET} PRIVATE
+        "$<$<CONFIG:Debug>:/PDBALTPATH:flame/${OUTPUT_NAME}.pdb>"
+        "$<$<CONFIG:Debug>:/ILK:${CMAKE_CURRENT_BINARY_DIR}/${OUTPUT_NAME}.ilk>"  # dont put ilk to bin dir
+)
+install(FILES $<TARGET_PDB_FILE:${TARGET}> DESTINATION "flame" CONFIGURATIONS Debug)
+set_target_properties(${TARGET} PROPERTIES PDB_OUTPUT_DIRECTORY_DEBUG "${CMAKE_BINARY_DIR}/bin/flame")  # put PATCH.pdb to flame dir
 set_target_properties(${TARGET} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin")

@@ -10,6 +10,8 @@
 #include <dk2/gui/ButtonCfg.h>
 #include <dk2/gui/WindowCfg.h>
 #include "main_layout.h"
+#include <patches/gui/button_id.h>
+#include <patches/gui/main/coop_campaign_menu.h>
 
 namespace {
     std::vector<dk2::ButtonCfg> buttons;
@@ -34,6 +36,14 @@ dk2::WindowCfg *Main_Multiplayer_layout() {
     buttons.emplace_back() = {
         BT_CClickButton, 11, 0, dk2::CButton_handleLeftClick_changeMenu, NULL, 0, 0, 0x00000000, 0x0000000D, 0,
         2336, 1688, 192, 192, 0, 0, 192, 192, 0, NULL, dk2::CClickButton_renderApplyBtn, NULL, 0, 0x00000000, 0x00000000, 35
+    };
+
+    // Use the existing text-button renderer; its literal is baked with the frontend fonts.
+    buttons.emplace_back() = {
+        BT_CClickButton, dk2::BID_Multiplayer_CoopCampaign, 0, patch::coop_campaign_menu::enter, NULL,
+        0, 0, 0, 0, 0,
+        608, 1040, 1344, 172, 0, 0, 1344, 172, 0, NULL,
+        dk2::CClickButton_render_532670, 0, 0, 0, 0x00080002, 0
     };
 
     buttons.emplace_back() = EngOfButtonList;

@@ -1,64 +1,56 @@
-name: CI
+name: Build DK2 Co-op
 
 on:
   workflow_dispatch:
   push:
-    branches: main
+    branches: [main]
+    tags: ['v*']
   pull_request:
-    branches: main
+    branches: [main]
+
+permissions:
+  contents: read
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: windows-2022
     strategy:
       fail-fast: false
       matrix:
-        build_type: [Release, Debug]
+        configuration: [release, debug]
     steps:
       - uses: actions/checkout@v4
         with:
-          submodules: true
-      - name: Set up Python
-        uses: actions/setup-python@v5
+          submodules: recursive
+      - uses: actions/setup-python@v5
         with:
-          python-version: '3.x'
-          # cache: 'pip'
-      - uses: actions/cache@v4
-        id: cache-venv
-        with:
-          path: venv
-          key: setup-venv-${{ runner.os }}-py-${{ steps.setup-python.outputs.python-version }}-${{ hashFiles('requirements.txt') }}
-          restore-keys: |
-            setup-venv-${{ runner.os }}-py-${{ steps.setup-python.outputs.python-version }}-
-      - name: Setup venv
-        run: |
-          python -m venv venv
-          venv/Scripts/python.exe -m pip install --upgrade pip setuptools wheel
-          venv/Scripts/python.exe -m pip install -r requirements.txt
-        if: steps.cache-venv.outputs.cache-hit != 'true'
-      - uses: ilammy/msvc-dev-cmd@v1
-        with:
-          arch: win32
-      - name: "create build dir"
+          python-version: '3.12'
+      - name: Build, test, and package
         shell: cmd
-        run: mkdir build
-      - name: "configure cmake"
-        shell: cmd
-        run: cd build && cmake -G Ninja -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} -DNO_VCRUNTIME=ON -DUSE_CONFIGURE_DATE=ON -DCMAKE_INSTALL_PREFIX=../install ..
-      - name: "cmake build"
-        shell: cmd
-        run: cd build && cmake --build .
-      - name: "cmake install"
-        shell: cmd
-        run: cd build && cmake --install .
-      - name: "get artifact name"
-        shell: cmd
-        run: |
-          cd build && cmake --build . --target get_artifact_name
-          set /p artifact_name=<artifact_name.txt
-          echo artifact_name=%artifact_name% >> %GITHUB_ENV%
+        run: build.cmd --package --${{ matrix.configuration }}
       - uses: actions/upload-artifact@v4
         with:
-          name: ${{ env.artifact_name }}
-          path: install/
+          name: DK2-Coop-${{ matrix.configuration }}
+          path: |
+            build/releases/*.zip
+            build/releases/*.zip.sha256
           if-no-files-found: error
+
+  # Tags prepare a reviewable draft; publishing remains a maintainer action.
+  draft-release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: DK2-Coop-release
+          path: release
+      - name: Prepare draft release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: gh release create "$RELEASE_TAG" release/* --verify-tag --draft --generate-notes --title "DK2 Co-op $RELEASE_TAG"

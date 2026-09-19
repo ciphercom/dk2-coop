@@ -3,8 +3,8 @@ set(TARGET flame)
 set(RESOURCES_FILE ${CMAKE_CURRENT_BINARY_DIR}/resources.rc)
 set(WELCOME__HEADER ${CMAKE_CURRENT_LIST_DIR}/patches/welcome_window/resources/resources.h)
 set(WELCOME__MAIN_BACKGROUND ${CMAKE_CURRENT_LIST_DIR}/patches/welcome_window/resources/main_background.png)
-set(VER_PRODUCT_NAME "DKII Flame")
-set(VER_DESCRIPTION "DKII Flame unofficial patches v${OUTPUT_VERSION}")
+set(VER_PRODUCT_NAME "DK2 Co-op")
+set(VER_DESCRIPTION "DK2 Co-op, based on Flame v${OUTPUT_VERSION}")
 configure_file(
         ${CMAKE_CURRENT_LIST_DIR}/resources.rc.in
         ${RESOURCES_FILE}
@@ -24,6 +24,13 @@ collect_sources(WEANETR_SOURCES weanetr_dll)
 
 add_library(${TARGET} SHARED
         main.cpp
+        patches/scripted_camera_trigger.cpp
+        patches/scripted_camera_hooks.cpp
+        patches/network_possession.cpp
+        patches/health_flower.cpp
+        patches/network_hands.cpp
+        patches/network_gem_ending.cpp
+        patches/network_gem_ending_ui.cpp
         dkii_exe_functions.cpp
         dk2/MyWindow.cpp
         dk2/MyHeap.cpp
@@ -75,6 +82,7 @@ add_library(${TARGET} SHARED
         dk2/engine/WinCls_BullfrogLibScreen.cpp
         dk2/engine/CWindowTest.cpp
         dk2/engine/WinEventHandlers.cpp
+        dk2/engine/InputCursor.cpp
         dk2/engine/DdModeList.cpp
 
         dk2/engine/scene/scene.cpp
@@ -107,6 +115,7 @@ add_library(${TARGET} SHARED
         dk2/gui/button_render.cpp
 
         tools/StackLimits.cpp
+        tools/instance_mutex_name.cpp
         tools/LoadedModules.cpp
         tools/win32_gui_layout.cpp
         tools/ExceptionWindow.cpp
@@ -135,6 +144,10 @@ add_library(${TARGET} SHARED
         patches/protocol_dump.cpp
         patches/registry_to_config.cpp
         patches/limit_tps.cpp
+        patches/coop_campaign.cpp
+        patches/coop_campaign_route.cpp
+        patches/coop_campaign_progress.cpp
+        patches/coop_campaign_init.cpp
         patches/auto_network.cpp
         patches/scheduler.cpp
         patches/replace_heap.cpp
@@ -147,6 +160,7 @@ add_library(${TARGET} SHARED
         patches/big_resolution_fix/big_resolution_fix.cpp
         patches/big_resolution_fix/screen_resolution.cpp
 
+        patches/gui/main/coop_campaign_menu.cpp
         patches/gui/main/main_layout.cpp
         patches/gui/main/single_player/btn_custom_campaign.cpp
         patches/gui/main/single_player/win_custom_campaign.cpp
@@ -205,6 +219,7 @@ target_link_libraries(${TARGET} PRIVATE
 #        imgui opengl32 stb  # welcome window
 
         imm32
+        advapi32
         # wsock32 is old link target
         ws2_32 # should be better
         dsound
@@ -232,12 +247,28 @@ set_target_properties(${TARGET} PROPERTIES OUTPUT_NAME "${OUTPUT_NAME}")
 
 
 install(FILES $<TARGET_FILE:${TARGET}> DESTINATION "flame")
-if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-    target_link_options(${TARGET} PRIVATE /PDBALTPATH:${OUTPUT_NAME}.pdb)
-    install(FILES $<TARGET_PDB_FILE:${TARGET}> DESTINATION "flame")
-    target_link_options(${TARGET} PRIVATE /ILK:${CMAKE_CURRENT_BINARY_DIR}/${OUTPUT_NAME}.ilk)  # dont put ilk to bin dir
-endif()
+target_link_options(${TARGET} PRIVATE
+        "$<$<CONFIG:Debug>:/PDBALTPATH:${OUTPUT_NAME}.pdb>"
+        "$<$<CONFIG:Debug>:/ILK:${CMAKE_CURRENT_BINARY_DIR}/${OUTPUT_NAME}.ilk>"  # dont put ilk to bin dir
+)
+install(FILES $<TARGET_PDB_FILE:${TARGET}> DESTINATION "flame" CONFIGURATIONS Debug)
 set_target_properties(${TARGET} PROPERTIES RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/flame")
+
+add_executable(instance_mutex_name_tests
+        tools/instance_mutex_name.cpp
+        tools/instance_mutex_name_tests.cpp
+)
+
+add_executable(scripted_camera_timeline_tests patches/scripted_camera_timeline_tests.cpp)
+add_executable(network_possession_tests patches/network_possession_tests.cpp)
+add_executable(command_line_tests tools/command_line_tests.cpp tools/command_line.cpp)
+add_executable(health_flower_tests patches/health_flower_tests.cpp)
+add_executable(network_hands_tests patches/network_hands_tests.cpp)
+add_executable(network_gem_ending_tests patches/network_gem_ending_tests.cpp)
+add_executable(network_gem_ending_ui_tests patches/network_gem_ending_ui_tests.cpp)
+add_executable(input_cursor_tests dk2/engine/InputCursor_tests.cpp dk2/engine/InputCursor.cpp)
+target_link_libraries(input_cursor_tests PRIVATE dkii_exe_api)
+target_compile_definitions(input_cursor_tests PRIVATE DIRECTINPUT_VERSION=0x0500 DIRECT3D_VERSION=0x0600)
 
 if(EXISTS "${CMAKE_CURRENT_LIST_DIR}/../dev")
     include(../dev/dev.cmake)
@@ -254,3 +285,15 @@ add_custom_target(update_replace_globals
         ${CMAKE_HOME_DIRECTORY}/src/replace_globals.txt
         COMMENT "update replace_globals.txt"
 )
+
+add_executable(coop_campaign_tests patches/coop_campaign_tests.cpp patches/coop_campaign_route.cpp)
+target_link_libraries(coop_campaign_tests PRIVATE dkii_exe_api)
+target_compile_definitions(coop_campaign_tests PRIVATE DIRECTINPUT_VERSION=0x0500 DIRECT3D_VERSION=0x0600)
+
+add_executable(coop_campaign_progress_tests patches/coop_campaign_progress_tests.cpp)
+
+add_executable(coop_campaign_init_tests patches/coop_campaign_init_tests.cpp)
+
+add_executable(shared_dig_overlay_tests patches/shared_dig_overlay_tests.cpp)
+target_link_libraries(shared_dig_overlay_tests PRIVATE dkii_exe_api)
+target_compile_definitions(shared_dig_overlay_tests PRIVATE DIRECTINPUT_VERSION=0x0500 DIRECT3D_VERSION=0x0600)

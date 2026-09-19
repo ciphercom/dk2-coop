@@ -25,6 +25,14 @@
 #include "patches/replace_mouse_dinput_to_user32.h"
 #include "patches/protocol_dump.h"
 #include "dk2/engine/game_engine.h"
+#include "patches/network_hands.h"
+#include "patches/coop_campaign.h"
+#include "patches/coop_campaign_init.h"
+#include <cstdlib>
+#include "patches/scripted_camera_hooks.h"
+#include "patches/network_gem_ending.h"
+#include "patches/network_possession.h"
+#include "patches/health_flower.h"
 #if __has_include(<dk2_research.h>)
 #include "dk2_research.h"
 #endif
@@ -43,12 +51,27 @@ dk2::CComponent *dk2::CGameComponent::mainGuiLoop() {
     int hardware3d = 1;
     if (!MyWindow_prepareWithSettings(&hardware3d)) return NULL;
     if (MyResources_instance.gameCfg.useFe3d && !CFrontEndComponent_instance.launchGame()) return NULL;
+    // Select the campaign and exclude carrier availability after the lobby finalizes
+    // the session, before game-session initialization. No campaign files are edited.
+    auto &launchConfig = MyResources_instance.gameCfg;
+    if (patch::coop_campaign::active() && launchConfig.useFe_playMode == 3 &&
+        !launchConfig.useFe3d && !launchConfig.useFe2d_unk1 && !launchConfig.hasSaveFile) {
+        // Both Controllers chose the same campaign route. A different carrier is
+        // a routing invariant violation, not permission to substitute an arbitrary match.
+        if (!patch::coop_campaign::apply(launchConfig)) std::abort();
+        patch::coop_campaign_init::install();
+        patch::health_flower::install();
+    }
     Pos2i v29 {0, 0};
     int status;
     static_MyInputManagerCb_setCursorIconAndDraw(&status, NULL, NULL, &v29);
     CWorld_instance.showLoadingScreen();
     CWorld_instance.releaseSurface();
     CWorld_instance.fun_511250();
+    patch::scripted_camera::resetSession();
+    patch::network_gem_ending::resetSession();
+    patch::network_possession::resetSession();
+    patch::network_hands::resetSession();
     if (!MyResources_instance.gameCfg.useFe2d_unk1)
         this->gameSession.init();
     CCommunicationInterface* v2_comm_i;
@@ -90,7 +113,7 @@ dk2::CComponent *dk2::CGameComponent::mainGuiLoop() {
         if (patch::buffer_overrun_fix::enabled) {
             char* SavFile = MyResources_instance.gameCfg.getSavFile();
             wchar_t Buffer[MAX_PATH];
-            swprintf(Buffer, L"%s", SavFile);
+            swprintf(Buffer, L"%hs", SavFile);
             CHAR MultiByteStr[MAX_PATH];
             unicodeToUtf8(Buffer, MultiByteStr, MAX_PATH);
             char v41[MAX_PATH];
@@ -105,7 +128,7 @@ dk2::CComponent *dk2::CGameComponent::mainGuiLoop() {
         } else {
             char* SavFile = MyResources_instance.gameCfg.getSavFile();
             wchar_t Buffer[64];
-            swprintf(Buffer, L"%s", SavFile);
+            swprintf(Buffer, L"%hs", SavFile);
             CHAR MultiByteStr[64];
             unicodeToUtf8(Buffer, MultiByteStr, 64);
             char v41[64];
@@ -268,6 +291,9 @@ dk2::CComponent *dk2::CGameComponent::mainGuiLoop() {
         }
     }
     // hook::AFTER_GAME_LOOP
+    patch::network_gem_ending::resetSession();
+    patch::network_possession::resetSession();
+    patch::network_hands::resetSession();
     if (!MyResources_instance.gameCfg.useFe2d_unk1) {
         CCamera* pCamera = this->gameSession.pBridge->v_fD0_getCamera();
         Vec3i pos;

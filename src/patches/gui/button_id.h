@@ -15,6 +15,7 @@ namespace dk2 {
 
         BID_CustomCampaign_Back,
         BID_CustomCampaign_Apply,
+        BID_Multiplayer_CoopCampaign,
 
     };
 

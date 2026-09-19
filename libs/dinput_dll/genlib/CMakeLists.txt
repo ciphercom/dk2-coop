@@ -7,12 +7,13 @@ set(ABS_GENLIB_LIB ${GENLIB_LIB})
 list(TRANSFORM ABS_GENLIB_LIB PREPEND "${CMAKE_CURRENT_LIST_DIR}/")
 add_custom_command(
         OUTPUT ${ABS_GENLIB_LIB}
-        COMMAND cmd /C ${CMAKE_HOME_DIRECTORY}/tools/genlib/gen_map.bat
-        ${DUMPBIN_PROGRAM} ${CMAKE_HOME_DIRECTORY}/libs/dinput_dll/dinput.dll dinput.def DINPUT
-        COMMAND cmd /C ${CMAKE_HOME_DIRECTORY}/tools/genlib/gen_lib.bat
-        ${LIB_PROGRAM} dinput.def ${ABS_GENLIB_LIB}
+        COMMAND "${CMAKE_HOME_DIRECTORY}/tools/genlib/gen_map.bat"
+        "${DUMPBIN_PROGRAM}" "${CMAKE_HOME_DIRECTORY}/libs/dinput_dll/dinput.dll" "dinput.def" "DINPUT"
+        COMMAND "${CMAKE_HOME_DIRECTORY}/tools/genlib/gen_lib.bat"
+        "${LIB_PROGRAM}" "dinput.def" "${ABS_GENLIB_LIB}"
         DEPENDS ${CMAKE_HOME_DIRECTORY}/libs/dinput_dll/dinput.dll
         COMMENT "genlib ${GENLIB_LIB}"
+        VERBATIM
 )
 
 set(TARGET dinput_genlib)

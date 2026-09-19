@@ -11,6 +11,7 @@
 #include "dk2/entities/data/MyObjectDataObj.h"
 #include "dk2_globals.h"
 #include "patches/micro_patches.h"
+#include "patches/network_hands.h"
 
 
 BOOL dk2::MyManufactureList::testManufactureCompleted(unsigned __int16 a2_completed) {
@@ -90,6 +91,8 @@ namespace dk2 {
 }
 
 int dk2::CPlayer::act4_dropThingFromHand() {
+    const int dropIndex = patch::network_hands::dropIndex(*this);
+    if (dropIndex < 0) return 0;
     uint16_t v1_dropTag = this->inst__playerAction.evData3;
     unsigned int v2_direction = HIWORD(this->inst__playerAction.evData3) & 0x7FF;  // v19_direction << 16
     Vec3i dropPos;
@@ -103,7 +106,7 @@ int dk2::CPlayer::act4_dropThingFromHand() {
     dropPos.z = 0x2000;
 
     if (patch::drop_thing_from_hand_fix::enabled) {
-        uint16_t v5_tagId = thingsInHand[this->thingsInHand_count - 1];
+        uint16_t v5_tagId = thingsInHand[dropIndex];
         CThing *v6_thing = (CThing *) sceneObjects[v5_tagId];
         BOOL allowToDrop = checkPlayerAllowToDrop(
                 g_pWorld, this->f0_tagId, v6_thing,
@@ -115,6 +118,8 @@ int dk2::CPlayer::act4_dropThingFromHand() {
     }
 
     uint16_t v5_direction = v2_direction;
+    // Preserve native bookkeeping by moving only the selected entry to the pop position.
+    patch::network_hands::Ownership::promote(thingsInHand, thingsInHand_count, unsigned(dropIndex));
     this->dropThingFromHand(&dropPos, &v5_direction);
     return 1;
 }

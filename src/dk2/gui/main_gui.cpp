@@ -12,7 +12,11 @@
 #include <dk2_functions.h>
 #include <dk2_globals.h>
 #include <patches/auto_network.h>
+#include <patches/gui/button_id.h>
+#include <patches/gui/main/coop_campaign_menu.h>
+#include <dk2/gui/RenderButtonTextInfo.h>
 #include <patches/gui/main/single_player/win_custom_campaign.h>
+#include <cstdlib>
 
 
 typedef char (__cdecl *CButton_render_t)(dk2::CButton *btn, dk2::CFrontEndComponent *front);
@@ -33,6 +37,7 @@ char __cdecl dk2::CButton_render_541F50(dk2::CButton *btn, dk2::CFrontEndCompone
 
 
 int dk2::CFrontEndComponent::load() {
+    patch::coop_campaign_menu::onFrontendLoad();
     MyResources_instance.gameCfg.useFe_playMode = 5;
     CFrontEndComponent3D_instance.CFrontEndComponent_p = this;
     MyResources_instance.gameCfg.unk_f16C = 0;
@@ -249,6 +254,14 @@ int dk2::CFrontEndComponent::load() {
     this->bakeButton(11, 0xAu, 5);
     this->bakeButton(10, 0xBu, 5);
     this->bakeButton(39, 0xCu, 5);
+    // Atlas group 8 is unused by the native menus; no string-table or asset edits are needed.
+    // The renderer consumes the native font encoding, not plain narrow text.
+    wchar_t coopLabel[] = L"Co-op Campaign";
+    RenderButtonTextInfo coopText[2]{};
+    coopText[0].btnId = BID_Multiplayer_CoopCampaign;
+    if (!UniToMb_convert(coopLabel, reinterpret_cast<uint8_t *>(coopText[0].mbstr),
+        sizeof(coopText[0].mbstr))) std::abort();
+    this->renderButtonsText_5329A0(MWID_Multiplayer, 8, coopText, 6);
     this->f6705 = 1;
     this->f6706 = 1;
     this->f6707 = 1;

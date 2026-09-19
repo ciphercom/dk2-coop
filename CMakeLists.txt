@@ -1,7 +1,21 @@
 cmake_minimum_required(VERSION 3.25)
-project(flame)
+project(dk2_coop)
 
 set(CMAKE_CXX_STANDARD 23)
+
+# Keep programmer invariants and assertion-based tests active in optimized builds.
+# Remove the default definition instead of overriding it (which produces MSVC warnings).
+foreach(language C CXX)
+  foreach(configuration RELEASE RELWITHDEBINFO MINSIZEREL)
+    string(REPLACE "/DNDEBUG" "" CMAKE_${language}_FLAGS_${configuration} "${CMAKE_${language}_FLAGS_${configuration}}")
+  endforeach()
+endforeach()
+
+# Parallelize translation units inside large MSVC targets; build.cmd also parallelizes targets.
+add_compile_options(
+        "$<$<COMPILE_LANG_AND_ID:C,MSVC>:/MP>"
+        "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/MP>"
+)
 
 option(NO_VCRUNTIME "Will remove dependency on VCRUNTIME*.dll")
 if(NO_VCRUNTIME)
@@ -23,13 +37,13 @@ if(EXISTS ${CMAKE_CURRENT_LIST_DIR}/.venv/Scripts/python.exe)
 else ()
   # create venv
   find_package(Python3 COMPONENTS Interpreter REQUIRED)
-  execute_process(COMMAND_ECHO STDOUT COMMAND ${Python3_EXECUTABLE} -m venv ${CMAKE_CURRENT_LIST_DIR}/.venv )
+  execute_process(COMMAND_ECHO STDOUT COMMAND ${Python3_EXECUTABLE} -m venv ${CMAKE_CURRENT_LIST_DIR}/.venv COMMAND_ERROR_IS_FATAL ANY)
   set(Python3_EXECUTABLE "${CMAKE_CURRENT_LIST_DIR}/.venv/Scripts/python.exe")
   set(EXIT_CODE 1)
 endif ()
-if(${EXIT_CODE} EQUAL 1)  # not installed
-  execute_process(COMMAND_ECHO STDOUT COMMAND ${Python3_EXECUTABLE} -m pip install -U pip wheel )
-  execute_process(COMMAND_ECHO STDOUT COMMAND ${Python3_EXECUTABLE} -m pip install -r ${CMAKE_CURRENT_LIST_DIR}/requirements.txt )
+if(NOT EXIT_CODE EQUAL 0)  # not installed
+  execute_process(COMMAND_ECHO STDOUT COMMAND ${Python3_EXECUTABLE} -m pip install -U pip wheel COMMAND_ERROR_IS_FATAL ANY)
+  execute_process(COMMAND_ECHO STDOUT COMMAND ${Python3_EXECUTABLE} -m pip install -r ${CMAKE_CURRENT_LIST_DIR}/requirements.txt COMMAND_ERROR_IS_FATAL ANY)
 endif ()
 message(STATUS "Python3 found: ${Python3_EXECUTABLE}")
 
@@ -37,6 +51,16 @@ find_package(Python3 COMPONENTS Interpreter REQUIRED)
 
 find_package(Git REQUIRED)
 message(STATUS "Git found: ${GIT_EXECUTABLE}")
+
+# Visual Studio generators resolve MSVC tools without adding them to the configure process PATH.
+if(MSVC)
+  if(NOT EXISTS "${CMAKE_AR}")
+    message(FATAL_ERROR "The MSVC library manager was not resolved by CMake: ${CMAKE_AR}")
+  endif()
+  set(LIB_PROGRAM "${CMAKE_AR}")
+  get_filename_component(MSVC_TOOL_DIRECTORY "${CMAKE_LINKER}" DIRECTORY)
+  find_program(DUMPBIN_PROGRAM NAMES dumpbin HINTS "${MSVC_TOOL_DIRECTORY}" REQUIRED)
+endif()
 
 # the commit's SHA1, and whether the building workspace was dirty or not
 execute_process(COMMAND
@@ -89,17 +113,6 @@ if(DK2_DIR)
   if(NOT EXISTS "${DK2_DIR}/DKII-DX.EXE")
     message(FATAL_ERROR "\"${DK2_DIR}/DKII-DX.EXE\" is not found")
   endif()
-  set(PDB_COPY_COMMANDS)
-  if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-    set(PDB_COPY_COMMANDS
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            $<TARGET_PDB_FILE:flame> "${DK2_DIR}/flame/Flame.pdb"
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            $<TARGET_PDB_FILE:dkii_dll_stub> "${DK2_DIR}/flame/DKII.pdb"
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different
-            $<TARGET_PDB_FILE:flame_loader> "${DK2_DIR}/flame/PATCH.pdb"
-    )
-  endif()
   add_custom_target(flame_dev
           DEPENDS flame dkii_dll_stub flame_loader
           COMMAND ${CMAKE_COMMAND} -E copy_if_different
@@ -108,17 +121,28 @@ if(DK2_DIR)
           $<TARGET_FILE:dkii_dll_stub> "${DK2_DIR}/flame/DKII.dll"
           COMMAND ${CMAKE_COMMAND} -E copy_if_different
           $<TARGET_FILE:flame_loader> "${DK2_DIR}/PATCH.dll"
-          ${PDB_COPY_COMMANDS}
+          # The helper makes PDB copies conditional at build time for multi-config generators.
+          COMMAND ${CMAKE_COMMAND}
+          "-DBUILD_CONFIG=$<CONFIG>"
+          "-DFLAME_PDB=$<TARGET_PDB_FILE:flame>"
+          "-DDKII_PDB=$<TARGET_PDB_FILE:dkii_dll_stub>"
+          "-DPATCH_PDB=$<TARGET_PDB_FILE:flame_loader>"
+          "-DDESTINATION=${DK2_DIR}/flame"
+          -P "${CMAKE_CURRENT_LIST_DIR}/cmake/copy_debug_pdbs.cmake"
+          VERBATIM
   )
 endif()
 
-set(OUTPUT_SUFFIX)
-if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-  set(OUTPUT_SUFFIX "-debug")
-endif ()
+# Generate a configuration-specific value, then expose the historical artifact_name.txt interface.
+file(GENERATE
+        OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/artifact_name-$<CONFIG>.txt"
+        CONTENT "DK2-Coop-${OUTPUT_VERSION}$<$<CONFIG:Debug>:-debug>\n"
+)
 add_custom_target(get_artifact_name
-        COMMAND ${CMAKE_COMMAND} -E echo "Flame-${OUTPUT_VERSION}${OUTPUT_SUFFIX}" >> ${CMAKE_CURRENT_BINARY_DIR}/artifact_name.txt
-        WORKING_DIRECTORY ${CMAKE_INSTALL_PREFIX}
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        "${CMAKE_CURRENT_BINARY_DIR}/artifact_name-$<CONFIG>.txt"
+        "${CMAKE_CURRENT_BINARY_DIR}/artifact_name.txt"
+        VERBATIM
 )
 
 set(Python_EXECUTABLE "")  # disable warning: Manually-specified variables were not used by the project

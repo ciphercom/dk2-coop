@@ -999,6 +999,8 @@ void BullfrogNET::DestroyPlayer() {
             v20_sysTime.wType = 1;
             timeGetSystemTime(&sysTime, 0xCu);
             timeGetSystemTime(&v19_sysTime, 0xCu);
+            // The first migration resend comparison needs a timestamp from the initial send.
+            timeGetSystemTime(&v20_sysTime, sizeof(v20_sysTime));
             MySocket_send(&this->f571_joinSession_sock, &a2_to, &packet, sizeof(MyPacket_F_MigrateHost));
             while (v19_sysTime.u.ms - sysTime.u.ms < 4000) {
                 struct mmtime_tag v23_sysTime;

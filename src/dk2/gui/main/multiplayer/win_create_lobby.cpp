@@ -10,6 +10,7 @@
 #include <dk2/gui/ButtonCfg.h>
 #include <dk2/gui/WindowCfg.h>
 #include "../main_layout.h"
+#include <patches/gui/main/coop_campaign_menu.h>
 
 namespace {
     void __cdecl CListBox__ret(dk2::CVerticalSlider *, dk2::CFrontEndComponent *) {}
@@ -25,11 +26,11 @@ namespace {
         },
         {  // Map name
             BT_CTextBox, 456, 0, NULL, NULL, 0, 0, 0x00000000, 0x00000000, 0,
-            1480, 272, 960, 140, 0, 0, 0, 0, 0, NULL, dk2::CButton_render_53F8B0, 0x00000000, 32, 0x00000006, 0x00000001, 0
+            1480, 272, 960, 140, 0, 0, 0, 0, 0, NULL, patch::coop_campaign_menu::renderMission, 0x00000000, 32, 0x00000006, 0x00000001, 0
         },
         {
             BT_CTextBox, 687, 255, NULL, NULL, 0, 0, 0x00000000, 0x00000000, 0,
-            0, 0, 4, 4, 0, 0, 0, 0, 0, NULL, dk2::CButton_render_537C30, 0x00000000, 0, 0x00000000, 0x00000000, 0
+            0, 0, 4, 4, 0, 0, 0, 0, 0, NULL, patch::coop_campaign_menu::renderThumbnail, 0x00000000, 0, 0x00000000, 0x00000000, 0
         },
         {  // row 1 header "Player Name"
             BT_CTextBox, 449, 0, NULL, NULL, 0, 0, 0x00000000, 0x00000000, 0,

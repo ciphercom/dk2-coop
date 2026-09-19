@@ -7,12 +7,13 @@ set(ABS_GENLIB_LIB ${GENLIB_LIB})
 list(TRANSFORM ABS_GENLIB_LIB PREPEND "${CMAKE_CURRENT_LIST_DIR}/")
 add_custom_command(
         OUTPUT ${ABS_GENLIB_LIB}
-        COMMAND cmd /C ${CMAKE_HOME_DIRECTORY}/tools/genlib/gen_map.bat
-        ${DUMPBIN_PROGRAM} ${CMAKE_HOME_DIRECTORY}/libs/weanetr_dll/WEANETR.dll weanetr.def WEANETR
-        COMMAND cmd /C ${CMAKE_HOME_DIRECTORY}/tools/genlib/gen_lib.bat
-        ${LIB_PROGRAM} weanetr.def ${ABS_GENLIB_LIB}
+        COMMAND "${CMAKE_HOME_DIRECTORY}/tools/genlib/gen_map.bat"
+        "${DUMPBIN_PROGRAM}" "${CMAKE_HOME_DIRECTORY}/libs/weanetr_dll/WEANETR.dll" "weanetr.def" "WEANETR"
+        COMMAND "${CMAKE_HOME_DIRECTORY}/tools/genlib/gen_lib.bat"
+        "${LIB_PROGRAM}" "weanetr.def" "${ABS_GENLIB_LIB}"
         DEPENDS ${CMAKE_HOME_DIRECTORY}/libs/weanetr_dll/WEANETR.dll
         COMMENT "genlib ${GENLIB_LIB}"
+        VERBATIM
 )
 
 set(TARGET weanetr_genlib)

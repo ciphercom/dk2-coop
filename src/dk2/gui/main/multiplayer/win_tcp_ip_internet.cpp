@@ -10,6 +10,7 @@
 #include <dk2/gui/ButtonCfg.h>
 #include <dk2/gui/WindowCfg.h>
 #include "../main_layout.h"
+#include <patches/gui/main/coop_campaign_menu.h>
 
 namespace {
 
@@ -20,7 +21,7 @@ namespace {
         },
         {
             BT_CTextBox, 214, 255, NULL, NULL, 0, 0, 0x00000000, 0x00000000, 0,
-            668, 44, 1252, 140, 0, 0, 0, 0, 0, NULL, dk2::CTextBox_renderTitle_536700, 0x00000000, 13, 0x00000000, 0x00000000, 0
+            668, 44, 1252, 140, 0, 0, 0, 0, 0, NULL, patch::coop_campaign_menu::renderTitle, 0x00000000, 13, 0x00000000, 0x00000000, 0
         },
         {
             BT_CTextBox, 228, 255, NULL, NULL, 0, 0, 0x00000000, 0x00000000, 0,

@@ -60,6 +60,10 @@ add_library(${TARGET} SHARED
         # log: LINK : fatal error LNK1000: unknown error at 00BD059D; consult documentation for technical support options
         #${RESOURCES_FILE}
 )
+# The generated export-only assembly has no exception handlers. Mark it SafeSEH
+# compatible so the Win32 VS2022 linker accepts it; require the check on every toolchain.
+target_compile_options(${TARGET} PRIVATE "$<$<COMPILE_LANGUAGE:ASM_MASM>:/safeseh>")
+target_link_options(${TARGET} PRIVATE /SAFESEH)
 set_target_properties(${TARGET} PROPERTIES LINK_FLAGS "/NODEFAULTLIB")
 
 set(OUTPUT_NAME "DKII")

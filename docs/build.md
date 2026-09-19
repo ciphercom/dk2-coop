@@ -41,7 +41,7 @@ The game version display, loader/runtime DLL version information and package nam
 
 ## GitHub workflow
 
-The [build workflow](../.github/workflows/CI.yml) runs `build.cmd` on Windows with Visual Studio 2022 for Release and Debug. Main-branch pushes, pull requests and manual runs provide downloadable workflow artifacts. Pushing a version tag publishes a GitHub release automatically after **both** configurations pass, attaches the Release ZIP and SHA-256 checksum, generates release notes and marks it **Latest**. Debug packages remain available as workflow artifacts.
+The [build workflow](../.github/workflows/CI.yml) runs `build.cmd` on Windows with Visual Studio 2022 for Release and Debug. Pull requests targeting `main` and manual runs provide downloadable workflow artifacts. Ordinary branch pushes do not trigger game builds. Pushing a version tag publishes a GitHub release automatically after **both** configurations pass, attaches the Release ZIP and SHA-256 checksum, generates release notes and marks it **Latest**. Debug packages remain available as workflow artifacts.
 
 To release:
 

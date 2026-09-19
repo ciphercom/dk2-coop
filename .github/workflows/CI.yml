@@ -3,7 +3,6 @@ name: Build DK2 Co-op
 on:
   workflow_dispatch:
   push:
-    branches: [main]
     tags: ['v*']
   pull_request:
     branches: [main]

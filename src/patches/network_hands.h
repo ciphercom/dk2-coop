@@ -9,6 +9,10 @@ namespace dk2 { struct CPlayer; struct GameAction; }
 namespace patch::network_hands {
 inline void invariant(bool valid) { if (!valid) std::abort(); }
 inline bool pickup(int kind) { return kind >= 57 && kind <= 60; }
+/** Shared Keeper occupancy protects the possessed creature regardless of which Controller picks up. */
+inline bool possessionBlocksPickup(bool coop, uint16_t possessed, uint16_t target) {
+    return coop && possessed != 0 && possessed == target;
+}
 inline uint8_t originForSlot(int slot) { invariant(slot >= 0 && slot < 8); return uint8_t(slot + 1); }
 
 /** Native UI calls may leave register debris above the 16-bit Keeper tag. */

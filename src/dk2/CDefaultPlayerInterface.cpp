@@ -547,6 +547,9 @@ void dk2::CDefaultPlayerInterface::tickThingsInHand() {
             int hasThingInHand = v16_player->hasThingInHand(curThing->tagId);
             // A lost pickup race must clear our request, never drop the winner's creature.
             const bool heldByPartner = hasThingInHand && !patch::network_hands::localOwns(curThing->tagId);
+            // A rejected possessed-creature pickup must not leave a pending hand preview.
+            const bool possessed = patch::network_hands::possessionBlocksPickup(
+                patch::network_hands::enabled(), v16_player->creaturePossessed, curThing->tagId);
             if (heldByPartner) hasThingInHand = 0;
             if (hasThingInHand && curThing->hasUnderHand) {
                 dropThing(this, curThing);
@@ -555,7 +558,7 @@ void dk2::CDefaultPlayerInterface::tickThingsInHand() {
                 continue;
             }
             if (
-                    !hasThingInHand && !heldByPartner &&
+                    !hasThingInHand && !heldByPartner && !possessed &&
                     curThing->dropped != 1 &&
                     (v17_timeMs - curThing->timeMs) <= 2000
                     ) {

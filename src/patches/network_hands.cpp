@@ -106,6 +106,9 @@ int dk2::GameActionHandler_N3C(GameAction *action) { return dispatchPickup(*acti
 int dk2::CPlayer::doPlayerAction_4C09F0(int type, int data1, int data2, int data3) {
     if (patch::network_hands::enabled()) {
         verifyOriginals();
+        // Reject before a new pickup can replace an existing Keeper action.
+        if (type >= 1 && type <= 3 && possessionBlocksPickup(true, creaturePossessed, uint16_t(data1)))
+            return 0;
         if (type >= 1 && type <= 3 && dispatchKind == (type == 1 ? 57 : type + 57)) {
             invariant(data2 == 0);
             data2 = dispatchOrigin;
@@ -119,6 +122,9 @@ int dk2::CPlayer::takeThingInHand(uint16_t tag) {
     uint8_t origin = 0;
     if (patch::network_hands::enabled()) {
         verifyOriginals();
+        // Recheck at insertion: possession can start after a delayed pickup was queued.
+        // Batch pickups also pass here, so they cannot bypass the shared-state guard.
+        if (possessionBlocksPickup(true, creaturePossessed, tag)) return 0;
         origin = completingOrigin(inst__playerAction.type, uint16_t(inst__playerAction.evData1),
             inst__playerAction.evData2, tag, dispatchKind, dispatchOrigin);
     }

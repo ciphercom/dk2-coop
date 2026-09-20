@@ -10,6 +10,11 @@ void require(bool valid, const char *message) {
 /** Observable hand contents and drop order must agree after interleaved synchronized commands. */
 int main() {
     using namespace patch::network_hands;
+    require(possessionBlocksPickup(true, 448, 448), "neither Controller may pick up the possessed creature");
+    require(!possessionBlocksPickup(true, 448, 449), "other creatures must remain available for pickup");
+    require(!possessionBlocksPickup(true, 0, 448), "ending possession must allow pickup again");
+    require(!possessionBlocksPickup(false, 448, 448), "native sessions must retain their pickup rules");
+    require(!possessionBlocksPickup(true, 0, 0), "an empty possession tag must not block pickup");
     require(isLocalKeeper(1, 1) && isLocalKeeper(0x12340001, 1) && isLocalKeeper(int(0xFFFF0001u), 1),
         "3D preview queries must identify the local Keeper despite unused register bits");
     require(!isLocalKeeper(0x12340002, 1), "normalizing a preview query must not match another Keeper");

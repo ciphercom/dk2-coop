@@ -6,7 +6,7 @@ set(VER_BUILD_NUMBER 0)
 set(VER_REVISION_NUMBER 0)
 
 # Increment for every co-op release, including when the upstream Flame version changes.
-set(COOP_REVISION_NUMBER 3)
+set(COOP_REVISION_NUMBER 4)
 if(COOP_REVISION_NUMBER LESS 1 OR COOP_REVISION_NUMBER GREATER 65535)
     message(FATAL_ERROR "Co-op revision must fit a nonzero Windows version component")
 endif()

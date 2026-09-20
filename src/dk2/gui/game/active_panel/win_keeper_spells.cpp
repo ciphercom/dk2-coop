@@ -29,12 +29,15 @@ namespace {
         if (!keeper) std::abort();
         if (!keeper->creaturePossessed) return false;
 
-        // Native scroll 417730 increments B5 and uses E5 as capacity. Swapping them
+        // Native scroll 417730 increments B5 and uses E5 as its step. Swapping them
         // preserves their product but makes the slot bound zero on the first page.
-        uint32_t page, pageSize;
+        // E5 counts icons per column; native refresh 4113B0 bounds slots with 85,
+        // the full panel capacity. Using E5 here misses icons in later columns.
+        uint32_t page, scrollStep, visibleSlots;
         const auto *bytes = reinterpret_cast<const unsigned char *>(controller);
         std::memcpy(&page, bytes + 0xB5, sizeof(page));
-        std::memcpy(&pageSize, bytes + 0xE5, sizeof(pageSize));
+        std::memcpy(&scrollStep, bytes + 0xE5, sizeof(scrollStep));
+        std::memcpy(&visibleSlots, bytes + 0x85, sizeof(visibleSlots));
         uint32_t index = 0;
         const int count = world->v_getAvailableSpellCount();
         for (int i = 1; i <= count; ++i) {
@@ -43,7 +46,7 @@ namespace {
             ++index;
             if (spell == 2)
                 return patch::network_possession::buttonBlocked(true, keeper->creaturePossessed,
-                    slot, page, pageSize, index);
+                    slot, page, scrollStep, visibleSlots, index);
         }
         return false;
     }

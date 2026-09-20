@@ -9,11 +9,11 @@ namespace patch::network_possession {
 inline uint32_t originForSlot(int slot) { if (slot < 0 || slot >= 8) std::abort(); return 0x504F5300u | (slot + 1); }
 inline bool validOrigin(uint32_t origin) { return origin >= 0x504F5301u && origin <= 0x504F5308u; }
 
-/** Panel slots are one-based and paged; only the visible possession entry is locked while occupied. */
+/** Panel slots are one-based; scrolling advances one column, not the whole visible panel. */
 inline bool buttonBlocked(bool enabled, uint16_t creature, uint32_t slot,
-        uint32_t page, uint32_t pageSize, uint32_t possessionIndex) {
-    return enabled && creature && slot && slot <= pageSize && possessionIndex &&
-        page * pageSize + slot == possessionIndex;
+        uint32_t page, uint32_t scrollStep, uint32_t visibleSlots, uint32_t possessionIndex) {
+    return enabled && creature && slot && slot <= visibleSlots && possessionIndex &&
+        page * scrollStep + slot == possessionIndex;
 }
 
 /** Local presentation follows the accepted native shot, never an ambiguous pending creature target. */

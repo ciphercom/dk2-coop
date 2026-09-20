@@ -9,13 +9,19 @@ void require(bool valid, const char *message) { if (!valid) { std::fprintf(stder
 /** Model the native acceptance boundary: rejected casts never emit a camera-entry command. */
 int main() {
     using namespace patch::network_possession;
-    require(buttonBlocked(true, 448, 2, 0, 6, 2), "occupied Keeper must disable the possession button");
-    require(!buttonBlocked(true, 0, 2, 0, 6, 2), "exit or death must unlock possession");
-    require(!buttonBlocked(false, 448, 2, 0, 6, 2), "native sessions must retain their button behavior");
-    require(!buttonBlocked(true, 448, 1, 0, 6, 2), "other spells must remain available");
-    require(buttonBlocked(true, 448, 1, 1, 6, 7), "possession must be locked on later panel pages too");
-    require(!buttonBlocked(true, 448, 1, 0, 6, 7), "matching slot on another page must remain available");
-    require(!buttonBlocked(true, 448, 0, 0, 6, 0), "hidden possession must not lock an empty slot");
+    require(buttonBlocked(true, 448, 2, 0, 6, 6, 2), "occupied Keeper must disable the possession button");
+    require(!buttonBlocked(true, 0, 2, 0, 6, 6, 2), "exit or death must unlock possession");
+    require(!buttonBlocked(false, 448, 2, 0, 6, 6, 2), "native sessions must retain their button behavior");
+    require(!buttonBlocked(true, 448, 1, 0, 6, 6, 2), "other spells must remain available");
+    require(buttonBlocked(true, 448, 1, 1, 6, 6, 7), "possession must be locked on later panel pages too");
+    require(!buttonBlocked(true, 448, 1, 0, 6, 6, 7), "matching slot on another page must remain available");
+    require(!buttonBlocked(true, 448, 0, 0, 6, 6, 0), "hidden possession must not lock an empty slot");
+    require(buttonBlocked(true, 448, 2, 0, 1, 6, 2),
+        "possession in the second column must lock even with one icon per column");
+    require(buttonBlocked(true, 448, 4, 1, 2, 6, 6),
+        "scrolling one column must retain the lock in later visible columns");
+    require(!buttonBlocked(true, 448, 7, 0, 2, 6, 7),
+        "slots outside the visible panel must not be treated as possession buttons");
     const auto host = originForSlot(0), guest = originForSlot(1);
     Presentation local;
     require(!local.enter(true, guest, host, 3, 3, 448), "remote accepted possession must leave this Controller top-down");

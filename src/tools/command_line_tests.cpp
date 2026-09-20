@@ -22,6 +22,11 @@ int main() {
     parse(coop);
     // An obsolete launcher must not silently reintroduce the retired settings preset.
     require(cmdl::dict.empty(), "legacy co-op flag must not inject configuration overrides");
+    const char *diagnostic[] = {"DKII-DX.exe", "-diagnostic-bridge", "-flame:logging:protocol=true"};
+    parse(diagnostic);
+    require(cmdl::hasFlag("diagnostic-bridge") && !cmdl::dict.contains("flame:diagnostic-bridge"),
+        "explicit diagnostic flag must remain available to the configuration option");
+    require(cmdl::dict.at("flame:logging:protocol") == "true", "explicit diagnostic logging must survive");
     const char *custom[] = {"DKII-DX.exe", "-coop", "-skip-launcher", "-windowed=false", "-c=custom.toml"};
     parse(custom);
     require(cmdl::hasFlag("skip-launcher"), "explicit launch flags must survive");

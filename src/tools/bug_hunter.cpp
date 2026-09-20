@@ -566,6 +566,19 @@ LONG WINAPI TopLevelExceptionFilter(_In_ struct _EXCEPTION_POINTERS *ExceptionIn
 
     char exeFile[MAX_PATH];
     GetModuleFileNameA(NULL, exeFile, MAX_PATH);
+    // The crash-dialog process runs game startup, which recreates MESSAGE.LOG.
+    // Preserve the failing process's native diagnostics beside its unique report first.
+    const auto &nativeLogger = dk2::MyWindow_instance.logObj_out;
+    const fs::path savedLog = std::string(reportFile) + ".MESSAGE.LOG";
+    std::error_code logCopyError;
+    if (nativeLogger.initialized)
+        fs::copy_file(nativeLogger.filePath, savedLog, fs::copy_options::overwrite_existing, logCopyError);
+    else logCopyError = std::make_error_code(std::errc::no_such_file_or_directory);
+    {
+        std::ofstream report(reportFile, std::ios::app);
+        if (logCopyError) report << "\nNative MESSAGE.LOG copy failed: " << logCopyError.message() << '\n';
+        else report << "\nNative MESSAGE.LOG saved: " << savedLog.string() << '\n';
+    }
     ShellExecuteA(NULL, "open", exeFile, "-display_crash_message", NULL, SW_SHOWDEFAULT);
 
     for(auto &ts : states) ts.resume();

@@ -18,6 +18,8 @@
 #include "dk2/Uv2f_arr1024.h"
 #include "patches/big_resolution_fix/big_resolution_fix.h"
 #include "patches/logging.h"
+#include "diagnostic/graphics_lifecycle.h"
+#include <intrin.h>
 
 
 int __cdecl dk2::MyDirectDraw_init(
@@ -101,7 +103,12 @@ int __cdecl dk2::MyDirectDraw_init(
 }
 
 void dk2::MyDirectDraw_destroy() {
-    if (!g_sc_is3dInitialized) return;
+    // Caller and before/after state distinguish outer cleanup from texture-only reinitialization.
+    patch::diagnostic::graphicsLifecycle("directDraw.destroy.begin", _ReturnAddress());
+    if (!g_sc_is3dInitialized) {
+        patch::diagnostic::graphicsLifecycle("directDraw.destroy.skipped", _ReturnAddress());
+        return;
+    }
 //    void *v0;
 //    ret_void_0args_0(v0);
     MyDirectDraw_uvs_destroy();
@@ -130,10 +137,12 @@ void dk2::MyDirectDraw_destroy() {
     MyDirectDraw_instance.ddsurf4_primarySurf = NULL;
     MyDirectDraw_instance.ddsurf4_offScreen = NULL;
     g_sc_is3dInitialized = 0;
+    patch::diagnostic::graphicsLifecycle("directDraw.destroy.end", _ReturnAddress());
 }
 
 
 int __cdecl dk2::static_MyDirectDraw_devTexture_init(MyDirectDraw *mydd) {
+    patch::diagnostic::graphicsLifecycle("devTexture.init.begin", _ReturnAddress());
     MyDirectDraw_devTexture_destroy();
     // destruct if flag changed
     if (((MyDirectDraw_instance_devTexture.flags ^ mydd->flags) & 1) != 0) {
@@ -250,7 +259,10 @@ int __cdecl dk2::static_MyDirectDraw_devTexture_init(MyDirectDraw *mydd) {
                     }
                     return 1;
                 }, NULL);
-        if (!g_isSupports_4r4g4b4a && !g_isSupports_8r8g8b8a) return 0;
+        if (!g_isSupports_4r4g4b4a && !g_isSupports_8r8g8b8a) {
+            patch::diagnostic::graphicsLifecycle("devTexture.init.failure.formats", _ReturnAddress());
+            return 0;
+        }
         char v14 = 1;
         if (!g_isSupports_16bit) {
             MyDirectDraw_instance_devTexture.flags &= ~0x30u;
@@ -303,6 +315,7 @@ int __cdecl dk2::static_MyDirectDraw_devTexture_init(MyDirectDraw *mydd) {
         if (((unsigned __int8) v26->constructor(&MyCEngineSurfDesc_argb32_instance, 32, 512) & (unsigned __int8) v14) ==
             0) {
             SurfHashList2_initialized = 1;
+            patch::diagnostic::graphicsLifecycle("devTexture.init.failure.hashLists", _ReturnAddress());
             MyDirectDraw_devTexture_destroy();
             return 0;
         }
@@ -356,12 +369,17 @@ int __cdecl dk2::static_MyDirectDraw_devTexture_init(MyDirectDraw *mydd) {
         v12 = NULL;
     }
     CEngineSurfaceScaler_instance.scaled_128x128_8a8r8g8b = v12;
+    patch::diagnostic::graphicsLifecycle("devTexture.init.end", _ReturnAddress());
     return 1;
 }
 
 
 void dk2::MyDirectDraw_devTexture_destroy() {
-    if (!SurfHashList2_initialized) return;
+    patch::diagnostic::graphicsLifecycle("devTexture.destroy.begin", _ReturnAddress());
+    if (!SurfHashList2_initialized) {
+        patch::diagnostic::graphicsLifecycle("devTexture.destroy.skipped", _ReturnAddress());
+        return;
+    }
     if (CEngineSurfaceScaler_instance.orig_128x128_8a8r8g8b)
         CEngineSurfaceScaler_instance.orig_128x128_8a8r8g8b->v_scalar_destructor(1u);
     if (CEngineSurfaceScaler_instance.scaled_128x128_8a8r8g8b)
@@ -452,6 +470,7 @@ void dk2::MyDirectDraw_devTexture_destroy() {
         MyTextures_instance.fileHandle = NULL;
     }
     SurfHashList2_initialized = 0;
+    patch::diagnostic::graphicsLifecycle("devTexture.destroy.end", _ReturnAddress());
 }
 
 void __cdecl dk2::static_MyDirectDraw_triangles_init(MyDirectDraw *a1) {

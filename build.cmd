@@ -139,6 +139,15 @@ if errorlevel 1 goto :failure
 "build\%BUILD_PRESET%\src\%BUILD_CONFIG%\input_cursor_tests.exe"
 if errorlevel 1 goto :failure
 
+rem Developer diagnostics use a synthetic host; tests never launch or modify DK2.
+"build\%BUILD_PRESET%\src\%BUILD_CONFIG%\diagnostic_bridge_tests.exe"
+if errorlevel 1 goto :failure
+"build\%BUILD_PRESET%\src\%BUILD_CONFIG%\test_availability_tests.exe"
+if errorlevel 1 goto :failure
+set "DIAGNOSTIC_BRIDGE_TEST_HOST=%~dp0build\%BUILD_PRESET%\src\%BUILD_CONFIG%\diagnostic_bridge_test_host.exe"
+".venv\Scripts\python.exe" -m unittest discover -s tools/tests -p "test_diagnostic*.py" -v
+if errorlevel 1 goto :failure
+
 ".venv\Scripts\python.exe" "tools\package_coop_tests.py"
 if errorlevel 1 goto :failure
 

@@ -1,6 +1,7 @@
 #include "coop_campaign.h"
 #include "network_possession.h"
 #include "network_hands.h"
+#include "diagnostic/game_bridge.h"
 #include "dk2/MyCreatureCollection.h"
 #include "dk2/entities/CPlayer.h"
 #include "dk2/entities/CShot.h"
@@ -12,6 +13,7 @@ namespace {
 patch::network_possession::Presentation presentation;
 // Native cast allocation and shot processing are synchronous within these separate scopes.
 uint32_t castingOrigin = 0, enteringOrigin = 0;
+unsigned traceLines = 0;
 
 /** The loader redirects references, leaving these original DKII 1.70 bodies callable. */
 template<size_t N> void expectBytes(uintptr_t address, const unsigned char (&bytes)[N]) {
@@ -47,6 +49,12 @@ bool allowEntry(dk2::CBridge &bridge, uint16_t *data) {
     const auto keeper = data[2], creature = data[0];
     const bool allow = presentation.enter(true, enteringOrigin, localOrigin(), keeper,
         bridge.v_fBC_getPlayerId(), creature);
+    if (patch::diagnostic::enabled() && traceLines < 64) {
+        ++traceLines;
+        dk2::MyWindow_log_printf(&dk2::MyWindow_instance,
+        "[possession] entry keeper=%u creature=%u origin=%08X local=%08X allow=%d\n",
+        unsigned(keeper), unsigned(creature), unsigned(enteringOrigin), unsigned(localOrigin()), int(allow));
+    }
     return allow;
 }
 }
@@ -57,7 +65,7 @@ bool patch::network_possession::enabled() {
     return config.useFe_playMode == 3 && !config.useFe3d && !config.useFe2d_unk1 && !config.hasSaveFile;
 }
 void patch::network_possession::resetSession() {
-    presentation.reset(); castingOrigin = enteringOrigin = 0;
+    presentation.reset(); castingOrigin = enteringOrigin = 0; traceLines = 0;
 }
 
 void patch::network_possession::afterWorldReload() {

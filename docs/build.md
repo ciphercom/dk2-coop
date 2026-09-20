@@ -23,6 +23,10 @@ Plain `build.cmd` uses Debug. `--package` defaults to Release; `--debug` selects
 
 Each run configures the Win32 build, compiles the project, runs its C++ regression checks and Python native-contract/packaging checks, then installs to `install/` (Debug) or `install-release/` (Release). A failing check stops the build. Assertions remain enabled in Release. Packaging follows only after those steps pass.
 
+## Diagnostics branch checks
+
+On `feature/diagnostic-bridge`, both configurations also run native diagnostic/availability checks and Python tests through a synthetic named-pipe host. The build selects `DIAGNOSTIC_BRIDGE_TEST_HOST` from its active Visual Studio preset and configuration, including VS2022 on CI. No live game is started or modified. See [diagnostic usage](../tools/diagnostic_bridge.md).
+
 ## Release artifacts
 
 `build.cmd --package` writes the complete distributable ZIP and its `.zip.sha256` sidecar under `build/releases/`. Names use `DK2-Coop-<version>-<identity>.zip`; Debug packages add `-debug`. The identity identifies the exact payload, including the instructions and bundled editor assets.

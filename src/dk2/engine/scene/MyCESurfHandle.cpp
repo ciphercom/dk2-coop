@@ -9,6 +9,9 @@
 #include "dk2/CEngineSurfaceScaler.h"
 #include "dk2_functions.h"
 #include "dk2_globals.h"
+#include "diagnostic/game_bridge.h"
+#include "diagnostic/graphics_lifecycle.h"
+#include <intrin.h>
 
 
 void dk2::MyCESurfHandle::resolveSurface() {
@@ -66,6 +69,12 @@ void dk2::MyCESurfHandle::resolveSurface() {
 void dk2::MyCESurfHandle::loadPrescaled() {
     char surfName[2048];
     sprintf(surfName, MyStringHashMap_MyCESurfHandle_instance.entries.buf[this->mapIdx].name);
+    // Observe the missing scratch state before the existing scaler path dereferences it.
+    if (patch::diagnostic::enabled() && (!CEngineSurfaceScaler_instance.orig_128x128_8a8r8g8b ||
+        !CEngineSurfaceScaler_instance.scaled_128x128_8a8r8g8b)) {
+        patch::diagnostic::graphicsLifecycle("loadPrescaled.missingScratch", _ReturnAddress(), surfName,
+            surfWidth8, surfHeight8, reductionLevel_andFlags);
+    }
     char isPrescaled = 0;
     char *prescaledPos = strstr(surfName, "PRESCALED_TO");
     if (prescaledPos) {

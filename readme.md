@@ -40,6 +40,10 @@ Use `build.cmd` from this repository; it configures, builds, runs the project ch
 
 Packages and SHA-256 sidecars are written to `build/releases/`. Versions combine the Flame base with an increasing co-op revision, such as `1.7.0.1`. Pushing a matching version tag builds, checks and publishes the latest GitHub release automatically; see [versioning and release steps](docs/build.md#versioning).
 
+## Developer diagnostics
+
+This branch includes an opt-in local diagnostic bridge, bounded gameplay and graphics traces, crash-log preservation, and a manual-play recorder. See [diagnostic usage](tools/diagnostic_bridge.md) and [Flame adoption notes](docs/development/diagnostic-bridge-port.md).
+
 ## Upstream and credits
 
 [Flame by DiaLight and contributors](https://github.com/DiaLight/Flame) provides the partial DK2 recompilation, patch loader and game fixes on which this fork is built. Its upstream authorship and source history are retained. Internal names such as `PATCH.dll`, `flame/Flame.dll` and `flame/DKII.dll` remain compatible with that loader; they are also the names used in this fork's packages. The original packaged attribution is retained as `Flame-Upstream-README.txt`. Quuz created the bundled level-editor patches in `Data/editor/`.

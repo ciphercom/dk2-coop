@@ -3,6 +3,8 @@
 //
 
 #include "flame_main.h"
+#include "diagnostic/game_bridge.h"
+#include "patches/network_hands.h"
 
 #include <algorithm>
 
@@ -125,6 +127,8 @@ void patch::flameInit(int argc, const char **argv) {
     patch::original_compatible::init();
     patch::protocol_dump::init();
     patch::screen_resolution::init();
+    // Co-op extends the reusable snapshots with per-Controller hand ownership.
+    patch::diagnostic::init(patch::network_hands::owner);
 
 #if __has_include(<dk2_research.h>)
     bug_hunter::init_keyWatcher();
@@ -133,6 +137,7 @@ void patch::flameInit(int argc, const char **argv) {
 }
 
 void patch::flameCleanup() {
+    patch::diagnostic::cleanup();
 #if __has_include(<dk2_research.h>)
     bug_hunter::stop_keyWatcher();
 #endif

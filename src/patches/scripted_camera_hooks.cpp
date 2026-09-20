@@ -1,5 +1,6 @@
 #include "coop_campaign.h"
 #include "scripted_camera_hooks.h"
+#include "diagnostic/game_bridge.h"
 #include "scripted_camera_playback.h"
 #include "network_possession.h"
 #include "dk2/CCamera.h"
@@ -12,6 +13,7 @@
 namespace {
 patch::scripted_camera::Playback playback;
 patch::scripted_camera::MotionWaits motion;
+unsigned traceLines = 0;
 
 /** Loader rewrites incoming references, preserving the DKII 1.70 original bodies. */
 void verifyOriginalEntries() {
@@ -67,6 +69,7 @@ bool patch::scripted_camera::movementPending() { return motion.movementPending()
 void patch::scripted_camera::resetSession() {
     playback.reset();
     motion.reset();
+    traceLines = 0;
 }
 
 void patch::scripted_camera::beforeWorldTick(dk2::MyGameSession &session) {
@@ -81,7 +84,12 @@ void patch::scripted_camera::beforeWorldTick(dk2::MyGameSession &session) {
     const auto tick = session.pWorld->getGameTick();
     // [path start, path finish) remains paused; finishing now does not consume an extra tick.
     motion.advance(tick, playback.pending());
-    playback.beforeTick(true, *camera, tick, [&] { return finishOriginal(*camera); });
+    if (playback.beforeTick(true, *camera, tick, [&] { return finishOriginal(*camera); }) &&
+            patch::diagnostic::enabled() && traceLines < 128) {
+        ++traceLines;
+        dk2::MyWindow_log_printf(&dk2::MyWindow_instance,
+            "[scripted-camera] finish tick=%u camera_mode=%u\n", tick, camera->_mode);
+    }
     motion.advance(tick, playback.pending());
 }
 
@@ -102,6 +110,7 @@ char dk2::CCamera::loadEnginePath(uint32_t path, uint32_t x, uint32_t y, int fla
     if (!g_pCWorld || !g_pCWorld->pGameSession) std::abort();
     const auto tick = g_pCWorld->getGameTick();
     const auto ticksPerSecond = g_pCWorld->pGameSession->gameTicksPerSecond;
+    const auto before = _mode;
     motion.advance(tick, playback.pending());
     const char result = playback.load(true, *this, tick, ticksPerSecond, [&](bool sharedAcceptance) {
         // Native set-mode18 saves the real previous mode, including possession,
@@ -112,6 +121,12 @@ char dk2::CCamera::loadEnginePath(uint32_t path, uint32_t x, uint32_t y, int fla
             [&] { return loadSharedPath(this, nullptr, path, x, y, flags); });
     });
     motion.advance(tick, playback.pending());
+    if (before != 18 && _mode == 18 && patch::diagnostic::enabled() && traceLines < 128) {
+        ++traceLines;
+        MyWindow_log_printf(&MyWindow_instance,
+            "[scripted-camera] start tick=%u path=%u points=%d first=%d tps=%u deadline=%u\n",
+            tick, path, numPoints, fEC6, ticksPerSecond, playback.completionTick());
+    }
     return result;
 }
 
@@ -134,5 +149,10 @@ int dk2::CWorld::callActionHandler(GameAction *action) {
     // Acceptance and timing come from the shared command, never the local camera's mode/distance.
     const int result = motion.dispatch(true, action->actionKind, rotationMs, tick,
         ticksPerSecond, playback.pending(), original);
+    if (patch::diagnostic::enabled() && traceLines < 128) {
+        ++traceLines;
+        MyWindow_log_printf(&MyWindow_instance,
+            "[scripted-camera] motion tick=%u rotation_ms=%u tps=%u\n", tick, rotationMs, ticksPerSecond);
+    }
     return result;
 }

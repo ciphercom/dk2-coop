@@ -18,6 +18,7 @@
 #include "dk2/utils/Pos2i.h"
 #include "dk2/text/render/MyTextRenderer.h"
 #include "dk2_globals.h"
+#include "diagnostic/game_bridge.h"
 #include "dk2_functions.h"
 #include "dk2/entities/CCreatureExtended.h"
 #include "dk2/math/int_float.h"
@@ -33,10 +34,18 @@
 #include "patches/network_gem_ending.h"
 #include "patches/network_possession.h"
 #include "patches/health_flower.h"
+#include "patches/test_availability.h"
 #if __has_include(<dk2_research.h>)
 #include "dk2_research.h"
 #endif
 
+
+namespace {
+flame_config::define_flame_option<bool> o_allAvailable(
+    "flame:prototype:all-available", flame_config::OG_Config,
+    "Testing only: make all loaded spells, rooms, traps and doors available at fresh network match start. "
+    "Both peers must enable it.", false);
+}
 
 dk2::CComponent *dk2::CGameComponent::mainGuiLoop() {
     patch::log::dbg("enter CGameComponent");
@@ -188,6 +197,8 @@ dk2::CComponent *dk2::CGameComponent::mainGuiLoop() {
     CWorld_instance.releaseSurface();
     if (!CWorld_instance.sub_511280())
         this->exit_flag = 1;
+    else
+        patch::test_availability::apply(o_allAvailable.get(), MyResources_instance.gameCfg, CWorld_instance);
     v2_comm_i->sub_521B80();
     this->fpsCalc_drawCount = 0;
     this->fps.value = 0;
@@ -216,6 +227,7 @@ dk2::CComponent *dk2::CGameComponent::mainGuiLoop() {
         research::tick();
 #endif
         patch::scheduler::tick();
+        patch::diagnostic::pump(&this->gameSession);
         if (flame_config::changed())
             flame_config::save();
         patch::protocol_dump::tick();

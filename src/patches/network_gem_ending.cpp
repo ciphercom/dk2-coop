@@ -1,6 +1,7 @@
 #include "coop_campaign.h"
 #include "coop_campaign_progress.h"
 #include "network_gem_ending.h"
+#include "diagnostic/game_bridge.h"
 #include "scripted_camera_hooks.h"
 #include "dk2/CState.h"
 #include "dk2/Obj6F2550.h"
@@ -13,6 +14,8 @@
 
 namespace {
 patch::network_gem_ending::Ending ending;
+unsigned traceLines = 0;
+int lastPathWait = -1, lastMoveWait = -1;
 
 /** These fixed continuations are valid only for the exact DKII 1.70 native frames. */
 template<size_t N> void expectBytes(uintptr_t address, const unsigned char (&bytes)[N]) {
@@ -137,6 +140,14 @@ __declspec(naked) int __fastcall moveReadyNative(dk2::CState *) {
 
 #pragma warning(pop)
 
+void trace(const char *event, uint16_t keeper = 0, uint16_t creature = 0, int pending = -1) {
+    if (!patch::diagnostic::enabled() || traceLines >= 128) return;
+    ++traceLines;
+    dk2::MyWindow_log_printf(&dk2::MyWindow_instance,
+        "[network-gem-ending] event=%s tick=%u keeper=%u creature=%u pending=%d\n", event,
+        unsigned(dk2::g_pCWorld->getGameTick()), unsigned(keeper), unsigned(creature), pending);
+}
+
 /** The native routine can letterbox even when creature creation/state entry fails. */
 uint16_t startedCreature(dk2::CPlayer &keeper) {
     if (!keeper.gemId || !(keeper.playerFlags & 0x40)) return 0;
@@ -174,17 +185,21 @@ bool patch::network_gem_ending::activeForKeeper(uint16_t tag) { return enabled()
 bool patch::network_gem_ending::alternativeForKeeper(uint16_t tag) { return enabled() && ending.alternativeFor(tag); }
 bool patch::network_gem_ending::physicalCompleteForKeeper(uint16_t tag) { return enabled() && ending.completeFor(tag); }
 void patch::network_gem_ending::resetSession() {
-    ending.reset();
+    ending.reset(); traceLines = 0; lastPathWait = lastMoveWait = -1;
 }
 void patch::network_gem_ending::beforeWorldTick(dk2::MyGameSession &session) {
     if (!enabled()) return;
     if (!session.pWorld) std::abort();
-    ending.observeTick(session.pWorld->getGameTick());
+    if (ending.observeTick(session.pWorld->getGameTick())) {
+        lastPathWait = lastMoveWait = -1;
+        trace("rewind-reset");
+    }
     // CPlayer::tick clears this shared deadline after emitting the native alternate effects.
     if (const auto tag = ending.alternativeKeeper()) {
         const auto *keeper = static_cast<dk2::CPlayer *>(session.pWorld->v_getCTag_508C40(tag));
         if (!keeper) std::abort();
-        ending.completeAlternative(tag, keeper->fireworksTime == 0);
+        if (ending.completeAlternative(tag, keeper->fireworksTime == 0))
+            trace("alternative-complete", tag);
     }
 }
 
@@ -204,10 +219,12 @@ int16_t dk2::CPlayer::fun_4BE630(int status) {
         if (patch::network_gem_ending::usesAlternativeEnding(dk2::Obj6F2550_instance.f407)) {
             startAlternativeNative(this);
             if (!fireworksTime || !(playerFlags & 0x40)) std::abort();
+            trace("alternative-started", f0_tagId);
             return patch::network_gem_ending::Started{0, true};
         }
         startNative(this);
         const auto creature = startedCreature(*this);
+        trace(creature ? "started" : "native-fallback", f0_tagId, creature);
         return patch::network_gem_ending::Started{creature};
     });
 }
@@ -217,6 +234,10 @@ int dk2::CState::sub_474100() {
     if (!patch::network_gem_ending::enabled() || !matches(*this)) return original();
     verifyNativeFrames();
     const bool pending = patch::scripted_camera::pathPending();
+    if (lastPathWait != int(pending)) {
+        lastPathWait = pending;
+        trace("path-wait", creature->f26_pPlayer_owner->f0_tagId, creature->f0_tagId, pending);
+    }
     return patch::network_gem_ending::wait(true, true, pending, age, original, [&] { return pathReadyNative(this); });
 }
 int dk2::CState::sub_4741D0() {
@@ -224,13 +245,18 @@ int dk2::CState::sub_4741D0() {
     if (!patch::network_gem_ending::enabled() || !matches(*this)) return original();
     verifyNativeFrames();
     const bool pending = patch::scripted_camera::movementPending();
+    if (lastMoveWait != int(pending)) {
+        lastMoveWait = pending;
+        trace("movement-wait", creature->f26_pPlayer_owner->f0_tagId, creature->f0_tagId, pending);
+    }
     return patch::network_gem_ending::wait(true, true, pending, age, original, [&] { return moveReadyNative(this); });
 }
 int dk2::CState::sub_4744F0() {
     const bool scoped = patch::network_gem_ending::enabled();
     if (scoped) verifyNativeFrames();
     const int result = reinterpret_cast<int (__thiscall *)(CState *)>(0x004744F0)(this);
-    if (scoped && matches(*this))
-        ending.complete(creature->f26_pPlayer_owner->f0_tagId, creature->f0_tagId, initiatedEndOfLevelGems != 0);
+    if (scoped && matches(*this) && ending.complete(creature->f26_pPlayer_owner->f0_tagId,
+        creature->f0_tagId, initiatedEndOfLevelGems != 0))
+        trace("physical-complete", creature->f26_pPlayer_owner->f0_tagId, creature->f0_tagId);
     return result;
 }

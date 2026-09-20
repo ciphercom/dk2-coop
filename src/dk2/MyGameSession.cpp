@@ -3,6 +3,7 @@
 //
 
 #include "dk2_globals.h"
+#include "diagnostic/game_bridge.h"
 #include "dk2_functions.h"
 #include "dk2_memory.h"
 #include "dk2/sound/TbSysCommand_Process.h"
@@ -46,6 +47,7 @@ int dk2::MyGameSession::tick(int a2_isNeedBlt) {
                 return 1;
         }
     }
+    patch::diagnostic::observeLocalQueue(*this);
     this->handleActions();
     if (this->pCommunication) {
         GameActionCtx actions;
@@ -240,6 +242,8 @@ int dk2::MyGameSession::tick(int a2_isNeedBlt) {
                     ++this->f292;
                     this->saveTick288 += 30 * this->gameTicksPerSecond;
                 }
+                GameActionCtx diagnosticActions;
+                const bool traceWorld = patch::diagnostic::captureWorldActions(actions, diagnosticActions);
                 DWORD v25 = getTimeMs();
                 patch::scripted_camera::beforeWorldTick(*this);
                 patch::network_gem_ending::beforeWorldTick(*this);
@@ -258,6 +262,7 @@ int dk2::MyGameSession::tick(int a2_isNeedBlt) {
                         });
                 }
                 unsigned int v26 = this->pWorld->v_tick(&actions);
+                if (traceWorld) patch::diagnostic::observeWorldReturn(diagnosticActions);
                 patch::network_possession::afterWorldTick(*this);
                 unsigned int v27 = getTimeMs() - v25;
                 if (v27 > GameSession_worldHighestTickTime)

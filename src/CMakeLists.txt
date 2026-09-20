@@ -24,6 +24,11 @@ collect_sources(WEANETR_SOURCES weanetr_dll)
 
 add_library(${TARGET} SHARED
         main.cpp
+        diagnostic/bridge.cpp
+        diagnostic/pipe.cpp
+        diagnostic/game_bridge.cpp
+        diagnostic/graphics_lifecycle.cpp
+        patches/test_availability.cpp
         patches/scripted_camera_trigger.cpp
         patches/scripted_camera_hooks.cpp
         patches/network_possession.cpp
@@ -301,3 +306,12 @@ add_executable(coop_campaign_init_tests patches/coop_campaign_init_tests.cpp)
 add_executable(shared_dig_overlay_tests patches/shared_dig_overlay_tests.cpp)
 target_link_libraries(shared_dig_overlay_tests PRIVATE dkii_exe_api)
 target_compile_definitions(shared_dig_overlay_tests PRIVATE DIRECTINPUT_VERSION=0x0500 DIRECT3D_VERSION=0x0600)
+
+# The synthetic host tests the same local transport without starting DK2.
+add_executable(diagnostic_bridge_tests diagnostic/bridge_tests.cpp diagnostic/bridge.cpp)
+add_executable(diagnostic_bridge_test_host diagnostic/bridge_test_host.cpp diagnostic/bridge.cpp diagnostic/pipe.cpp)
+target_link_libraries(diagnostic_bridge_test_host PRIVATE advapi32)
+target_compile_definitions(diagnostic_bridge_test_host PRIVATE NOMINMAX=1)
+add_executable(test_availability_tests patches/test_availability_tests.cpp patches/test_availability.cpp)
+target_link_libraries(test_availability_tests PRIVATE dkii_exe_api)
+target_compile_definitions(test_availability_tests PRIVATE DIRECTINPUT_VERSION=0x0500 DIRECT3D_VERSION=0x0600)

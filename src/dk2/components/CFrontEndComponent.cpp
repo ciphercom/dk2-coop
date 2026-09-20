@@ -19,6 +19,7 @@
 #include "dk2/sound/TbSysCommand_StopAll.h"
 #include "dk2_functions.h"
 #include "dk2_globals.h"
+#include "diagnostic/game_bridge.h"
 #include "dk2/dk2_memory.h"
 #include "patches/logging.h"
 #include "patches/micro_patches.h"
@@ -63,6 +64,7 @@ void dk2::CFrontEndComponent::showTitleScreen() {
 dk2::CComponent *dk2::CFrontEndComponent::mainGuiLoop() {
     patch::log::dbg("enter CFrontEndComponent");
     while (!this->is_component_destroy) {
+        patch::diagnostic::pump(nullptr);
         if (this->cgui_manager.sub_52C520())
             MyInputManagerCb_static_processInputs_setStaticListenersAndHandleDxActions(
                 &this->static_listeners, 0, this, 0);

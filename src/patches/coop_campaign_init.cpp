@@ -7,7 +7,7 @@
 #include <cstring>
 
 namespace {
-/** Only the native world-initialization branches see campaign mode; transport stays networked. */
+/** Native campaign rule branches see campaign mode; transport stays networked. */
 int __cdecl initializationMode() {
     const auto &cfg = dk2::MyResources_instance.gameCfg;
     return patch::coop_campaign_init::effectiveMode(patch::coop_campaign::mission() != nullptr,
@@ -83,6 +83,9 @@ void patch::coop_campaign_init::install() {
             {0x0050C9C2, eaxRead, sizeof(eaxRead), modeForInitialization},
             {0x0050CB71, eaxRead, sizeof(eaxRead), modeForInitialization},
             {0x0050CBF6, eaxRead, sizeof(eaxRead), modeForInitialization},
+            // The countdown and expiry flag still drive authored events (Level 9's hero arrival).
+            // Only bypass the following multiplayer branch that defeats every Keeper at zero.
+            {0x0050A67A, eaxRead, sizeof(eaxRead), modeForInitialization},
             // Native ME-Heart cleanup and its following sole-survivor check use campaign rules.
             {0x004BB368, campaignCompare, sizeof(campaignCompare), compareCampaignMode},
             {0x004BB39A, campaignCompare, sizeof(campaignCompare), compareCampaignMode},

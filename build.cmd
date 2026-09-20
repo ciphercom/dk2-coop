@@ -130,6 +130,9 @@ if errorlevel 1 goto :failure
 ".venv\Scripts\python.exe" "tools\tests\network_possession_native_tests.py"
 if errorlevel 1 goto :failure
 
+".venv\Scripts\python.exe" "tools\tests\coop_timer_native_tests.py"
+if errorlevel 1 goto :failure
+
 "build\%BUILD_PRESET%\src\%BUILD_CONFIG%\network_gem_ending_tests.exe"
 if errorlevel 1 goto :failure
 

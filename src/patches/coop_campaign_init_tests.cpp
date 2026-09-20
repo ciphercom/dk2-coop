@@ -15,6 +15,12 @@ int main() {
     const int transportMode = 3;
     require(effectiveMode(true, transportMode, false, false, false) == 1,
         "selected network campaign still uses carrier world-initialization rules");
+    // Native timer expiry defeats Keepers only in modes 2 and 3; campaign mode lets scripts decide.
+    const auto timerDefeatsKeepers = [](int mode) { return mode == 2 || mode == 3; };
+    require(!timerDefeatsKeepers(effectiveMode(true, transportMode, false, false, false)),
+        "campaign countdown expiry still automatically defeats the shared Keeper");
+    require(timerDefeatsKeepers(effectiveMode(false, transportMode, false, false, false)),
+        "ordinary multiplayer timeout no longer ends the match");
     require(terminalMode(true, transportMode, false, false, false) == 0,
         "campaign status change still propagates multiplayer victory or persists a new score");
     for (int selected = 0; selected != 2; ++selected)

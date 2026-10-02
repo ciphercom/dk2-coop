@@ -12,6 +12,7 @@
 namespace {
 patch::scripted_camera::Playback playback;
 patch::scripted_camera::MotionWaits motion;
+patch::scripted_camera::ResyncCheckpoints checkpoints;
 
 /** Loader rewrites incoming references, preserving the DKII 1.70 original bodies. */
 void verifyOriginalEntries() {
@@ -67,6 +68,20 @@ bool patch::scripted_camera::movementPending() { return motion.movementPending()
 void patch::scripted_camera::resetSession() {
     playback.reset();
     motion.reset();
+    checkpoints.reset();
+}
+
+void patch::scripted_camera::saveResyncCheckpoint(dk2::MyGameSession &session) {
+    if (!enabled()) return;
+    if (!session.pWorld) std::abort();
+    checkpoints.save(session.f290, session.pWorld->getGameTick(), playback, motion);
+}
+
+void patch::scripted_camera::restoreResyncCheckpoint(dk2::MyGameSession &session) {
+    if (!enabled()) return;
+    if (!session.pWorld || !session.pBridge) std::abort();
+    checkpoints.restore(session.f290, session.pWorld->getGameTick(),
+        session.pBridge->v_fD0_getCamera(), playback, motion);
 }
 
 void patch::scripted_camera::beforeWorldTick(dk2::MyGameSession &session) {

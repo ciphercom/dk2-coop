@@ -27,6 +27,7 @@ add_library(${TARGET} SHARED
         patches/scripted_camera_trigger.cpp
         patches/scripted_camera_hooks.cpp
         patches/network_possession.cpp
+        patches/possession_navigation_context.cpp
         patches/health_flower.cpp
         patches/network_hands.cpp
         patches/network_gem_ending.cpp

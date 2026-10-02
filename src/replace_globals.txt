@@ -456,6 +456,7 @@
 
 
 # Controller-local possession for fresh co-op campaign sessions
+0040E910 void * __cdecl CDefaultPlayerInterface_sub_40E910()
 004483D0 int CBridge::idx_handler_B(uint16_t *)
 00448440 int CBridge::idx_handler_C(uint16_t *)
 004AEEA0 int CShot::sub_4AEEA0()

@@ -71,3 +71,19 @@ Verified both ZIPs, payload hashes and sidecar checksums, Windows version resour
 | Debug | `DK2-Coop-1.7.0.1-debug-287643a6f40c.zip` | `a01996df9683c49477148c9c0cc38a49fd8c555689e533ffd2f1aa1cc734ea7c` |
 
 Temporary version-build logs were removed after preserving these results; generated packages remain in the ignored build directory.
+
+## Possession navigation and resync timing — 2026-10-02
+
+Release 1.7.0.5 brings the Level 13 possession correction and native resync timing correction from the main Flame source. Both fixes live in normal source files; investigation captures and developer diagnostics remain outside this fork.
+
+Local possession movement queries changed navigation capability global `6EC9E4`, which subsequent shared AI terrain checks inherited. The correction restores that capability after the entire local Controller update, preserving its native collision checks and return value. Native ABI and terrain-consumer tests pin the original DKII 1.70 seam; behavioral checks cover both capability values and unchanged ordinary sessions.
+
+Native resync saves rotate through two checkpoints. Matching timing copies now restore accepted cutscene deadlines and paused movement/rotation waits immediately after native world load. Save uses the real virtual return value despite the generated declaration saying void. Native camera loading restores the existing embedded camera in place, and saved world ticks return unchanged. Regression checks replay checkpoint 124 through the original completion at 168 under different render rates, both checkpoint slots and authored motion waits.
+
+The local Level 13 acceptance run processed exactly 432 matching shared actions, including 235 attacks and 187 movements, without dropped events, a checksum/seed mismatch or resync. Both Controllers accepted the next path at tick 407 with deadline 467. The host then crashed in the existing native texture scaler after a focus switch; released graphics storage was required by Vampbak loading. That separate graphics lifetime issue interrupted the run. The new checkpoint recovery behavior is covered by regression tests; this run did not force recovery.
+
+The main Flame package build passed all configured checks. It retained two existing CGameComponent swprintf C4477 warnings and the existing nameList LNK4217 warning.
+
+Release and Debug `build.cmd --package` runs both passed on Visual Studio 2026/Win32: 14 native test executables and 24 Python checks per configuration (6 Hand, 4 possession, 1 timer, 8 packaging, 5 publication). The only fork warning was the inherited nameList LNK4217. Independent port review found no blockers and confirmed diagnostic exclusions. Whitespace checks passed.
+
+Both packages passed ZIP integrity, manifest membership, every payload SHA-256 and sidecar checksum checks. Each contains 12 files and no bridge, testing availability override or movement-trace markers. The real publication gate accepts the Release payload for v1.7.0.5 and rejects v1.7.0.4. Build and package metadata retain Flame 1.7.0 alongside co-op 1.7.0.5. Pushing the version tag triggers GitHub's existing Release/Debug build and publication workflow.

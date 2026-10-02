@@ -24,6 +24,7 @@ char loadShared(Camera &camera, FinishTween finishTween, Original original) {
 
 /** Coordinate original engine calls without owning or duplicating camera data. */
 class Playback {
+    friend class ResyncCheckpoints;
     Timeline timeline;
     const void *trackedCamera = nullptr;
 
@@ -80,6 +81,37 @@ public:
         original();
         reset();
         return true;
+    }
+};
+
+/** Pair shared presentation timing with DK2's two rolling native resync saves. */
+class ResyncCheckpoints {
+    struct Checkpoint {
+        Playback playback;
+        MotionWaits motion;
+        uint32_t savedWorldTick = 0;
+        bool valid = false;
+    } checkpoints[2];
+
+public:
+    void reset() { for (auto &checkpoint : checkpoints) checkpoint = {}; }
+
+    /** Copy only after the matching native world save succeeds. */
+    void save(int slot, uint32_t worldTick, const Playback &playback, const MotionWaits &motion) {
+        if (slot < 0 || slot >= 2) std::abort();
+        checkpoints[slot] = {playback, motion, worldTick, true};
+    }
+
+    /** Rewind deadlines and paused motion budgets before native replay resumes. */
+    void restore(int slot, uint32_t worldTick, const void *camera, Playback &playback, MotionWaits &motion) const {
+        if (slot < 0 || slot >= 2) std::abort();
+        const auto &checkpoint = checkpoints[slot];
+        if (!checkpoint.valid || checkpoint.savedWorldTick != worldTick || !camera) std::abort();
+        // Native resync reloads the existing bridge's camera in place. Retain its
+        // tracked pointer; replacing the object would invalidate this timing copy.
+        if (checkpoint.playback.pending() && checkpoint.playback.trackedCamera != camera) std::abort();
+        playback = checkpoint.playback;
+        motion = checkpoint.motion;
     }
 };
 }

@@ -153,6 +153,7 @@ int dk2::MyGameSession::tick(int a2_isNeedBlt) {
                         for_each_destruct<GameAction, true>(actions.actionArr, 16);
                         return 0;
                     }
+                    patch::scripted_camera::restoreResyncCheckpoint(*this);
                     patch::network_possession::afterWorldReload();
                     // ref: net=00524F50
                     this->pCommunication->v_syncGameTickInit(this->gameTick);
@@ -236,7 +237,12 @@ int dk2::MyGameSession::tick(int a2_isNeedBlt) {
                             Buffer,
                             (unsigned __int16) this->f290 + 1,
                             pANsav);
-                    this->pWorld->v_f28_saveToFile(v84);
+                    // Native 0050FD10 returns success in EAX; generated metadata declares
+                    // this slot void. Keep virtual dispatch while reading its real result.
+                    auto saveWorld = reinterpret_cast<int (__thiscall *)(CWorld *, const char *)>(
+                        static_cast<void **>(this->pWorld->getVtbl())[0x28 / sizeof(void *)]);
+                    if (saveWorld(this->pWorld, v84))
+                        patch::scripted_camera::saveResyncCheckpoint(*this);
                     ++this->f292;
                     this->saveTick288 += 30 * this->gameTicksPerSecond;
                 }

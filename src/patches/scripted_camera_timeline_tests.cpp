@@ -32,6 +32,113 @@ struct EngineCamera {
     int finish() { _mode = savedMode; ++completions; fEC6 = 0; return 123; }
 };
 
+/** Model native camera reload and the timing copy at the real save/load seams. */
+struct ResyncPeer {
+    patch::scripted_camera::Playback playback;
+    patch::scripted_camera::MotionWaits motion;
+    patch::scripted_camera::ResyncCheckpoints checkpoints;
+    EngineCamera camera, savedCameras[2];
+
+    /** Match the hooks that pause authored motion when the shared path is accepted. */
+    void load(uint32_t tick, int pointCount, uint32_t ticksPerSecond) {
+        camera.numPoints = pointCount;
+        motion.advance(tick, playback.pending());
+        playback.load(true, camera, tick, ticksPerSecond, [&](bool) { return camera.load(); });
+        motion.advance(tick, playback.pending());
+    }
+
+    /** Apply path completion before the shared world evaluates its camera predicate. */
+    void beforeTick(uint32_t tick) {
+        motion.advance(tick, playback.pending());
+        playback.beforeTick(true, camera, tick, [&] { return camera.finish(); });
+        motion.advance(tick, playback.pending());
+    }
+
+    /** Preserve native camera data and shared timing at the same world boundary. */
+    void save(int slot, uint32_t tick) {
+        savedCameras[slot] = camera;
+        checkpoints.save(slot, tick, playback, motion);
+    }
+
+    /** Reload native data first, retaining the original camera object's address. */
+    void restore(int slot, uint32_t tick) {
+        camera = savedCameras[slot]; // Native resync reloads the existing camera in place.
+        checkpoints.restore(slot, tick, &camera, playback, motion);
+    }
+};
+
+/** Replaying a completed path must preserve its authored deadline across render rates. */
+void resyncPathContract() {
+    ResyncPeer fast, slow;
+    for (auto *peer : {&fast, &slow}) {
+        peer->load(1, 500, 10);
+        require(peer->playback.completionTick() == 168, "initial authored deadline is wrong");
+        peer->beforeTick(123);
+        peer->save(0, 124); // The native save precedes beforeWorldTick(124).
+        peer->beforeTick(168);
+        require(!peer->playback.pending() && peer->camera.completions == 1,
+            "original path did not complete before resync");
+        peer->beforeTick(200);
+        peer->save(1, 200); // The other rolling slot must not overwrite tick124.
+        peer->restore(0, 124);
+        require(peer->playback.pending() && peer->playback.completionTick() == 168,
+            "resync failed to recover the original authored deadline");
+    }
+    for (uint32_t tick = 124; tick <= 167; ++tick) {
+        fast.camera.fEC6 = fast.camera.numPoints; // Fast rendering repeatedly reaches the endpoint.
+        fast.playback.complete(true, fast.camera, [&] { return fast.camera.finish(); });
+        if (tick == 149) { // The slower Controller reaches its local path endpoint later.
+            slow.camera.fEC6 = slow.camera.numPoints - 1;
+            slow.playback.complete(true, slow.camera, [&] { return slow.camera.finish(); });
+        }
+        for (auto *peer : {&fast, &slow}) {
+            peer->beforeTick(tick);
+            require(peer->camera._mode == 18 && peer->camera.completions == 0 &&
+                    peer->motion.condition(true, 72, 0, peer->camera._mode, 1) == 0,
+                "rendering released a restored shared path before tick168");
+        }
+    }
+    for (auto *peer : {&fast, &slow}) {
+        peer->beforeTick(168);
+        require(peer->camera._mode == 7 && peer->camera.completions == 1 &&
+                peer->motion.condition(true, 72, 0, peer->camera._mode, 0) == 1,
+            "restored shared path did not release both Controllers on tick168");
+        peer->load(170, 32, 10);
+        peer->restore(1, 200);
+        require(!peer->playback.pending() &&
+                peer->motion.condition(true, 72, 0, peer->camera._mode, 0) == 1,
+            "restoring the other rolling slot retained timing from a later path");
+    }
+}
+
+/** Native resync must also rewind authored movement and rotation paused by a path. */
+void resyncMotionContract() {
+    ResyncPeer peer;
+    peer.motion.dispatch(true, 4, 1000, 100, 4, false, [] { return 17; });
+    peer.beforeTick(101);
+    peer.load(101, 32, 4); // Path deadline106; one movement and three rotation ticks remain.
+    peer.save(1, 102);
+    peer.beforeTick(106);
+    peer.beforeTick(109);
+    require(peer.motion.condition(true, 72, 0, peer.camera._mode, 0) == 1,
+        "original authored motion did not finish");
+    peer.restore(1, 102);
+    peer.beforeTick(106);
+    require(!peer.playback.pending() && peer.motion.movementPending() &&
+            peer.motion.condition(true, 72, 0, peer.camera._mode, 1) == 0,
+        "resync lost the movement budget paused inside the path");
+    peer.beforeTick(107);
+    require(!peer.motion.movementPending() &&
+            peer.motion.condition(true, 72, 0, peer.camera._mode, 1) == 0,
+        "resync lost the remaining authored rotation budget");
+    peer.beforeTick(108);
+    require(peer.motion.condition(true, 72, 0, peer.camera._mode, 1) == 0,
+        "restored rotation released before its authored deadline");
+    peer.beforeTick(109);
+    require(peer.motion.condition(true, 72, 0, peer.camera._mode, 0) == 1,
+        "restored motion extended the authored deadline");
+}
+
 /** Different render rates cannot change the original camera-complete predicate. */
 void playbackContract() {
     using patch::scripted_camera::Playback;
@@ -304,6 +411,8 @@ void combinedWaitContract() {
 
 /** Authored 30 Hz paths complete on shared ticks, independently of rendered frames. */
 int main() {
+    resyncPathContract();
+    resyncMotionContract();
     playbackContract();
     scopeContract();
     motionWaitContract();

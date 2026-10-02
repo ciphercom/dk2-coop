@@ -8,6 +8,9 @@ bool pathPending();
 bool movementPending();
 /** Clear presentation deadlines before a session can initialize its first path. */
 void resetSession();
+/** Keep shared presentation timing beside the successful native resync save/load. */
+void saveResyncCheckpoint(dk2::MyGameSession &session);
+void restoreResyncCheckpoint(dk2::MyGameSession &session);
 /** Complete due paths immediately before the original shared world tick. */
 void beforeWorldTick(dk2::MyGameSession &session);
 /** Select only the original camera-complete condition in co-op campaign sessions. */

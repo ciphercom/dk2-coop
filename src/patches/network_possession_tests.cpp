@@ -1,4 +1,5 @@
 #include "network_possession.h"
+#include "possession_navigation_context.h"
 #include <cstdio>
 
 namespace {
@@ -9,6 +10,31 @@ void require(bool valid, const char *message) { if (!valid) { std::fprintf(stder
 /** Model the native acceptance boundary: rejected casts never emit a camera-entry command. */
 int main() {
     using namespace patch::network_possession;
+    // Native 4C8BD0 rejects second tile type1 / first tile type0 when E4 is zero.
+    // A local probe must retain its own capability through collision processing,
+    // while the next AI assessment inherits the same context as a remote peer.
+    const auto terrainAssessment = [](int capability) { return capability ? 2 : 0; };
+    for (int shared = 0; shared <= 1; ++shared) {
+        for (int possessed = 0; possessed <= 1; ++possessed) {
+            for (bool isolate : {false, true}) {
+                int capability = shared;
+                unsigned calls = 0;
+                const int result = patch::possession_navigation::localMovement(isolate, capability, [&] {
+                    ++calls;
+                    capability = possessed; // Native local terrain probe 40F6B0.
+                    const int probe = terrainAssessment(capability);
+                    // A later local collision check sees the selected capability until return.
+                    require(capability == possessed, "local collision processing must retain the possessed capability");
+                    return probe;
+                });
+                require(calls == 1 && result == terrainAssessment(possessed),
+                    "navigation isolation must preserve the native local update and its result");
+                // AI 4D5A40 refreshes five other flags; its E4 terrain gate remains inherited.
+                require(terrainAssessment(capability) == terrainAssessment(isolate ? shared : possessed),
+                    "co-op local prediction must not change the next AI terrain assessment; native sessions retain the leak");
+            }
+        }
+    }
     require(buttonBlocked(true, 448, 2, 0, 6, 6, 2), "occupied Keeper must disable the possession button");
     require(!buttonBlocked(true, 0, 2, 0, 6, 6, 2), "exit or death must unlock possession");
     require(!buttonBlocked(false, 448, 2, 0, 6, 6, 2), "native sessions must retain their button behavior");

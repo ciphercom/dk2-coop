@@ -1,5 +1,6 @@
 """Verify possession's panel field reads against the original DKII paging callback."""
 import re
+import struct
 import unittest
 
 import network_hands_native_tests as native
@@ -7,6 +8,39 @@ import network_hands_native_tests as native
 
 class NativePossessionContracts(unittest.TestCase):
     """Keep the UI adapter connected to the native page counter and page capacity."""
+
+    def test_local_movement_boundary_uses_ecx_and_no_stack_arguments(self):
+        """Generated cdecl metadata must not lose the Controller carried in ECX."""
+        native.NativeHandContracts.setUpClass()
+        data = native.NativeHandContracts.data
+        self.assertEqual(data(0x406777, 7), bytes.fromhex("8bcee892810000"))
+        self.assertEqual(data(0x40E910, 10), bytes.fromhex("558bec6aff68d8926400"))
+        self.assertEqual(data(0x40E92C, 2), bytes.fromhex("8bf1"))
+        self.assertEqual(data(0x40F67C, 1), b"\xc3")
+        self.assertEqual(data(0x40677E, 5), bytes.fromhex("e90e060000"))
+        callers = {ins.address for address in native.NativeHandContracts.functions
+                   for ins in native.NativeHandContracts.instructions(address)
+                   if ins.mnemonic == "call" and ins.op_str == "0x40e910"}
+        self.assertEqual(callers, {0x406779})
+        replacements = (native.ROOT / "src/replace_globals.txt").read_text()
+        self.assertIn("0040E910 void * __cdecl CDefaultPlayerInterface_sub_40E910()", replacements)
+
+    def test_local_probe_sets_capability_inherited_by_ai_terrain_gate(self):
+        """Pin the actual leaked context and terrain consumer, avoiding guessed creature flags."""
+        native.NativeHandContracts.setUpClass()
+        instructions = native.NativeHandContracts.instructions
+        probe = {i.address: (i.mnemonic, i.op_str) for i in instructions(0x40F6B0)}
+        self.assertEqual(probe[0x40F720], ("mov", "dword ptr [0x6ec9e4], edi"))
+        self.assertEqual(probe[0x40F728], ("mov", "dword ptr [0x6ec9e4], 1"))
+        ai_writes = {i.op_str.split(",")[0] for i in instructions(0x4D5A40)
+                     if i.mnemonic == "mov" and i.op_str.startswith("dword ptr [0x6ec9")}
+        self.assertEqual(ai_writes, {f"dword ptr [0x{address:x}]"
+                                    for address in (0x6EC9D0, 0x6EC9D4, 0x6EC9D8, 0x6EC9DC, 0x6EC9E0)})
+        callback = struct.unpack("<I", native.NativeHandContracts.data(0x6A11D0, 4))[0]
+        self.assertEqual(callback, 0x4C8BD0)
+        terrain = {i.address: (i.mnemonic, i.op_str) for i in instructions(callback)}
+        self.assertEqual(terrain[0x4C8CBE], ("mov", "edx, dword ptr [0x6ec9e4]"))
+        self.assertEqual(terrain[0x4C8CC6], ("jne", "0x4c8ce0"))
 
     def test_spell_page_fields_match_native_scroll(self):
         native.NativeHandContracts.setUpClass()
